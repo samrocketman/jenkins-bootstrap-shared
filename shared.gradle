@@ -5,8 +5,8 @@ apply plugin: 'maven'
 defaultTasks 'getjenkins', 'getplugins'
 
 apply from: 'variables.gradle'
-apply from: 'jenkins.gradle'
-apply from: 'packaging/packaging.gradle'
+apply from: "${bootstrapHome}/jenkins.gradle"
+apply from: "${bootstrapHome}/packaging/packaging.gradle"
 
 //http://www.gradle.org/docs/current/userguide/gradle_wrapper.html
 //generate gradlew with: gradle wrapper

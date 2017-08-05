@@ -8,7 +8,7 @@ buildscript {
     }
 }
 
-apply from: 'shared.gradle'
+apply from: "${bootstrapHome}/shared.gradle"
 
 //RPM or DEB package version
 //version should be the jenkins.war version appended by .1 and increments .1

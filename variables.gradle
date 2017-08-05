@@ -2,9 +2,8 @@
 //avoiding JENKINS_HOME because I only want to copy if file doesn't exist
 //by default the copy function will overwrite plugins in JENKINS_HOME if the hash is different
 ext.jenkinsHome = System.getenv('JENKINS_HOME')?:'../my_jenkins_home'
-ext.bootstrapHome = System.getenv('BOOTSTRAP_HOME')?:'.'
-ext.pluginsDest = bootstrapHome
-ext.jenkinsDest = bootstrapHome
+ext.pluginsDest = '.'
+ext.jenkinsDest = '.'
 //tokens for Jenkins packaging
 //note: tokens do not auto-correct when rpm prefix is customized during install
 ext.tokens = [

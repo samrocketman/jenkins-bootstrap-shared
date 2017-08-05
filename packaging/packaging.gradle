@@ -17,7 +17,7 @@ import org.redline_rpm.header.Flags
 //Operating System packages
 //I want to package the exact version of Jenkins plus all exact versions of plugins together
 task filterPackagingScripts(type: Copy) {
-    from "${rootProject.projectDir}/packaging"
+    from "${bootstrapHome}/packaging"
     into "${buildDir}/packaging-filtered"
     include '**/*.in'
     filter(ReplaceTokens, beginToken: '@@', endToken: '@@', tokens: tokens)
