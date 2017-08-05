@@ -37,12 +37,12 @@ if [ -d 'jenkins-bootstrap-shared' ]; then
   "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/listShortNameVersion.groovy > "${TMPFILE}"
 
   JENKINS_WAR_VERSION=$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url <(echo 'println Jenkins.instance.version'))
-  cat > dependencies.gradle <<-EOF
-  dependencies {
-      //get Jenkins
-      getjenkins 'org.jenkins-ci.main:jenkins-war:${JENKINS_WAR_VERSION}@war'
+cat > dependencies.gradle <<-EOF
+dependencies {
+    //get Jenkins
+    getjenkins 'org.jenkins-ci.main:jenkins-war:${JENKINS_WAR_VERSION}@war'
 
-      //get plugins
+    //get plugins
 EOF
 
   while read x; do
