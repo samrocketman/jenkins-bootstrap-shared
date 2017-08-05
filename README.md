@@ -33,7 +33,7 @@ skip to the next section.
    git init
    git submodule add https://github.com/samrocketman/jenkins-bootstrap-shared
    ./jenkins-bootstrap-shared/init.sh
-   git commit -m 'initial commit'
+   git add -A && git commit -m 'initial commit'
    ```
 
 2. Bootstrap your new Jenkins version locally.
@@ -49,7 +49,7 @@ skip to the next section.
 
    ```
    ./jenkins-bootstrap-shared/scripts/upgrade/upgrade_build_gradle.sh
-   git commit -m 'plugins are installed'
+   git add -A && git commit -m 'plugins are installed'
    ```
 
 ### Import an existing Jenkins instance
@@ -67,7 +67,7 @@ instance.
    git init
    git submodule add https://github.com/samrocketman/jenkins-bootstrap-shared
    ./jenkins-bootstrap-shared/init.sh
-   git commit -m 'initial commit'
+   git add -A && git commit -m 'initial commit'
    ```
 
 2. Prepare authentication for your remote Jenkins instance.
@@ -83,7 +83,7 @@ instance.
 
    ```
    ./jenkins-bootstrap-shared/scripts/upgrade/remote_dependencies.sh
-   git commit -m 'plugins are installed'
+   git add -A && git commit -m 'plugins are installed'
    ```
 
 4. Clean up environment when finished.
@@ -129,7 +129,7 @@ To upgrade Jenkins master and plugin versions do the following:
 
     ./jenkins_bootstrap.sh
     ./scripts/upgrade/upgrade_build_gradle.sh
-    git commit -m 'jenkins upgraded'
+    git add -A && git commit -m 'jenkins upgraded'
 
 # Instructions
 
