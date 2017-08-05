@@ -32,7 +32,7 @@ rm build.gradle.bak
 
 #generate a new dependencies.gradle file
 echo 'Upgrade dependencies.gradle file.'
-if [ -d 'jenkins-bootstrap-shared' ]; then
+if [ ! "$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url <(echo 'println Jenkins.instance.pluginManager.plugins.size()'))" = '0' ]; then
   #create an index of installed plugins
   "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/listShortNameVersion.groovy > "${TMPFILE}"
 
@@ -54,6 +54,6 @@ EOF
   echo '}' >> dependencies.gradle
 else
   $SED -i.bak -rf "${TMPFILE}" dependencies.gradle
-  rm build.gradle.bak
+  rm dependencies.gradle.bak
 fi
 echo 'Done.'

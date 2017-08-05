@@ -42,7 +42,8 @@ skip to the next section.
    ./jenkins_bootstrap.sh
    ```
 
-3. Visit `http://localhost:8080/` and install all desired plugins.
+3. Visit `http://localhost:8080/` and install all desired plugins.  Be sure to
+   continue as admin.
 
 4. Save your Jenkins version and plugins to your new repository.
 
