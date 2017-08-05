@@ -19,10 +19,13 @@ fi
 
 (
   cd jenkins-bootstrap-shared/
-  cp -r .gitignore gradle* build.gradle variables.gradle ../
+  cp -r Vagrantfile .gitignore gradle* build.gradle variables.gradle ../
+  mkdir ../scripts
+  cp scripts/vagrant-up.sh ../scripts/
 )
 
 echo 'bootstrapHome=jenkins-bootstrap-shared' > gradle.properties
-
-#${SED} -i.bak -r -- $'s#^(apply from: \')(shared.gradle\')$#\\1jenkins-bootstrap-shared/\\2\\napply from: \'variables.gradle\'#' build.gradle
-#rm -f build.gradle.bak
+cat > jenkins_bootstrap.sh <<'EOF'
+source jenkins-bootstrap-shared/jenkins_bootstrap.sh
+EOF
+chmod 755 jenkins_bootstrap.sh

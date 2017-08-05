@@ -81,6 +81,6 @@ jenkins_console --script "${SCRIPT_LIBRARY_PATH}/console-skip-2.0-wizard.groovy"
 jenkins_console --script "${SCRIPT_LIBRARY_PATH}/configure-disable-usage-stats.groovy"
 
 #configure jenkins agent credentials
-jenkins_console --script "${SCRIPT_LIBRARY_PATH}/credentials-jenkins-agent.groovy"
+#jenkins_console --script "${SCRIPT_LIBRARY_PATH}/credentials-jenkins-agent.groovy"
 #disable agent -> master security
-jenkins_console --script "${SCRIPT_LIBRARY_PATH}/security-disable-agent-master.groovy"
+#jenkins_console --script "${SCRIPT_LIBRARY_PATH}/security-disable-agent-master.groovy"
