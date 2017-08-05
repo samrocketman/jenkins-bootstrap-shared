@@ -1,0 +1,29 @@
+//perhaps use JENKINS_HOME some day
+//avoiding JENKINS_HOME because I only want to copy if file doesn't exist
+//by default the copy function will overwrite plugins in JENKINS_HOME if the hash is different
+ext.jenkinsHome = System.getenv('JENKINS_HOME')?:'../my_jenkins_home'
+ext.bootstrapHome = System.getenv('BOOTSTRAP_HOME')?:'.'
+ext.pluginsDest = bootstrapHome
+ext.jenkinsDest = bootstrapHome
+//tokens for Jenkins packaging
+//note: tokens do not auto-correct when rpm prefix is customized during install
+ext.tokens = [
+  ARTIFACTNAME: System.getenv('ARTIFACTNAME')?:'jenkins',
+  AUTHOR: System.getenv('AUTHOR')?:'Sam Gleske <sam.mxracer@gmail.com>',
+  CAMELARTIFACTNAME: System.getenv('CAMELARTIFACTNAME')?:'Jenkins',
+  CHANGELOG_PAGE: System.getenv('CHANGELOG_PAGE')?:'http://jenkins.io/changelog',
+  COMMIT: ['git', 'rev-parse', 'HEAD'].execute().text.toString().trim(),
+  HOME: System.getenv('JENKINS_HOME')?:'/var/lib/jenkins', //JENKINS_HOME
+  HOMEPAGE: System.getenv('HOMEPAGE')?:'https://github.com/samrocketman/jenkins-bootstrap-shared',
+  LICENSE: 'MIT/X License, GPL/CDDL, ASL2',
+  LICENSE_FILE: System.getenv('LICENSE_FILE')?:'LICENSE',
+  MANIFEST: 'jenkins-versions.manifest',
+  PACKAGENAME: System.getenv('PACKAGENAME')?:'jenkins-bootstrap',
+  PORT: System.getenv('PORT')?:'8080',
+  PREFIX: '/usr',
+  PRODUCTNAME: 'Jenkins',
+  SUMMARY: System.getenv('SUMMARY')?:'Jenkins Continuous Integration Server',
+  USER: System.getenv('JENKINS_USER')?:'jenkins',
+  VENDOR: System.getenv('VENDOR')?:'jenkins-bootstrap by Sam Gleske'
+]
+ext.tokens['WAR'] = "${ext.tokens['PREFIX']}/lib/${ext.tokens['ARTIFACTNAME']}/${ext.tokens['ARTIFACTNAME']}.war".toString()

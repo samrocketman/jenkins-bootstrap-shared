@@ -1,0 +1,193 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.netflix.nebula:gradle-ospackage-plugin:4.0.0'
+    }
+}
+
+//RPM package building
+apply plugin: 'nebula.ospackage'
+
+import org.apache.tools.ant.filters.ReplaceTokens
+import org.redline_rpm.header.Flags
+
+//Operating System packages
+//I want to package the exact version of Jenkins plus all exact versions of plugins together
+task filterPackagingScripts(type: Copy) {
+    from "${rootProject.projectDir}/packaging"
+    into "${buildDir}/packaging-filtered"
+    include '**/*.in'
+    filter(ReplaceTokens, beginToken: '@@', endToken: '@@', tokens: tokens)
+    filter(ReplaceTokens, beginToken: '~~', endToken: '~~', tokens: tokens)
+    rename '(.*).in', '$1'
+}
+
+task createManifest {
+    doLast {
+        configurations.all.findAll { !it.allDependencies.empty }.each { c ->
+            File file = new File("${buildDir}/${tokens['MANIFEST']}")
+            c.allDependencies.each { dep ->
+                file << ("${dep.group}:${dep.name}:${dep.version}\n")
+            }
+        }
+    }
+}
+createManifest.mustRunAfter filterPackagingScripts
+
+ospackage {
+    packageName tokens['PACKAGENAME']
+    packager tokens['AUTHOR']
+    release '0'
+    url tokens['HOMEPAGE']
+    into tokens['PREFIX']
+    license tokens['LICENSE']
+
+    //shared package name dependencies
+    requires 'coreutils'
+    requires 'grep'
+    requires 'logrotate'
+    requires 'procps'
+    requires 'rsync'
+
+    //only sign if properties exist
+    if(project.hasProperty('signing.keyId') && project.hasProperty('signing.password') && project.hasProperty('signing.secretKeyRingFile')) {
+        signingKeyId project.getProperty('signing.keyId')
+        signingKeyPassphrase project.getProperty('signing.password')
+        signingKeyRingFile file(project.getProperty('signing.secretKeyRingFile'))
+    }
+    addParentDirs = true
+
+    preInstall = file("${buildDir}/packaging-filtered/preInstall.sh")
+    postInstall = file("${buildDir}/packaging-filtered/postInstall.sh")
+    preUninstall = file("${buildDir}/packaging-filtered/preUninstall.sh")
+    postUninstall = file("${buildDir}/packaging-filtered/postUninstall.sh")
+
+    from(configurations.getjenkins) {
+        into "lib/${tokens['ARTIFACTNAME']}"
+        rename '.*', "${tokens['ARTIFACTNAME']}.war"
+        user tokens['USER']
+        permissionGroup tokens['USER']
+    }
+    from(configurations.getplugins) {
+        into "lib/${tokens['ARTIFACTNAME']}/plugins"
+        include '*.hpi'
+        rename '(.*)-[.0-9]+.hpi$', '$1.jpi'
+        user tokens['USER']
+        permissionGroup tokens['USER']
+    }
+    from('scripts') {
+        into "lib/${tokens['ARTIFACTNAME']}/scripts"
+        user tokens['USER']
+        permissionGroup tokens['USER']
+    }
+    from(tokens['LICENSE_FILE']) {
+        into "lib/${tokens['ARTIFACTNAME']}"
+        fileType LICENSE
+        rename '.*', 'LICENSE'
+        user tokens['USER']
+        permissionGroup tokens['USER']
+    }
+    from('packaging/common/gitignore') {
+        into "lib/${tokens['ARTIFACTNAME']}"
+        user tokens['USER']
+        permissionGroup tokens['USER']
+    }
+    from("${buildDir}/${tokens['MANIFEST']}") {
+        into "lib/${tokens['ARTIFACTNAME']}"
+        user tokens['USER']
+        permissionGroup tokens['USER']
+    }
+    from("${buildDir}/packaging-filtered/share") {
+        into "lib/${tokens['ARTIFACTNAME']}/share"
+        user tokens['USER']
+        permissionGroup tokens['USER']
+    }
+    from("${buildDir}/packaging-filtered/jenkins.logrotate") {
+        into '/etc/logrotate.d'
+        fileMode 0644
+        fileType CONFIG
+        rename '.*', tokens['ARTIFACTNAME']
+    }
+    from("${buildDir}/packaging-filtered/jenkins.cron") {
+        into '/etc/cron.daily'
+        fileMode 0755
+        fileType CONFIG
+        rename '.*', tokens['ARTIFACTNAME']
+    }
+}
+
+buildRpm {
+    packageGroup 'Development/Tools/Building'
+    user 'root'
+    permissionGroup 'root'
+    type BINARY
+    os LINUX
+    addParentDirs = false
+    prefix tokens['PREFIX']
+
+    //how this package relates to other system packages
+    obsoletes 'jenkins'
+    obsoletes 'hudson'
+    requires 'cronie'
+    requires 'glibc-common'
+
+    from("${buildDir}/packaging-filtered/rpm/jenkins.init") {
+        into '/etc/init.d'
+        fileMode 0755
+        fileType CONFIG
+        rename '.*', tokens['ARTIFACTNAME']
+    }
+    from("${buildDir}/packaging-filtered/rpm/jenkins.sysconfig") {
+        addParentDirs = false
+        into '/etc/sysconfig'
+        fileMode 0600
+        fileType CONFIG | NOREPLACE
+        rename '.*', tokens['ARTIFACTNAME']
+        user tokens['USER']
+        permissionGroup tokens['USER']
+    }
+}
+buildRpm.dependsOn createManifest, filterPackagingScripts
+
+buildDeb {
+    //packager is limited to only 32 chars for DEB files so only include email
+    packager tokens['AUTHOR'].replaceAll(/[^<]+<([^>]+)>/, '$1')
+    maintainer tokens['AUTHOR'].replaceAll(/[^<]+<([^>]+)>/, '$1')
+    packageGroup 'devel'
+    user 'root'
+    permissionGroup 'root'
+
+    priority 'extra'
+    requires 'adduser'
+    requires 'daemon'
+    requires 'net-tools'
+    requires 'psmisc'
+    requires('default-jre-headless', '2:1.7', Flags.GREATER | Flags.EQUAL).or('java7-runtime-headless').or('openjdk-8-jdk')
+    conflicts 'hudson'
+    conflicts 'jenkins'
+    replaces 'hudson'
+    replaces 'jenkins'
+    from("${buildDir}/packaging-filtered/deb/jenkins.init") {
+        into '/etc/init.d'
+        fileMode 0755
+        fileType CONFIG
+        rename '.*', tokens['ARTIFACTNAME']
+    }
+    from("${buildDir}/packaging-filtered/deb/jenkins.default") {
+        addParentDirs = false
+        into '/etc/default'
+        fileMode 0600
+        fileType CONFIG | NOREPLACE
+        rename '.*', tokens['ARTIFACTNAME']
+        user tokens['USER']
+        permissionGroup tokens['USER']
+    }
+}
+buildDeb.dependsOn createManifest, filterPackagingScripts
+
+//packages task to create all system packages
+task packages
+packages.dependsOn buildRpm, buildDeb
