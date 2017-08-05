@@ -8,15 +8,20 @@ to be bootstrapped.
 The following tasks would be executed with `./gradlew TASK`.  List of common
 TASKs include:
 
-- `clean` - cleans the build directory and all bootstrap related directories.
+- `clean` - cleans the build directory and all bootstrap related files.
 - `buildRpm` - builds an RPM package for RHEL based Linux distros.
 - `buildDeb` - builds a DEB package for Debian based Linux distros.
 - `packages` - executes both `buildRpm` and `buildDeb` tasks.
-- `getjenkins` - Downloads `jenkins.war` dependency and copies it to the current
-  directory.
-- `getplugins` - Downloads Jenkins plugin HPI files and copies it to
-  `$PWD/plugins`.
+- `getjenkins` - Downloads `jenkins.war` to the current directory.
+- `getplugins` - Downloads Jenkins plugin HPI files to `./plugins`.
 
+# Upgrade build.gradle
+
+To upgrade Jenkins version and plugin versions inside of `build.gradle` run the
+following commands:
+
+    ./jenkins_bootstrap.sh
+    ./scripts/upgrade/upgrade_build_gradle.sh
 
 # Instructions
 

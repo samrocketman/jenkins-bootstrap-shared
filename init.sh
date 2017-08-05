@@ -19,13 +19,19 @@ fi
 
 (
   cd jenkins-bootstrap-shared/
-  cp -r Vagrantfile .gitignore gradle* build.gradle variables.gradle ../
-  mkdir ../scripts
+  cp -r Vagrantfile .gitignore gradle* build.gradle variables.gradle env.sh ../
+  mkdir -p ../scripts
   cp scripts/vagrant-up.sh ../scripts/
 )
 
+TMPFILE=$(mktemp)
+
+$SED 's#^\( \+\)\.\(/scripts/upgrade/.*\)$#\1jenkins-bootstrap-shared\2#' README.md > "${TMPFILE}"
+mv "${TMPFILE}" README.md
+
 echo 'bootstrapHome=jenkins-bootstrap-shared' > gradle.properties
 cat > jenkins_bootstrap.sh <<'EOF'
+#!/bin/bash
 source jenkins-bootstrap-shared/jenkins_bootstrap.sh
 EOF
 chmod 755 jenkins_bootstrap.sh
