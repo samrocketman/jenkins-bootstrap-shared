@@ -6,8 +6,8 @@ project aims to make managing a Jenkins instance and all of its plugins easy.
 Goals of this project:
 
 - Keep the bulk of the logic in a shared project (this one).
-- Allow other projects to source this one making changes easy to read in
-  downstream projets.
+- Allow other projects to source this project making changes easy to read in
+  downstream projects.
 - Provide a standard bootstrapper across all downstream projects.
 
 # Requirements
