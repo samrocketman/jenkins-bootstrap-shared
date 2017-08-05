@@ -16,7 +16,7 @@ JENKINS_HOME="~~HOME~~"
 # Java executable to run Jenkins
 # When left empty, we'll try to find the suitable Java.
 #
-JENKINS_JAVA_CMD=""
+JENKINS_JAVA_CMD="~~JENKINS_JAVA_CMD~~"
 
 ## Type:        string
 ## Default:     "@@ARTIFACTNAME@@"
@@ -44,16 +44,16 @@ JENKINS_USER="@@USER@@"
 #
 # Options to pass to java when running Jenkins.
 #
-JENKINS_JAVA_OPTIONS="-Djava.awt.headless=true -Duser.timezone=America/New_York -Dhudson.model.ParametersAction.keepUndefinedParameters=true -DsessionTimeout=10000"
+JENKINS_JAVA_OPTIONS="~~JENKINS_JAVA_OPTIONS~~"
 
 ## Type:        integer(0:65535)
-## Default:     @@PORT@@
+## Default:     @@HTTP_PORT@@
 ## ServiceRestart: jenkins
 #
 # Port Jenkins is listening on.
 # Set to -1 to disable
 #
-JENKINS_PORT="@@PORT@@"
+JENKINS_PORT="@@HTTP_PORT@@"
 
 ## Type:        string
 ## Default:     ""
@@ -62,7 +62,7 @@ JENKINS_PORT="@@PORT@@"
 # IP address Jenkins listens on for HTTP requests.
 # Default is all interfaces (0.0.0.0).
 #
-JENKINS_LISTEN_ADDRESS=""
+JENKINS_LISTEN_ADDRESS="~~HTTP_LISTEN_ADDRESS~~"
 
 ## Type:        integer(0:65535)
 ## Default:     ""
@@ -71,7 +71,7 @@ JENKINS_LISTEN_ADDRESS=""
 # HTTPS port Jenkins is listening on.
 # Default is disabled.
 #
-JENKINS_HTTPS_PORT=""
+JENKINS_HTTPS_PORT="~~HTTPS_PORT~~"
 
 ## Type:        string
 ## Default:     ""
@@ -80,7 +80,7 @@ JENKINS_HTTPS_PORT=""
 # Path to the keystore in JKS format (as created by the JDK 'keytool').
 # Default is disabled.
 #
-JENKINS_HTTPS_KEYSTORE=""
+JENKINS_HTTPS_KEYSTORE="~~HTTPS_KEYSTORE~~"
 
 ## Type:        string
 ## Default:     ""
@@ -89,7 +89,7 @@ JENKINS_HTTPS_KEYSTORE=""
 # Password to access the keystore defined in JENKINS_HTTPS_KEYSTORE.
 # Default is disabled.
 #
-JENKINS_HTTPS_KEYSTORE_PASSWORD=""
+JENKINS_HTTPS_KEYSTORE_PASSWORD="~~HTTPS_KEYSTORE_PASSWORD~~"
 
 ## Type:        string
 ## Default:     ""
@@ -98,7 +98,7 @@ JENKINS_HTTPS_KEYSTORE_PASSWORD=""
 # IP address Jenkins listens on for HTTPS requests.
 # Default is disabled.
 #
-JENKINS_HTTPS_LISTEN_ADDRESS=""
+JENKINS_HTTPS_LISTEN_ADDRESS="~~HTTPS_LISTEN_ADDRESS~~"
 
 
 ## Type:        integer(1:9)
@@ -116,7 +116,7 @@ JENKINS_DEBUG_LEVEL="5"
 #
 # Whether to enable access logging or not.
 #
-JENKINS_ENABLE_ACCESS_LOG="no"
+JENKINS_ENABLE_ACCESS_LOG="~~JENKINS_ENABLE_ACCESS_LOG~~"
 
 ## Type:        integer
 ## Default:     100
@@ -124,7 +124,7 @@ JENKINS_ENABLE_ACCESS_LOG="no"
 #
 # Maximum number of HTTP worker threads.
 #
-JENKINS_HANDLER_MAX="100"
+JENKINS_HANDLER_MAX="~~HTTP_MAX_WORKER_THREADS~~"
 
 ## Type:        integer
 ## Default:     20
@@ -132,7 +132,7 @@ JENKINS_HANDLER_MAX="100"
 #
 # Maximum number of idle HTTP worker threads.
 #
-JENKINS_HANDLER_IDLE="20"
+JENKINS_HANDLER_IDLE="~~HTTP_MAX_IDLE_THREADS~~"
 
 ## Type:        string
 ## Default:     ""
@@ -141,4 +141,4 @@ JENKINS_HANDLER_IDLE="20"
 # Pass arbitrary arguments to Jenkins.
 # Full option list: java -jar @@ARTIFACTNAME@@.war --help
 #
-JENKINS_ARGS=""
+JENKINS_ARGS="~~ADDITIONAL_JENKINS_ARGS~~"

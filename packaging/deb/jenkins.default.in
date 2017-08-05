@@ -1,27 +1,27 @@
 # defaults for jenkins continuous integration server
 
 # pulled in from the init script; makes things easier.
-NAME=@@ARTIFACTNAME@@
+NAME="@@ARTIFACTNAME@@"
 
 # location of java
-JAVA=/usr/bin/java
+JAVA="~~JENKINS_JAVA_CMD~~"
 
 # arguments to pass to java
-JAVA_ARGS="-Djava.awt.headless=true"  # Allow graphs etc. to work even when an X server is present
+JAVA_ARGS="~~JENKINS_JAVA_OPTIONS~~"  # Allow graphs etc. to work even when an X server is present
 #JAVA_ARGS="-Xmx256m"
 #JAVA_ARGS="-Djava.net.preferIPv4Stack=true" # make jenkins listen on IPv4 address
 
-PIDFILE=/var/run/$NAME/$NAME.pid
+PIDFILE="/var/run/$NAME/$NAME.pid"
 
 # user and group to be invoked as (default to jenkins)
-JENKINS_USER=$NAME
-JENKINS_GROUP=$NAME
+JENKINS_USER="~~USER~~"
+JENKINS_GROUP="~~USER~~"
 
 # location of the jenkins war file
-JENKINS_WAR=/usr/lib/$NAME/$NAME.war
+JENKINS_WAR="~~PREFIX~~/lib/$NAME/$NAME.war"
 
 # jenkins home location
-JENKINS_HOME=/var/lib/$NAME
+JENKINS_HOME="~~HOME~~"
 
 # set this to false if you don't want Hudson to run by itself
 # in this set up, you are expected to provide a servlet container
@@ -29,7 +29,7 @@ JENKINS_HOME=/var/lib/$NAME
 RUN_STANDALONE=true
 
 # log location.  this may be a syslog facility.priority
-JENKINS_LOG=/var/log/$NAME/$NAME.log
+JENKINS_LOG="/var/log/$NAME/$NAME.log"
 #JENKINS_LOG=daemon.info
 
 # OS LIMITS SETUP
@@ -37,7 +37,7 @@ JENKINS_LOG=/var/log/$NAME/$NAME.log
 #   this is on by default because http://github.com/jenkinsci/jenkins/commit/2fb288474e980d0e7ff9c4a3b768874835a3e92e
 #   reported that Ubuntu's PAM configuration doesn't include pam_limits.so, and as a result the # of file
 #   descriptors are forced to 1024 regardless of /etc/security/limits.conf
-MAXOPENFILES=8192
+MAXOPENFILES="~~MAXOPENFILES~~"
 
 # set the umask to control permission bits of files that Jenkins creates.
 #   027 makes files read-only for group and inaccessible for others, which some security sensitive users
@@ -54,7 +54,7 @@ MAXOPENFILES=8192
 # UMASK=027
 
 # port for HTTP connector (default 8080; disable with -1)
-HTTP_PORT=@@PORT@@
+HTTP_PORT=@@HTTP_PORT@@
 
 
 # servlet context, important if you want to use apache proxying
@@ -69,4 +69,4 @@ PREFIX=/$NAME
 # --webroot=~/.jenkins/war
 # --prefix=$PREFIX
 
-JENKINS_ARGS="--webroot=/var/cache/$NAME/war --httpPort=$HTTP_PORT"
+JENKINS_ARGS="~~JENKINS_ARGS~~"
