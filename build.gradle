@@ -19,7 +19,7 @@ description = "Built from ${tokens['PACKAGENAME']} @ ${tokens['COMMIT']}"
 
 dependencies {
     //get Jenkins
-    getjenkins "org.jenkins-ci.main:jenkins-war:2.46.3@war"
+    getjenkins 'org.jenkins-ci.main:jenkins-war:2.46.3@war'
 
     //get plugins
     getplugins 'com.coravy.hudson.plugins.github:github:1.20.0@hpi'
