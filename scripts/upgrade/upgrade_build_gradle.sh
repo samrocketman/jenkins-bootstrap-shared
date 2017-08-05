@@ -15,6 +15,14 @@ trap cleanup_temp_on EXIT
 
 source env.sh
 
+#protect user from accidentally upgrading a remote Jenkins
+#this should always be localhost
+if [ ! "${JENKINS_WEB}" = 'http://localhost:8080' ]; then
+  echo 'ERROR: JENKINS_WEB is not equal to localhost' >&2
+  echo "JENKINS_WEB = ${JENKINS_WEB}" >&2
+  exit 1
+fi
+
 if [ ! -f build.gradle ]; then
   echo "Not being run from repository root." 1>&2
   exit 1
