@@ -1,0 +1,15 @@
+#!/bin/sh
+if [ ! -r '/etc/sysconfig/@@ARTIFACTNAME@@' -a ! -r '/etc/default/@@ARTIFACTNAME@@' ]; then
+  echo "Failed to source Jenkins daemon settings."
+  echo "On RPM based distros: '/etc/sysconfig/@@ARTIFACTNAME@@'"
+  echo "On DEB based distros: '/etc/default/@@ARTIFACTNAME@@'"
+  exit 1
+fi
+
+[ -r '/etc/sysconfig/@@ARTIFACTNAME@@' ] && . '/etc/sysconfig/@@ARTIFACTNAME@@'
+[ -r '/etc/default/@@ARTIFACTNAME@@' ] && . '/etc/default/@@ARTIFACTNAME@@'
+
+JENKINS_HOME="${JENKINS_HOME:-@@HOME@@}"
+JENKINS_USER="${JENKINS_USER:-@@USER@@}"
+
+su -s /bin/bash -c "${JENKINS_HOME}/dailycommit.sh" - ${JENKINS_USER}

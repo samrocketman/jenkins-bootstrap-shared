@@ -1,0 +1,11 @@
+/*.bak
+/.gradle
+/.vagrant
+/build
+/console.log
+/jenkins-cli.jar
+/jenkins.pid
+/jenkins.war*
+/my_jenkins_home
+/plugins
+/ssh_config

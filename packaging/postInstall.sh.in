@@ -1,0 +1,109 @@
+#!/bin/sh
+set -e
+
+RPM_BASED=false
+DEB_BASED=false
+
+#detect using RedHat based package
+#if not RPM then it's DEB
+if [ -n "${RPM_PACKAGE_NAME}" ]; then
+  RPM_BASED=true
+else
+  DEB_BASED=true
+fi
+
+${RPM_BASED} && [ -r '/etc/sysconfig/@@ARTIFACTNAME@@' ] && . '/etc/sysconfig/@@ARTIFACTNAME@@'
+${DEB_BASED} && [ -r '/etc/default/@@ARTIFACTNAME@@' ] &&  . '/etc/default/@@ARTIFACTNAME@@'
+
+if ${DEB_BASED}; then
+  case "$1" in
+    configure)
+    ;;
+    abort-upgrade|abort-remove|abort-deconfigure)
+      exit 0
+    ;;
+    *)
+      echo "postinst called with unknown argument '$1'" >&2
+      exit 1
+    ;;
+  esac
+fi
+
+JENKINS_HOME="${JENKINS_HOME:-@@HOME@@}"
+JENKINS_USER="${JENKINS_USER:-@@USER@@}"
+RPM_INSTALL_PREFIX="${RPM_INSTALL_PREFIX:-@@PREFIX@@}"
+
+if ${RPM_BASED} && ( ! chkconfig | grep -E '\b@@ARTIFACTNAME@@\b' &> /dev/null ); then
+  chkconfig --add @@ARTIFACTNAME@@
+fi
+
+#overwrite plugins with plugins in the package
+mkdir -p "${JENKINS_HOME}/plugins" "${JENKINS_HOME}/init.groovy.d"
+echo "Synchronizing packaged plugins with '${JENKINS_HOME}/plugins/'."
+rsync -a --delete-after "${RPM_INSTALL_PREFIX}/lib/@@ARTIFACTNAME@@/plugins/" "${JENKINS_HOME}/plugins/"
+chown -R ${JENKINS_USER}: "${JENKINS_HOME}"/plugins/*.jpi
+echo "Synchronizing packaged hook scripts with '${JENKINS_HOME}/init.groovy.d/'."
+rsync -a --delete-after "${RPM_INSTALL_PREFIX}/lib/@@ARTIFACTNAME@@/scripts/init.groovy.d/" "${JENKINS_HOME}/init.groovy.d/"
+chown -R ${JENKINS_USER}: "${JENKINS_HOME}/init.groovy.d/"
+
+echo "Overwriting manifest in '${JENKINS_HOME}/plugins/@@MANIFEST@@'."
+cp -f "${RPM_INSTALL_PREFIX}/lib/@@ARTIFACTNAME@@/@@MANIFEST@@" "${JENKINS_HOME}/"
+echo '@@COMMIT@@' > "${JENKINS_HOME}/@@PACKAGENAME@@-commit"
+
+echo "Pinning all plugins in '${JENKINS_HOME}/plugins/'."
+echo "See https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins for more info."
+for plugin in "${JENKINS_HOME}"/plugins/*.jpi;do
+  #pin plugin versions
+  #https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins
+  touch "${plugin}.pinned"
+done
+
+#change ownership of just the plugins dir but not children
+chown ${JENKINS_USER}: "${JENKINS_HOME}/plugins"
+
+#fix init script prefix when RPMs customize prefix (does not affect DEB)
+if [ ! "${RPM_INSTALL_PREFIX}" = '@@PREFIX@@' ]; then
+  sed -i -r $"s#^(JENKINS_WAR=\")@@PREFIX@@(/[^\"]+\")\$#\1${RPM_INSTALL_PREFIX}\2#" "/etc/init.d/@@ARTIFACTNAME@@"
+fi
+
+mkdir -p /var/cache/@@ARTIFACTNAME@@
+mkdir -p /var/log/@@ARTIFACTNAME@@
+mkdir -p "${JENKINS_HOME}"
+
+if [ -z "$JENKINS_INSTALL_SKIP_CHOWN" ];then
+  chown -R ${JENKINS_USER}: /var/cache/@@ARTIFACTNAME@@
+  chown -R ${JENKINS_USER}: /var/log/@@ARTIFACTNAME@@
+  if [ ! "$(stat -c "%U:%G" "${JENKINS_HOME}")" = '@@USER@@:@@USER@@' ]; then
+    echo "Taking ownership of '${JENKINS_HOME}' for @@USER@@.  Skip this by setting JENKINS_INSTALL_SKIP_CHOWN=true env var."
+    chown -R ${JENKINS_USER}: "${JENKINS_HOME}"
+  fi
+
+fi
+
+if [ ! -e "${JENKINS_HOME}/.gitignore" ]; then
+  echo "Creating '${JENKINS_HOME}/.gitignore'."
+  cp "${RPM_INSTALL_PREFIX}/lib/@@ARTIFACTNAME@@/share/gitignore" "${JENKINS_HOME}/.gitignore"
+  chmod 644 "${JENKINS_HOME}/.gitignore"
+  chown ${JENKINS_USER}: "${JENKINS_HOME}/.gitignore"
+fi
+
+echo "Overwriting '${JENKINS_HOME}/dailycommit.sh'."
+cp -f "${RPM_INSTALL_PREFIX}/lib/@@ARTIFACTNAME@@/share/dailycommit.sh" "${JENKINS_HOME}/"
+chmod 755 "${JENKINS_HOME}/dailycommit.sh"
+chown ${JENKINS_USER}: "${JENKINS_HOME}/dailycommit.sh"
+
+if ! diff -q "${RPM_INSTALL_PREFIX}/lib/@@ARTIFACTNAME@@/share/gitignore" "${JENKINS_HOME}/.gitignore"; then
+  diff -u "${RPM_INSTALL_PREFIX}/lib/@@ARTIFACTNAME@@/share/gitignore" "${JENKINS_HOME}/.gitignore"
+  echo "To resolve the changes you can optionally:"
+  echo "    cp -f '${RPM_INSTALL_PREFIX}/lib/@@ARTIFACTNAME@@/share/gitignore' '${JENKINS_HOME}/.gitignore'"
+fi
+
+#create a symlink based on upstream RPM spec (see preUninstall.sh.in for removal)
+if ${RPM_BASED} && [ ! -d "${RPM_INSTALL_PREFIX}/sbin" ]; then
+  mkdir -p "${RPM_INSTALL_PREFIX}/sbin"
+  chmod 555 "${RPM_INSTALL_PREFIX}/sbin"
+fi
+
+${RPM_BASED} && ln -sf '/etc/init.d/@@ARTIFACTNAME@@' "${RPM_INSTALL_PREFIX}/sbin/rc@@ARTIFACTNAME@@"
+
+exit 0

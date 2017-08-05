@@ -1,0 +1,39 @@
+#!/bin/bash
+#Sam Gleske (sag47)
+#Tue Mar  4 14:35:59 EST 2014
+#Red Hat Enterprise Linux Server release 6.5 (Santiago)
+#Linux 2.6.32-431.3.1.el6.x86_64 x86_64
+#GNU bash, version 4.1.2(1)-release (x86_64-redhat-linux-gnu)
+
+set -e
+
+[ -r '/etc/sysconfig/@@ARTIFACTNAME@@' ] && . '/etc/sysconfig/@@ARTIFACTNAME@@'
+[ -r '/etc/default/@@ARTIFACTNAME@@' ] && . '/etc/default/@@ARTIFACTNAME@@'
+
+if [ -z "${JENKINS_HOME}" ];then
+  echo "JENKINS_HOME not set." 1>&2
+  exit 1
+fi
+if [ ! "${USER}" = "@@USER@@" ];then
+  echo "Must be @@USER@@ user to run daily commit." 1>&2
+  exit 1
+fi
+
+export PATH="/usr/local/bin:${PATH}"
+
+cd "${JENKINS_HOME}"
+if [ ! -d '.git' ]; then
+  git init
+fi
+git add .
+git add -u
+if [ -n "$1" ]; then
+  git commit -m "package upgrade commit $1"
+else
+  git commit -m "daily commit $(date '+%a %m/%d/%Y')"
+fi
+
+
+if git remote -v 2> /dev/null | grep origin > /dev/null; then
+  git push origin master
+fi

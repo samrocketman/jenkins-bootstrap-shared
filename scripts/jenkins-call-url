@@ -1,0 +1,360 @@
+#!/usr/bin/env python
+#Created by Sam Gleske
+#Copyright 2017 Sam Gleske
+#Tue Mar 21 17:24:36 PDT 2017
+#Ubuntu 16.04.1 LTS
+#Linux 4.4.0-59-generic x86_64
+#Python 2.7.12
+#LICENSE MIT
+#Source: https://github.com/samrocketman/home/blob/master/bin/jenkins-call-url
+#The above comment block must remain intact for usage.
+
+#DESCRIPTION:
+#  Reads Jenkins API and can make calls to arbitrary Jenkins URL endpoints.
+#EXAMPLES:
+#  Execute script console script.
+#      jenkins-call-url -m POST --data-string "script=println 'hello world'" http://localhost:8080/scriptText
+#  Execute a whole Groovy script on script console.
+#      jenkins-call-url -m POST --data-string "script=" --data-file ./script.groovy http://localhost:8080/scriptText
+#  Set default arguments for always calling groovy scripts to script console.
+#      export JENKINS_CALL_ARGS="-m POST -v --data-string script= http://localhost:8080/scriptText --data-file"
+#      jenkins-call-url ./script.groovy
+
+from httplib import HTTPSConnection
+import argparse
+import base64
+import json
+import os
+import re
+import ssl
+import sys
+import time
+
+try:
+    import socket
+    import socks
+    socks_supported = True
+except ImportError:
+    socks_supported = False
+
+version = "0.3"
+
+parser = argparse.ArgumentParser(description="Reads Jenkins API and can make calls to arbitrary Jenkins URL endpoints.  Useful for calling Jenkins URLs for killing jobs or executing script console scripts.", epilog="""
+environment variables:
+  JENKINS_USER          Username to authenticate with Jenkins.
+  JENKINS_PASSWORD      Password to authenticate with Jenkins.
+  JENKINS_CA_FILE       Path to CA chain file to validate TLS connections.  See also -c.
+  JENKINS_HEADERS_FILE  Path to file to persist HTTP headers.  See also --save-headers or --load-headers.
+  JENKINS_CALL_ARGS     Additional space-separated arguments which would normally be called on command line.  If spaces are required for an argument then the separator can be the pipe symbol '|'.
+  JENKINS_SOCKS_PROXY   Define a SOCKS5 proxy to proxy traffic.  Format is host:port where host is hostname and port is TCP port of the proxy.
+
+
+exit status:
+  0                     SUCCESS script run.
+  1                     Any script run status other than SUCCESS.
+
+examples:
+  Execute script console script.
+      jenkins-call-url -m POST --data-string "script=println 'hello world'" http://localhost:8080/scriptText
+
+  Execute a whole Groovy script on script console.
+      jenkins-call-url -m POST --data-string "script=" --data-file ./script.groovy http://localhost:8080/scriptText
+
+  Set default arguments for always calling groovy scripts to script console.
+      export JENKINS_CALL_ARGS="-m POST -v --data-string script= http://localhost:8080/scriptText --data-file"
+      jenkins-call-url ./script.groovy
+""", formatter_class=argparse.RawTextHelpFormatter)
+parser.add_argument('--version', action='version', version="%(prog)s "+version)
+parser.add_argument('--curl', action='store_true', dest='print_curl', help='Print a fully formatted curl command which includes all options for debugging and exit.')
+parser.add_argument('--curl-init', action='store_true', dest='print_curl_init', help='Print a formatted initial curl command for debugging and exit.')
+parser.add_argument('--data-string', action="append", default=[], metavar='arg', dest='http_data_strings', help='Data to pass via message body of an HTTP request and prepends -d.  Can specify one or more -d data-file.')
+parser.add_argument('--force-crumb', action='store_true', dest='force_crumb', help='Force resolving the CSRF crumb even if --load-headers option is used.')
+parser.add_argument('--load-headers', default=os.getenv('JENKINS_HEADERS_FILE', ''), metavar='json-file', dest='load_headers_file', help='Loads HTTP headers from a JSON file to use.  It can also be set via JENKINS_HEADERS_FILE environment variable.')
+parser.add_argument('--save-headers', default=os.getenv('JENKINS_HEADERS_FILE', ''), metavar='json-file', dest='save_headers_file', help='Saves HTTP headers to a JSON file for reuse later.  It can also be set via JENKINS_HEADERS_FILE environment variable.')
+parser.add_argument('-a', '--automatic-jenkins-server', action='store_true', dest='auto_jenkins_web', help='Automatically determine the Jenkins root based off of JENKINS_URL url.  This option ignores -s and --load-headers.')
+parser.add_argument('-c', '--ca-file', default=os.getenv('JENKINS_CA_FILE'), metavar='CERT_PEM', dest='pinned_cert', help='Path to pinned CA chain in PEM format.  Can be self signed to guarantee secure connection.  It can also be set via JENKINS_CA_FILE environment variable.')
+parser.add_argument('-d', '--data-file', action="append", default=[], metavar='data-file', dest='http_data_files', help='Data to pass via message body of an HTTP request URL encoded.  Can specify one or more -d data-file.')
+parser.add_argument('-m', '--http-method', default='GET', metavar='method', dest='http_method', help='HTTP method to use when calling Jenkins.  Valid values are GET, HEAD, or POST.')
+parser.add_argument('--proxy', default=os.getenv('JENKINS_SOCKS_PROXY'), metavar='proxy', dest='socks_proxy', help='Define a SOCKS5 proxy to proxy traffic.  It can also be set via JENKINS_SOCKS_PROXY environment variable.')
+parser.add_argument('-s', '--jenkins-server', default='http://localhost:8080', metavar='JENKINS_WEB', dest='jenkins_web', help='Root web URL for the Jenkins server.')
+parser.add_argument('-o', '--output', default='-', metavar='OUTPUT_FILE', dest='output', help='Write output to file instead of stdout.  Default: - for stdout.')
+parser.add_argument('-v', '--verbosity', action="count", dest='verbosity', help="Increase output verbosity.")
+parser.add_argument('JENKINS_URL', help='The URL to a Jenkins endpoint to call.')
+
+#prepend additional arguments from environment
+additional_args = os.getenv('JENKINS_CALL_ARGS', '')
+if len(additional_args) > 0:
+  if '|' in list(additional_args):
+      sys.argv = [sys.argv[0]] + additional_args.strip().split('|') + sys.argv[1:]
+  else:
+      sys.argv = [sys.argv[0]] + additional_args.strip().split() + sys.argv[1:]
+args = parser.parse_args()
+
+def trim_url_slash(url):
+    return url[:-1] if url[-1:] == '/' else url
+
+def printCurl(settings, url=trim_url_slash(args.jenkins_web)):
+    curl='curl'
+    headers = settings['headers']
+    if 'socks_proxy' in settings and len(settings['socks_proxy']) > 0:
+        curl += ' --proxy socks5h://%s' % settings['socks_proxy']
+    if args.http_method != 'GET' and url != trim_url_slash(args.jenkins_web):
+        curl += " -X%s" % args.http_method
+    if len(args.http_data_files) > 0 and url != trim_url_slash(args.jenkins_web):
+        curl += ' --data-urlencode "'
+        if len(args.http_data_strings) > 0:
+            for s in args.http_data_strings:
+                curl += '%s' % s
+        for f in args.http_data_files:
+            curl += '$(<%s)' % f
+        curl += '"'
+    if args.pinned_cert:
+        curl += ' --cacert %s' % args.pinned_cert
+    for k,v in headers.items():
+        curl += " -H '%s:%s'" % (k, v)
+    print curl, url
+    sys.exit(1)
+
+#print to stderr
+def printErr(message=''):
+    sys.stderr.write(message + '\n')
+    sys.stderr.flush()
+
+if not args.http_method in ['GET', 'HEAD', 'POST']:
+    printErr("Invalid --http-method specified: %s" % args.http_method)
+    parser.print_help()
+    sys.exit(1)
+
+#build credentials
+username = os.getenv('JENKINS_USER')
+password = os.getenv('JENKINS_PASSWORD')
+
+if len(args.load_headers_file) > 0 and os.path.exists(args.load_headers_file) and os.path.getsize(args.load_headers_file) > 0:
+    if args.verbosity >= 2:
+        printErr("Loading HTTP headers from JSON file.")
+    with open(args.load_headers_file) as f:
+        settings = json.load(f)
+else:
+    settings = {}
+
+if 'headers' in settings:
+    headers = settings['headers']
+else:
+    headers = {
+        'Accept-Encoding': '',
+        'Connection': 'close',
+        'Host': args.jenkins_web.split('/')[2].split(':')[0],
+    }
+#always set the User-Agent
+headers['User-Agent'] = 'jenkins-call-url %s' % version
+
+if 'Authorization' in headers:
+    if args.verbosity >= 2:
+        printErr("Reusing Authorization from HTTP headers file.")
+else:
+    if not username == None:
+        if args.verbosity >= 2:
+            printErr("Logging in as user %s." % username)
+        headers['Authorization'] = "Basic %s" % base64.b64encode("%s:%s" % (username, password)).decode('ascii')
+
+#configure SOCKS5 proxy
+if args.socks_proxy != None:
+    proxy = args.socks_proxy
+elif 'socks_proxy' in settings:
+    if args.verbosity >= 2:
+        printErr("Reusing proxy configuration from headers file.")
+    proxy = str(settings['socks_proxy'])
+else:
+    proxy = ''
+
+if proxy and not re.match(r'[-0-9a-zA-Z.]+:[0-9]+', proxy):
+    printErr("Invalid --proxy specified: %s" % args.socks_proxy)
+    parser.print_help()
+    sys.exit(1)
+
+if proxy:
+    if args.verbosity >= 1:
+        printErr("Using SOCKS5 proxy: %s" % proxy)
+    settings['socks_proxy'] = proxy
+    proxy_host = proxy.split(':')[0]
+    proxy_port = int(proxy.split(':')[1])
+    if not socks_supported:
+        printErr("WARNING: Python socks module not installed so socks is not supported")
+    else:
+        socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, proxy_host, proxy_port)
+        socket.socket = socks.socksocket
+else:
+    if args.verbosity >= 3:
+        printErr("Removing proxy configuration from headers file.")
+    settings.pop('socks_proxy', None)
+
+if args.print_curl_init:
+    settings['headers'] = headers
+    printCurl(settings)
+
+#
+### POST-PROXY SETTINGS using urllib and urllib2
+# See: https://stackoverflow.com/questions/2317849/how-can-i-use-a-socks-4-5-proxy-with-urllib2
+# Note: SOCKS proxy must always be configured before importing urllib and urllib2
+
+import urllib
+import urllib2
+
+def getUrl(url, headers, data=None, method='GET'):
+    if args.verbosity >= 3:
+        printErr('%s %s' % (method, url))
+    responseCode = -1
+    responseString = ""
+    responseErrorReason = None
+    try:
+        if url.startswith('https'):
+            #https://docs.python.org/3/library/ssl.html#ssl-security
+            context = ssl.create_default_context()
+            if args.pinned_cert:
+                context.load_verify_locations(cafile=args.pinned_cert)
+            else:
+                context.load_default_certs()
+            req = urllib2.Request(url, data=data, headers=headers)
+            if method != 'GET':
+                req.get_method = lambda: method
+            urlconn = urllib2.urlopen(req, context=context)
+        else:
+            req = urllib2.Request(url=url, data=data, headers=headers)
+            if method != 'GET':
+                req.get_method = lambda: method
+            urlconn = urllib2.urlopen(req)
+        responseString = urlconn.read()
+        responseCode = urlconn.getcode()
+        urlconn.close()
+    except urllib2.HTTPError as e:
+        responseCode = e.code
+        responseErrorReason = e.reason
+    return (responseCode, responseString, responseErrorReason)
+
+def getJSONUrl(url, headers):
+    if not url.endswith('/api/json'):
+        url = url + '/api/json'
+    code, response, reason = getUrl(url, headers)
+    if reason:
+        printErr("HTTP ERROR %s: %s\n%s" % (str(code), reason, url))
+        sys.exit(1)
+    parsed = json.loads(response)
+    return parsed
+
+#
+### END POST-PROXY SETTINGS using urllib and urllib2
+#
+
+#complete arguments for use
+jenkins_url = trim_url_slash(args.JENKINS_URL)
+jenkins_web = ''
+jenkins_root_api_response = {}
+
+if args.auto_jenkins_web:
+    #force a crumb reload since we're resolving JENKINS_WEB
+    args.force_crumb = True
+    if args.verbosity >= 2:
+        printErr("Automatically resolving JENKINS_WEB.")
+    jenkins_web = jenkins_url
+    if jenkins_web[-8:] == 'api/json':
+        jenkins_web = jenkins_web[:-8]
+    if jenkins_web[-1:] != '/':
+        jenkins_web += '/'
+    while len(jenkins_web.split('/')) > 3:
+        jenkins_web = '/'.join(jenkins_web.split('/')[:-1])
+        if jenkins_web.split('/')[-1] in ['job', 'view']:
+            continue
+        jenkins_root_api_response = getJSONUrl(jenkins_web + '/api/json', headers)
+        if 'useCrumbs' in jenkins_root_api_response:
+            #use -a to update host header
+            headers['Host'] = jenkins_web.split('/')[2].split(':')[0]
+            break
+
+if len(args.load_headers_file) == 0 or args.force_crumb or not os.path.exists(args.load_headers_file):
+    if not args.auto_jenkins_web:
+        jenkins_web = trim_url_slash(args.jenkins_web)
+        if not jenkins_url.startswith(jenkins_web):
+            printErr("ERROR: JENKINS_URL does not start with JENKINS_WEB.  See --help for -s or -a.")
+            sys.exit(2)
+        jenkins_root_api_response = getJSONUrl(jenkins_web + '/api/json', headers)
+
+    #detect CSRF protection
+    if jenkins_root_api_response['useCrumbs']:
+        if args.verbosity >= 2:
+            printErr("CSRF protection enabled.")
+        csrf_crumb = getJSONUrl(jenkins_web + '/crumbIssuer', headers)
+        headers[csrf_crumb["crumbRequestField"]] = csrf_crumb["crumb"]
+    else:
+        if args.verbosity >= 2:
+            printErr("CSRF protection disabled.")
+else:
+    if args.verbosity >= 2:
+        printErr("Reusing CSRF crumb from HTTP headers file.")
+
+#include the full operation
+if args.print_curl:
+    settings['headers'] = headers
+    printCurl(settings, url=jenkins_url)
+
+if args.verbosity >= 1:
+    printErr("%s %s" % (args.http_method, jenkins_url))
+
+#prepare the HTTP message body payload
+data=None
+if len(args.http_data_files) > 0:
+    data = ""
+    for string in args.http_data_strings:
+        data += string
+    for path in args.http_data_files:
+        with open(path) as f:
+            data += urllib.quote(f.read())
+
+#Call the URL
+code, response, reason = getUrl(jenkins_url, headers, method=args.http_method, data=data)
+if args.verbosity >= 1:
+    printErr("Response (HTTP %s):" % str(code))
+#print without newline at end
+if len(response) > 0:
+    if args.output == '-':
+        sys.stdout.write(response)
+        sys.stdout.flush()
+    else:
+        with open(args.output, 'w') as f:
+            f.write(response)
+            f.flush()
+
+if len(args.save_headers_file) > 0:
+    if args.verbosity >= 2:
+        printErr("Saving HTTP headers to file.")
+    with open(args.save_headers_file, 'w') as f:
+        settings['headers'] = headers
+        json.dump(settings,f)
+    #credentials are stored in the headers file so don't want just anybody to read it
+    os.chmod(args.save_headers_file, 0o600)
+
+STATUS = 0
+if reason:
+    STATUS=1
+    if args.verbosity >= 1:
+        printErr(reason)
+sys.exit(STATUS)
+
+# CHANGELOG
+# 0.3
+#   - Bugfix empty JSON file decoding with an error.
+# 0.2
+#   - SECURITY: fix insecure permissions for headers file.
+#   - SOCKS5 proxy support.
+#   - Add a CHANGELOG.
+# 0.1 - Jun 16, 2017
+#   - A generic script which reads Jenkins API and can make calls to arbitrary
+#     Jenkins URL endpoints.  Supported HTTP methods include: GET, HEAD, POST.
+#   - Print debugging output to stderr.
+#   - Auto-resolving JENKINS_WEB.
+#   - Support save/loading HTTP session headers.
+#   - Support --data-string in jenkins-call-url.
+#   - Non-zero exit code on HTTP errors with a human readable format.
+#   - Support for specifying a TLS certificate authority bundle.
+#   - JENKINS_CALL_ARGS is a more advanced environment variable which gives the
+#     user flexibility to define arguments they would normally put on the
+#     command line in an environment variable, instead.

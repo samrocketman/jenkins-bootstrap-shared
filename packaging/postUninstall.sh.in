@@ -1,0 +1,40 @@
+#!/bin/sh
+set -e
+
+RPM_BASED=false
+DEB_BASED=false
+
+#detect using RedHat based package
+#if not RPM then it's DEB
+if [ -n "${RPM_PACKAGE_NAME}" ]; then
+  RPM_BASED=true
+else
+  DEB_BASED=true
+fi
+
+if ${RPM_BASED}; then
+  [ -r '/etc/sysconfig/@@ARTIFACTNAME@@' ] && . '/etc/sysconfig/@@ARTIFACTNAME@@'
+  JENKINS_HOME="${JENKINS_HOME:-@@HOME@@}"
+  if [ "$1" -ge 1 ]; then
+      #upgrading package
+      service @@ARTIFACTNAME@@ try-restart > /dev/null 2>&1
+  fi
+else
+  #DEB_BASED == true
+  case "$1" in
+    purge)
+      [ -r '/etc/default/@@ARTIFACTNAME@@' ] && . '/etc/default/@@ARTIFACTNAME@@'
+      userdel @@ARTIFACTNAME@@ || true
+      groupdel @@ARTIFACTNAME@@ || true
+      rm -rf "${JENKINS_HOME}" /var/log/@@ARTIFACTNAME@@ /var/run/@@ARTIFACTNAME@@ /var/cache/@@ARTIFACTNAME@@
+    ;;
+    remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+    ;;
+    *)
+        echo "postrm called with unknown argument '$1'" >&2
+        exit 1
+    ;;
+  esac
+fi
+
+exit 0

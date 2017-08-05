@@ -1,0 +1,13 @@
+/var/log/@@ARTIFACTNAME@@/@@ARTIFACTNAME@@.log /var/log/@@ARTIFACTNAME@@/access_log {
+    weekly
+    rotate 52
+    maxage 365
+    compress
+    delaycompress
+    dateext
+    size=+4096k
+    notifempty
+    missingok
+    create 644
+    copytruncate
+}
