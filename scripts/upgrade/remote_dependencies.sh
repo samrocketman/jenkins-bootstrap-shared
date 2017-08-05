@@ -30,25 +30,30 @@ export JENKINS_CALL_ARGS="-m POST ${JENKINS_WEB}/scriptText --data-string script
 $SED -i.bak -rf "${TMPFILE}" build.gradle
 rm build.gradle.bak
 
-#search for plugins missing from build.gradle
-"${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/listShortNameVersion.groovy > "${TMPFILE}"
-
 #generate a new dependencies.gradle file
 echo 'Upgrade dependencies.gradle file.'
-JENKINS_WAR_VERSION=$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url <(echo 'println Jenkins.instance.version'))
-cat > dependencies.gradle <<EOF
-dependencies {
-    //get Jenkins
-    getjenkins 'org.jenkins-ci.main:jenkins-war:${JENKINS_WAR_VERSION}@war'
+if [ -d 'jenkins-bootstrap-shared' ]; then
+  #create an index of installed plugins
+  "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/listShortNameVersion.groovy > "${TMPFILE}"
 
-    //get plugins
+  JENKINS_WAR_VERSION=$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url <(echo 'println Jenkins.instance.version'))
+  cat > dependencies.gradle <<-EOF
+  dependencies {
+      //get Jenkins
+      getjenkins 'org.jenkins-ci.main:jenkins-war:${JENKINS_WAR_VERSION}@war'
+
+      //get plugins
 EOF
 
-while read x; do
-    [ -f "${GAV_TMPFILE}" ] || "${SCRIPT_LIBRARY_PATH}"/upgrade/plugins_gav.sh > "${GAV_TMPFILE}"
-    GROUP=$(awk "BEGIN {FS=\":\"};\$2 == \"${x%:*}\" { print \$1 }" "${GAV_TMPFILE}")
-    echo "    getplugins '${GROUP}:${x}@hpi'" >> dependencies.gradle
-    unset GROUP
-done < "${TMPFILE}"
-echo '}' >> dependencies.gradle
+  while read x; do
+      [ -f "${GAV_TMPFILE}" ] || "${SCRIPT_LIBRARY_PATH}"/upgrade/plugins_gav.sh > "${GAV_TMPFILE}"
+      GROUP=$(awk "BEGIN {FS=\":\"};\$2 == \"${x%:*}\" { print \$1 }" "${GAV_TMPFILE}")
+      echo "    getplugins '${GROUP}:${x}@hpi'" >> dependencies.gradle
+      unset GROUP
+  done < "${TMPFILE}"
+  echo '}' >> dependencies.gradle
+else
+  $SED -i.bak -rf "${TMPFILE}" dependencies.gradle
+  rm build.gradle.bak
+fi
 echo 'Done.'
