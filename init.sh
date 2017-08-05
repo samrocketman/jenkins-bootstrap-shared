@@ -22,12 +22,8 @@ fi
   cp -r Vagrantfile .gitignore gradle* build.gradle variables.gradle env.sh ../
   mkdir -p ../scripts
   cp scripts/vagrant-up.sh ../scripts/
+  $SED 's#^\( \+\)\.\(/scripts/upgrade/.*\)$#\1jenkins-bootstrap-shared\2#' README.md > ../README.md
 )
-
-TMPFILE=$(mktemp)
-
-$SED 's#^\( \+\)\.\(/scripts/upgrade/.*\)$#\1jenkins-bootstrap-shared\2#' README.md > "${TMPFILE}"
-mv "${TMPFILE}" README.md
 
 echo 'bootstrapHome=jenkins-bootstrap-shared' > gradle.properties
 cat > jenkins_bootstrap.sh <<'EOF'
