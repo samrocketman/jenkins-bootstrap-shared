@@ -66,15 +66,16 @@ MISSING_PLUGINS=false
 while read x; do
   grep -- ":${x%:*}:" build.gradle > /dev/null || {
     if ! ${MISSING_PLUGINS}; then
-      echo 'Detected missing plugins (add to your build.gradle):'
+      echo -e 'Detected missing plugins:\n'
       "${SCRIPT_LIBRARY_PATH}"/upgrade/plugins_gav.sh > "${GAV_TMPFILE}"
     fi
-    local GROUP=$(awk "BEGIN {FS=':'};\$2 == '${x%:*}' { print \$1 }" "${GAV_TMPFILE}")
+    GROUP=$(awk "BEGIN {FS=\":\"};\$2 == \"${x%:*}\" { print \$1 }" "${GAV_TMPFILE}")
     echo "    getplugins '${GROUP}:${x}@hpi'"
+    unset GROUP
     MISSING_PLUGINS=true
   }
 done < "${TMPFILE}"
 if ${MISSING_PLUGINS}; then
-  echo 'Missing plugins can be searched for at https://repo.jenkins-ci.org/'
+  echo -e '\nAdd the missing plugins to your build.gradle file.'
 fi
 echo 'Done.'
