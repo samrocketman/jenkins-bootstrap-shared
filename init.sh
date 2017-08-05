@@ -19,7 +19,7 @@ fi
 
 (
   cd jenkins-bootstrap-shared/
-  cp -r Vagrantfile .gitignore gradle* build.gradle variables.gradle env.sh ../
+  cp -r Vagrantfile .gitignore gradle* build.gradle variables.gradle dependencies.gradle env.sh ../
   mkdir -p ../scripts
   cp scripts/vagrant-up.sh ../scripts/
   $SED 's#^\( \+\)\.\(/scripts/upgrade/.*\)$#\1jenkins-bootstrap-shared\2#' README.md > ../README.md

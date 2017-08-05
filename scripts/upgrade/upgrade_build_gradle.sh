@@ -53,6 +53,7 @@ fi
 #temp file will automatically be cleaned up on exit because of trap function
 TMPFILE=$(mktemp)
 GAV_TMPFILE=$(mktemp)
+rm -f "${GAV_TMPFILE}"
 
 echo 'Upgrade build.gradle file.'
 "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/generateSedExpr.groovy > "${TMPFILE}"
@@ -62,20 +63,21 @@ rm build.gradle.bak
 #search for plugins missing from build.gradle
 "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/listShortNameVersion.groovy > "${TMPFILE}"
 
-MISSING_PLUGINS=false
+#generate a new dependencies.gradle file
+JENKINS_WAR_VERSION=$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url <(echo 'println Jenkins.instance.version'))
+cat > dependencies.gradle <<EOF
+dependencies {
+    //get Jenkins
+    getjenkins 'org.jenkins-ci.main:jenkins-war:${JENKINS_WAR_VERSION}@war'
+
+    //get plugins
+EOF
+
 while read x; do
-  grep -- ":${x%:*}:" build.gradle > /dev/null || {
-    if ! ${MISSING_PLUGINS}; then
-      echo -e 'Detected missing plugins:\n'
-      "${SCRIPT_LIBRARY_PATH}"/upgrade/plugins_gav.sh > "${GAV_TMPFILE}"
-    fi
+    [ -f "${GAV_TMPFILE}" ] || "${SCRIPT_LIBRARY_PATH}"/upgrade/plugins_gav.sh > "${GAV_TMPFILE}"
     GROUP=$(awk "BEGIN {FS=\":\"};\$2 == \"${x%:*}\" { print \$1 }" "${GAV_TMPFILE}")
-    echo "    getplugins '${GROUP}:${x}@hpi'"
+    echo "    getplugins '${GROUP}:${x}@hpi'" >> dependencies.gradle
     unset GROUP
-    MISSING_PLUGINS=true
-  }
 done < "${TMPFILE}"
-if ${MISSING_PLUGINS}; then
-  echo -e '\nAdd the missing plugins to your build.gradle file.'
-fi
+echo '}' >> dependencies.gradle
 echo 'Done.'
