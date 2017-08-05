@@ -38,10 +38,14 @@ if ${RPM_BASED} && ( ! chkconfig | grep -E '\b@@ARTIFACTNAME@@\b' &> /dev/null )
 fi
 
 #overwrite plugins with plugins in the package
-mkdir -p "${JENKINS_HOME}/plugins" "${JENKINS_HOME}/init.groovy.d"
+mkdir -p "${JENKINS_HOME}/plugins" "${JENKINS_HOME}/init.groovy.d" \
+  "${RPM_INSTALL_PREFIX}/lib/@@ARTIFACTNAME@@/plugins/" \
+  "${RPM_INSTALL_PREFIX}/lib/@@ARTIFACTNAME@@/scripts/init.groovy.d/"
 echo "Synchronizing packaged plugins with '${JENKINS_HOME}/plugins/'."
 rsync -a --delete-after "${RPM_INSTALL_PREFIX}/lib/@@ARTIFACTNAME@@/plugins/" "${JENKINS_HOME}/plugins/"
-chown -R ${JENKINS_USER}: "${JENKINS_HOME}"/plugins/*.jpi
+if [ -f "$(ls -1 "${JENKINS_HOME}"/plugins/*.jpi 2> /dev/null | head -n1)" ]; then
+  chown -R ${JENKINS_USER}: "${JENKINS_HOME}"/plugins/*.jpi
+fi
 echo "Synchronizing packaged hook scripts with '${JENKINS_HOME}/init.groovy.d/'."
 rsync -a --delete-after "${RPM_INSTALL_PREFIX}/lib/@@ARTIFACTNAME@@/scripts/init.groovy.d/" "${JENKINS_HOME}/init.groovy.d/"
 chown -R ${JENKINS_USER}: "${JENKINS_HOME}/init.groovy.d/"
