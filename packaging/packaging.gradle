@@ -78,6 +78,11 @@ ospackage {
         user tokens['USER']
         permissionGroup tokens['USER']
     }
+    from("${bootstrapHome}/scripts") {
+        into "lib/${tokens['ARTIFACTNAME']}/scripts"
+        user tokens['USER']
+        permissionGroup tokens['USER']
+    }
     from('scripts') {
         into "lib/${tokens['ARTIFACTNAME']}/scripts"
         user tokens['USER']
@@ -87,11 +92,6 @@ ospackage {
         into "lib/${tokens['ARTIFACTNAME']}"
         fileType LICENSE
         rename '.*', 'LICENSE'
-        user tokens['USER']
-        permissionGroup tokens['USER']
-    }
-    from('packaging/common/gitignore') {
-        into "lib/${tokens['ARTIFACTNAME']}"
         user tokens['USER']
         permissionGroup tokens['USER']
     }
