@@ -28,11 +28,6 @@ if [ ! -f build.gradle ]; then
   exit 1
 fi
 
-#GNU sed is required.  Homebrew on Mac installs GNU sed as gsed.
-#Try to detect gsed; otherwise, fall back to just using sed.
-[ -x "$(type -P gsed)" ] && SED=gsed || SED=sed
-export SED
-
 #set up Jenkins env vars
 source "${SCRIPT_LIBRARY_PATH}"/upgrade/env.sh
 export JENKINS_CALL_ARGS="-m POST ${JENKINS_WEB}/scriptText --data-string script= -d"
@@ -58,34 +53,5 @@ if [ "$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgra
   export JENKINS_CALL_ARGS="-m POST ${JENKINS_WEB}/scriptText --data-string script= -d"
 fi
 
-#temp file will automatically be cleaned up on exit because of trap function
-TMPFILE=$(mktemp)
-GAV_TMPFILE=$(mktemp)
-rm -f "${GAV_TMPFILE}"
-
-echo 'Upgrade build.gradle file.'
-"${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/generateSedExpr.groovy > "${TMPFILE}"
-$SED -i.bak -rf "${TMPFILE}" build.gradle
-rm build.gradle.bak
-
-#search for plugins missing from build.gradle
-"${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/listShortNameVersion.groovy > "${TMPFILE}"
-
-#generate a new dependencies.gradle file
-JENKINS_WAR_VERSION=$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url <(echo 'println Jenkins.instance.version'))
-cat > dependencies.gradle <<EOF
-dependencies {
-    //get Jenkins
-    getjenkins 'org.jenkins-ci.main:jenkins-war:${JENKINS_WAR_VERSION}@war'
-
-    //get plugins
-EOF
-
-while read x; do
-    [ -f "${GAV_TMPFILE}" ] || "${SCRIPT_LIBRARY_PATH}"/upgrade/plugins_gav.sh > "${GAV_TMPFILE}"
-    GROUP=$(awk "BEGIN {FS=\":\"};\$2 == \"${x%:*}\" { print \$1 }" "${GAV_TMPFILE}")
-    echo "    getplugins '${GROUP}:${x}@hpi'" >> dependencies.gradle
-    unset GROUP
-done < "${TMPFILE}"
-echo '}' >> dependencies.gradle
-echo 'Done.'
+#write jenkins master and plugin versions to build.gradle and dependencies.gradle
+"${SCRIPT_LIBRARY_PATH}"/upgrade/remote_dependencies.sh

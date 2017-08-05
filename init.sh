@@ -10,12 +10,10 @@ if [ -f build.gradle ]; then
   exit 1
 fi
 
-#choose GNU sed on Mac (installed via homebrew) or fall back to sed on GNU/Linux
-if [ -x "$(type -P gsed)" ]; then
-  SED=gsed
-else
-  SED=sed
-fi
+#GNU sed is required.  Homebrew on Mac installs GNU sed as gsed.
+#Try to detect gsed; otherwise, fall back to just using sed.
+[ -x "$(type -P gsed)" ] && SED=gsed || SED=sed
+export SED
 
 (
   cd jenkins-bootstrap-shared/
