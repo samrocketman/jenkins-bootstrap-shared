@@ -48,9 +48,9 @@ EOF
   while read x; do
       [ -f "${GAV_TMPFILE}" ] || "${SCRIPT_LIBRARY_PATH}"/upgrade/plugins_gav.sh > "${GAV_TMPFILE}"
       GROUP=$(awk "BEGIN {FS=\":\"};\$2 == \"${x%:*}\" { print \$1 }" "${GAV_TMPFILE}")
-      echo "    getplugins '${GROUP}:${x}@hpi'" >> dependencies.gradle
+      echo "    getplugins '${GROUP}:${x}@hpi'"
       unset GROUP
-  done < "${TMPFILE}"
+  done < "${TMPFILE}" | LC_COLLATE=C sort >> dependencies.gradle
   echo '}' >> dependencies.gradle
 else
   $SED -i.bak -rf "${TMPFILE}" dependencies.gradle
