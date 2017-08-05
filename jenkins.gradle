@@ -10,6 +10,8 @@ task cleanJenkins(type: Delete) {
     }
     delete '.gradle'
     delete 'plugins'
+    delete 'jenkins.war.tmp'
+    delete 'jenkins.war.bak'
 }
 
 clean.dependsOn cleanJenkins
