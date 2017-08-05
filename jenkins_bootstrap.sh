@@ -13,12 +13,16 @@
 function cleanup_on() {
   #clean up jenkins headers file
   [ -n "${JENKINS_HEADERS_FILE}" -a -f "${JENKINS_HEADERS_FILE}" ] && rm -f "${JENKINS_HEADERS_FILE}"
-  echo "Jenkins is ready.  Visit ${JENKINS_WEB}/"
-  echo "User: admin"
-  echo "Password: $(<"${JENKINS_HOME}"/secrets/initialAdminPassword)"
+  if [ "$1" = '0' ]; then
+    echo "Jenkins is ready.  Visit ${JENKINS_WEB}/"
+    echo "User: admin"
+    echo "Password: $(<"${JENKINS_HOME}"/secrets/initialAdminPassword)"
+  fi
 }
-trap cleanup_on EXIT
+trap 'cleanup_on $?' EXIT
 export JENKINS_HEADERS_FILE=$(mktemp)
+
+set -e
 
 #sane defaults
 export BOOTSTRAP_HOME="${BOOTSTRAP_HOME:-.}"
