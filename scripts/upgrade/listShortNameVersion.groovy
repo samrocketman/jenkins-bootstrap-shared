@@ -19,5 +19,5 @@
 
 import jenkins.model.Jenkins
 
-Jenkins.instance.pluginManager.plugins.each { p -> println ":${p.shortName}:" }
+Jenkins.instance.pluginManager.plugins.each { p -> println "${p.shortName}:${p.version}" }
 null

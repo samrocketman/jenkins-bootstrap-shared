@@ -24,20 +24,7 @@ export JENKINS_HEADERS_FILE=$(mktemp)
 
 set -e
 
-#sane defaults
-export BOOTSTRAP_HOME="${BOOTSTRAP_HOME:-.}"
-export JENKINS_WAR="${JENKINS_WAR:-jenkins.war}"
-
-export JENKINS_HOME="${JENKINS_HOME:-../my_jenkins_home}"
-export JENKINS_START="${JENKINS_START:-java -Xms4g -Xmx4g -XX:MaxPermSize=512M -jar ${JENKINS_WAR}}"
-export JENKINS_WEB="${JENKINS_WEB:-http://localhost:8080}"
-export jenkins_url="${jenkins_url:-http://mirrors.jenkins-ci.org/war/latest/jenkins.war}"
-
-if [ -d 'jenkins-bootstrap-shared' ]; then
-  export SCRIPT_LIBRARY_PATH="${SCRIPT_LIBRARY_PATH:-${BOOTSTRAP_HOME}/jenkins-bootstrap-shared/scripts}"
-else
-  export SCRIPT_LIBRARY_PATH="${SCRIPT_LIBRARY_PATH:-${BOOTSTRAP_HOME}/scripts}"
-fi
+source env.sh
 
 if [ -e "${SCRIPT_LIBRARY_PATH}/common.sh" ]; then
   source "${SCRIPT_LIBRARY_PATH}/common.sh"
@@ -51,12 +38,12 @@ fi
 echo 'Downloading specific versions of Jenkins and plugins...'
 ./gradlew getjenkins getplugins
 
-if [ -d "${BOOTSTRAP_HOME}/plugins" ]; then
+if [ -d "./plugins" ]; then
   mkdir -p "${JENKINS_HOME}/plugins"
-  ( cd "${BOOTSTRAP_HOME}/plugins/"; ls -1d * ) | while read x; do
+  ( cd "./plugins/"; ls -1d * ) | while read x; do
     if [ ! -e "${JENKINS_HOME}/plugins/${x}" ]; then
       echo "Copying ${x} to JENKINS_HOME"
-      cp -r "${BOOTSTRAP_HOME}/plugins/${x}" "${JENKINS_HOME}/plugins/"
+      cp -r "./plugins/${x}" "${JENKINS_HOME}/plugins/"
       #pin plugin versions
       #https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins
       touch "${JENKINS_HOME}/plugins/${x}.pinned"

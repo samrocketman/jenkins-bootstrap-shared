@@ -1,4 +1,4 @@
-curl -L http://updates.jenkins-ci.org/update-center.json | awk '$1 ~ /^{/' | \
+curl -sL http://updates.jenkins-ci.org/update-center.json | awk '$1 ~ /^{/' | \
   python -c '
 import sys,json
 j=json.load(sys.stdin)
