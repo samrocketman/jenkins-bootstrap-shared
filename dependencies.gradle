@@ -3,6 +3,7 @@ dependencies {
     getjenkins 'org.jenkins-ci.main:jenkins-war:2.46.3@war'
 
     //get plugins
+    //getplugins configurations go here...
     getplugins 'com.coravy.hudson.plugins.github:github:1.20.0@hpi'
     getplugins 'org.jenkins-ci.main:maven-plugin:2.16@hpi'
     getplugins 'org.jenkins-ci.plugins.workflow:workflow-scm-step:2.2@hpi'
