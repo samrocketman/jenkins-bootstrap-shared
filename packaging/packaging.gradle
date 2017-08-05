@@ -1,3 +1,5 @@
+//Operating System packages
+//I want to package the exact version of Jenkins plus all exact versions of plugins together
 buildscript {
     repositories {
         jcenter()
@@ -14,10 +16,17 @@ apply plugin: 'nebula.ospackage'
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.redline_rpm.header.Flags
 
-//Operating System packages
-//I want to package the exact version of Jenkins plus all exact versions of plugins together
 task filterPackagingScripts(type: Copy) {
     from "${bootstrapHome}/packaging"
+    into "${buildDir}/packaging-filtered"
+    include '**/*.in'
+    filter(ReplaceTokens, beginToken: '@@', endToken: '@@', tokens: tokens)
+    filter(ReplaceTokens, beginToken: '~~', endToken: '~~', tokens: tokens)
+    rename '(.*).in', '$1'
+}
+
+task userOverridenFilterPackagingScripts(type: Copy) {
+    from 'packaging'
     into "${buildDir}/packaging-filtered"
     include '**/*.in'
     filter(ReplaceTokens, beginToken: '@@', endToken: '@@', tokens: tokens)
@@ -36,6 +45,7 @@ task createManifest {
     }
 }
 createManifest.mustRunAfter filterPackagingScripts
+userOverridenFilterPackagingScripts.mustRunAfter filterPackagingScripts
 
 ospackage {
     packageName tokens['PACKAGENAME']
@@ -78,12 +88,12 @@ ospackage {
         user tokens['USER']
         permissionGroup tokens['USER']
     }
-    from("${bootstrapHome}/scripts") {
+    from('scripts') {
         into "lib/${tokens['ARTIFACTNAME']}/scripts"
         user tokens['USER']
         permissionGroup tokens['USER']
     }
-    from('scripts') {
+    from("${bootstrapHome}/scripts") {
         into "lib/${tokens['ARTIFACTNAME']}/scripts"
         user tokens['USER']
         permissionGroup tokens['USER']
@@ -150,7 +160,7 @@ buildRpm {
         permissionGroup tokens['USER']
     }
 }
-buildRpm.dependsOn createManifest, filterPackagingScripts
+buildRpm.dependsOn createManifest, filterPackagingScripts, userOverridenFilterPackagingScripts
 
 buildDeb {
     //packager is limited to only 32 chars for DEB files so only include email
@@ -186,7 +196,7 @@ buildDeb {
         permissionGroup tokens['USER']
     }
 }
-buildDeb.dependsOn createManifest, filterPackagingScripts
+buildDeb.dependsOn createManifest, filterPackagingScripts, userOverridenFilterPackagingScripts
 
 //packages task to create all system packages
 task packages
