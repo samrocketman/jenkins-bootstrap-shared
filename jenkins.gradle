@@ -1,0 +1,49 @@
+task cleanJenkins(type: Delete) {
+    doFirst {
+        //stop jenkins just in case it's running
+        def stdout = new StringBuilder()
+        def stderr = new StringBuilder()
+        def process = ["${bootstrapHome}/scripts/provision_jenkins.sh", 'purge'].execute()
+        process.waitForProcessOutput(stdout, stderr)
+        println stdout.toString()
+        println stderr.toString()
+    }
+    delete '.gradle'
+    delete 'plugins'
+}
+
+clean.dependsOn cleanJenkins
+
+configurations {
+    getplugins {
+        description = 'Download Jenkins plugins .jpi files.'
+        transitive = false
+    }
+    getjenkins {
+        description = 'Download Jenkins WAR file.'
+        transitive = false
+    }
+}
+repositories {
+    maven {
+        name 'jenkins'
+        delegate.url('https://repo.jenkins-ci.org/public/')
+    }
+}
+
+//download and copy specific versions of plugins
+task getplugins(type: Copy) {
+    into "${pluginsDest}/plugins"
+    from configurations.getplugins
+    include '*.hpi'
+    rename '(.*)-[.0-9]+.hpi$', '$1.jpi'
+}
+
+//download and copy a specific version of Jenkins
+task getjenkins(type: Copy) {
+    //println configurations.getjenkins
+    into jenkinsDest
+    from configurations.getjenkins
+    include '*.war'
+    rename '.*', 'jenkins.war'
+}

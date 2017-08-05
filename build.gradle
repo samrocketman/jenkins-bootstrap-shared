@@ -8,53 +8,15 @@ buildscript {
     }
 }
 
-//gradle plugins
-apply plugin: 'maven'
-
-//default
-defaultTasks 'getjenkins', 'getplugins'
-
-apply from: 'variables.gradle'
+apply from: 'shared.gradle'
 
 //RPM or DEB package version
 //version should be the jenkins.war version appended by .1 and increments .1
 //every time there's non-jenkins.war version changes to the package.
 //if upgrading jenkins.war version then it should be reset to .1.
 version = '2.46.3.1'
-description = "Built from jenkins-bootstrap-jervis @ ${tokens['COMMIT']}"
+description = "Built from ${tokens['PACKAGENAME']} @ ${tokens['COMMIT']}"
 
-task cleanJenkins(type: Delete) {
-    doFirst {
-        //stop jenkins just in case it's running
-        def stdout = new StringBuilder()
-        def stderr = new StringBuilder()
-        def process = ["${bootstrapHome}/scripts/provision_jenkins.sh", 'purge'].execute()
-        process.waitForProcessOutput(stdout, stderr)
-        println stdout.toString()
-        println stderr.toString()
-    }
-    delete '.gradle'
-    delete 'plugins'
-}
-
-clean.dependsOn cleanJenkins
-
-configurations {
-    getplugins {
-        description = 'Download Jenkins plugins .jpi files.'
-        transitive = false
-    }
-    getjenkins {
-        description = 'Download Jenkins WAR file.'
-        transitive = false
-    }
-}
-repositories {
-    maven {
-        name 'jenkins'
-        delegate.url('https://repo.jenkins-ci.org/public/')
-    }
-}
 dependencies {
     //get Jenkins
     getjenkins "org.jenkins-ci.main:jenkins-war:2.46.3@war"
@@ -97,27 +59,3 @@ dependencies {
     getplugins 'org.jenkins-ci.plugins:translation:1.10@hpi'
     getplugins 'org.jenkins-ci.plugins:windows-slaves:1.0@hpi'
 }
-//download and copy specific versions of plugins
-task getplugins(type: Copy) {
-    into "${pluginsDest}/plugins"
-    from configurations.getplugins
-    include '*.hpi'
-    rename '(.*)-[.0-9]+.hpi$', '$1.jpi'
-}
-
-//download and copy a specific version of Jenkins
-task getjenkins(type: Copy) {
-    //println configurations.getjenkins
-    into jenkinsDest
-    from configurations.getjenkins
-    include '*.war'
-    rename '.*', 'jenkins.war'
-}
-
-//http://www.gradle.org/docs/current/userguide/gradle_wrapper.html
-//generate gradlew with: gradle wrapper
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.0.2'
-}
-
-apply from: 'packaging/packaging.gradle'
