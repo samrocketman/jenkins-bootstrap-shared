@@ -11,5 +11,5 @@ apply from: "${bootstrapHome}/packaging/packaging.gradle"
 //http://www.gradle.org/docs/current/userguide/gradle_wrapper.html
 //generate gradlew with: gradle wrapper
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.0.2'
+    gradleVersion = '4.1'
 }
