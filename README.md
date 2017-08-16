@@ -16,6 +16,11 @@ Goals of this project:
 - More than two CPU cores recommended.
 - More than 6GB of RAM recommended if running Jenkins.
 
+Optional requirements:
+
+- [VirtualBox][vbox]
+- [Vagrant][vagrant]
+
 # Getting Started
 
 How to use this shared bootstrapper with your own scripts.
@@ -157,3 +162,4 @@ For service control and other usage see [`USAGE`](USAGE.md).
 * [3rd party licenses](3rd_party)
 
 [vagrant]: https://www.vagrantup.com/
+[vbox]: https://www.virtualbox.org/
