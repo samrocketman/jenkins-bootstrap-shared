@@ -13,18 +13,24 @@
 function cleanup_on() {
   #clean up jenkins headers file
   [ -n "${JENKINS_HEADERS_FILE}" -a -f "${JENKINS_HEADERS_FILE}" ] && rm -f "${JENKINS_HEADERS_FILE}"
+  [ -n "${VAGRANT_SSH_CONFIG}" -a -f "${VAGRANT_SSH_CONFIG}" ] && rm -f "${VAGRANT_SSH_CONFIG}"
   if [ "$1" = '0' ]; then
     echo "Jenkins is ready.  Visit ${JENKINS_WEB}/"
-    echo "User: admin"
-    echo "Password: $(<"${JENKINS_HOME}"/secrets/initialAdminPassword)"
+    echo "User: ${JENKINS_USER}"
+    echo "Password: ${JENKINS_PASSWORD}"
   fi
 }
 trap 'cleanup_on $?' EXIT
-export JENKINS_HEADERS_FILE=$(mktemp)
+
+source env.sh
+#set password
+[ -n "${VAGRANT_JENKINS}" ] && source "${SCRIPT_LIBRARY_PATH}/vagrant-env.sh"
+export JENKINS_HEADERS_FILE="$(mktemp)"
+export JENKINS_USER="admin"
+export JENKINS_PASSWORD="${JENKINS_PASSWORD:-$(<"${JENKINS_HOME}"/secrets/initialAdminPassword)}"
 
 set -e
 
-source env.sh
 
 if [ -e "${SCRIPT_LIBRARY_PATH}/common.sh" ]; then
   source "${SCRIPT_LIBRARY_PATH}/common.sh"
@@ -35,8 +41,10 @@ else
 fi
 
 #provision jenkins and plugins
-echo 'Downloading specific versions of Jenkins and plugins...'
-./gradlew getjenkins getplugins
+if [ -z "${REMOTE_JENKINS}" -a -z "${VAGRANT_JENKINS}" ]; then
+  echo 'Downloading specific versions of Jenkins and plugins...'
+  ./gradlew getjenkins getplugins
+fi
 
 if [ -d "./plugins" ]; then
   mkdir -p "${JENKINS_HOME}/plugins"
@@ -52,17 +60,21 @@ if [ -d "./plugins" ]; then
 fi
 
 #download jenkins, start it up, and update the plugins
-if [ ! -e "${JENKINS_WAR}" ]; then
-  "${SCRIPT_LIBRARY_PATH}/provision_jenkins.sh" download-file "${jenkins_url}" "${JENKINS_WAR}"
+if [ -z "${REMOTE_JENKINS}" -a -z "${VAGRANT_JENKINS}" ]; then
+  if [ ! -e "${JENKINS_WAR}" ]; then
+    "${SCRIPT_LIBRARY_PATH}/provision_jenkins.sh" download-file "${jenkins_url}" "${JENKINS_WAR}"
+  fi
+  #check for running jenkins or try to start it
+  if ! "${SCRIPT_LIBRARY_PATH}/provision_jenkins.sh" status; then
+    "${SCRIPT_LIBRARY_PATH}/provision_jenkins.sh" start
+  fi
 fi
-#check for running jenkins or try to start it
-if ! "${SCRIPT_LIBRARY_PATH}/provision_jenkins.sh" status; then
-  "${SCRIPT_LIBRARY_PATH}/provision_jenkins.sh" start
-fi
+
 #wait for jenkins to become available
 "${SCRIPT_LIBRARY_PATH}/provision_jenkins.sh" url-ready "${JENKINS_WEB}/jnlpJars/jenkins-cli.jar"
 
-JENKINS_USER=admin JENKINS_PASSWORD="$(<"${JENKINS_HOME}"/secrets/initialAdminPassword)" "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url -a -m HEAD -o /dev/null ${JENKINS_WEB}
+#persist credentials
+"${SCRIPT_LIBRARY_PATH}"/jenkins-call-url -a -m HEAD -o /dev/null ${JENKINS_WEB}
 
 if grep -- '^ \+getplugins' dependencies.gradle > /dev/null; then
   jenkins_console --script "${SCRIPT_LIBRARY_PATH}/console-skip-2.0-wizard.groovy"

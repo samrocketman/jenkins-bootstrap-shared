@@ -135,10 +135,11 @@ To upgrade Jenkins master and plugin versions do the following:
 
 ### Provision Jenkins
 
-This repository uses [Vagrant][vagrant].  To bootstrap Jenkins simply run the
-following to start Jenkins.
+This repository optionally uses [Vagrant][vagrant].  To bootstrap Jenkins simply
+run the following to start Jenkins.
 
     vagrant up
+    VAGRANT_JENKINS=1 ./jenkins_bootstrap.sh
 
 Visit `http://localhost:8080/` to see Jenkins running.
 
