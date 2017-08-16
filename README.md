@@ -129,9 +129,9 @@ TASKs include:
 - `getplugins` - Downloads Jenkins plugin HPI files to `./plugins`.
 
 
-# Optional Instructions
+# Additional Instructions
 
-### Provision Jenkins
+### Provision Jenkins via Vagrant
 
 This repository optionally uses [Vagrant][vagrant].  To bootstrap Jenkins simply
 run the following to start Jenkins.

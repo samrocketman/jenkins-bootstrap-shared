@@ -106,6 +106,13 @@ case "$1" in
             echo "Overwriting plugins."
             mkdir -p "${JENKINS_HOME}/plugins"
             rsync -a --delete-after "@@PREFIX@@/lib/@@ARTIFACTNAME@@/plugins/" "${JENKINS_HOME}/plugins/"
+            echo "Pinning all plugins in '${JENKINS_HOME}/plugins/'."
+            echo "See https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins for more info."
+            for plugin in "${JENKINS_HOME}"/plugins/*.jpi;do
+              #pin plugin versions
+              #https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins
+              touch "${plugin}.pinned"
+            done
             chown -R "${JENKINS_USER}": "${JENKINS_HOME}"/plugins
         fi
         if [ ! -d "${JENKINS_HOME}/init.groovy.d" -o -n "${JENKINS_OVERWRITE}" ]; then
