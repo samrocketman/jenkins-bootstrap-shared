@@ -102,6 +102,18 @@ RETVAL=0
 
 case "$1" in
     start)
+        if [ ! -d "${JENKINS_HOME}/plugins" -o -n "${JENKINS_OVERWRITE}" ]; then
+            echo "Overwriting plugins."
+            mkdir -p "${JENKINS_HOME}/plugins"
+            rsync -a --delete-after "@@PREFIX@@/lib/@@ARTIFACTNAME@@/plugins/" "${JENKINS_HOME}/plugins/"
+            chown -R "${JENKINS_USER}": "${JENKINS_HOME}"/plugins
+        fi
+        if [ ! -d "${JENKINS_HOME}/init.groovy.d" -o -n "${JENKINS_OVERWRITE}" ]; then
+            echo "Overwriting init.groovy.d scripts."
+            mkdir -p "${JENKINS_HOME}/init.groovy.d"
+            rsync -a --delete-after "@@PREFIX@@/lib/@@ARTIFACTNAME@@/scripts/init.groovy.d/" "${JENKINS_HOME}/init.groovy.d/"
+            chown -R "${JENKINS_USER}": "${JENKINS_HOME}"/init.groovy.d
+        fi
 	echo -n "Starting @@PRODUCTNAME@@ "
 	daemon --user "$JENKINS_USER" --pidfile "$JENKINS_PID_FILE" $JAVA_CMD $PARAMS > /dev/null
 	RETVAL=$?
