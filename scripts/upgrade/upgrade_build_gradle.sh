@@ -4,6 +4,18 @@
 #Ubuntu 16.04.2 LTS
 #Linux 4.4.0-72-generic x86_64
 
+function cleanup_on() {
+  #clean up jenkins headers file
+  [ -n "${JENKINS_HEADERS_FILE}" -a -f "${JENKINS_HEADERS_FILE}" ] && rm -f "${JENKINS_HEADERS_FILE}"
+  [ -n "${VAGRANT_SSH_CONFIG}" -a -f "${VAGRANT_SSH_CONFIG}" ] && rm -f "${VAGRANT_SSH_CONFIG}"
+  if [ "$1" = '0' ]; then
+    echo "Jenkins is ready.  Visit ${JENKINS_WEB}/"
+    echo "User: ${JENKINS_USER}"
+    echo "Password: ${JENKINS_PASSWORD}"
+  fi
+}
+trap 'cleanup_on $?' EXIT
+
 set -e
 
 function cleanup_temp_on() {
@@ -14,6 +26,8 @@ function cleanup_temp_on() {
 trap cleanup_temp_on EXIT
 
 source env.sh
+#set password if using vagrant
+[ -n "${VAGRANT_JENKINS}" ] && source "${SCRIPT_LIBRARY_PATH}/vagrant-env.sh"
 
 #protect user from accidentally upgrading a remote Jenkins
 #this should always be localhost
@@ -29,8 +43,8 @@ if [ ! -f build.gradle ]; then
 fi
 
 #set up Jenkins env vars
+export JENKINS_HEADERS_FILE=$(mktemp)
 source "${SCRIPT_LIBRARY_PATH}"/upgrade/env.sh
-export JENKINS_CALL_ARGS="-m POST ${JENKINS_WEB}/scriptText --data-string script= -d"
 
 #upgrade jenkins.war and all plugins
 "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/upgradeJenkinsAndPlugins.groovy
@@ -44,13 +58,12 @@ echo
 
 if [ "$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/needsRestart.groovy)" = 'true' ]; then
   #restart Jenkins
-  "${SCRIPT_LIBRARY_PATH}"/provision_jenkins.sh restart
+  "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url <(echo "Jenkins.instance.restart()")
   #wait for jenkins to become available
   "${SCRIPT_LIBRARY_PATH}"/provision_jenkins.sh url-ready "${JENKINS_WEB}/jnlpJars/jenkins-cli.jar"
 
   #set up Jenkins env vars post-restart
   source "${SCRIPT_LIBRARY_PATH}"/upgrade/env.sh
-  export JENKINS_CALL_ARGS="-m POST ${JENKINS_WEB}/scriptText --data-string script= -d"
 fi
 
 #write jenkins master and plugin versions to build.gradle and dependencies.gradle

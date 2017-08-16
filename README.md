@@ -128,15 +128,8 @@ TASKs include:
 - `getjenkins` - Downloads `jenkins.war` to the current directory.
 - `getplugins` - Downloads Jenkins plugin HPI files to `./plugins`.
 
-# Upgrade Jenkins and plugins
 
-To upgrade Jenkins master and plugin versions do the following:
-
-    ./jenkins_bootstrap.sh
-    ./scripts/upgrade/upgrade_build_gradle.sh
-    git add -A && git commit -m 'jenkins upgraded'
-
-# Instructions
+# Optional Instructions
 
 ### Provision Jenkins
 
@@ -147,6 +140,18 @@ run the following to start Jenkins.
     VAGRANT_JENKINS=1 ./jenkins_bootstrap.sh
 
 Visit `http://localhost:8080/` to see Jenkins running.
+
+# Upgrade Jenkins and plugins
+
+To upgrade Jenkins master and plugin versions do the following:
+
+    ./jenkins_bootstrap.sh
+    ./scripts/upgrade/upgrade_build_gradle.sh
+    git add -A && git commit -m 'jenkins upgraded'
+
+If you're optionally using Vagrant, then upgrade using the following command.
+
+    VAGRANT_JENKINS=1 ./scripts/upgrade/upgrade_build_gradle.sh
 
 ### Build an RPM package
 

@@ -23,7 +23,7 @@ function cleanup_on() {
 trap 'cleanup_on $?' EXIT
 
 source env.sh
-#set password
+#set password if using vagrant
 [ -n "${VAGRANT_JENKINS}" ] && source "${SCRIPT_LIBRARY_PATH}/vagrant-env.sh"
 export JENKINS_HEADERS_FILE="$(mktemp)"
 export JENKINS_USER="admin"
