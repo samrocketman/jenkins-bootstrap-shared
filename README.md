@@ -137,21 +137,18 @@ This repository optionally uses [Vagrant][vagrant].  To bootstrap Jenkins simply
 run the following to start Jenkins.
 
     vagrant up
-    VAGRANT_JENKINS=1 ./jenkins_bootstrap.sh
+    export VAGRANT_JENKINS=1
+    ./jenkins_bootstrap.sh
 
 Visit `http://localhost:8080/` to see Jenkins running.
 
-# Upgrade Jenkins and plugins
+### Upgrade Jenkins and plugins
 
 To upgrade Jenkins master and plugin versions do the following:
 
     ./jenkins_bootstrap.sh
     ./scripts/upgrade/upgrade_build_gradle.sh
     git add -A && git commit -m 'jenkins upgraded'
-
-If you're optionally using Vagrant, then upgrade using the following command.
-
-    VAGRANT_JENKINS=1 ./scripts/upgrade/upgrade_build_gradle.sh
 
 ### Build an RPM package
 
