@@ -10,15 +10,43 @@ export CURL="${CURL:-curl}"
 export JENKINS_WEB="${JENKINS_WEB:-http://localhost:8080}"
 export SCRIPT_LIBRARY_PATH="${SCRIPT_LIBRARY_PATH:-./scripts}"
 
-function curl_item_script() (
+function jenkins_console() (
   set -euo pipefail
   #parse options
   jenkins="${JENKINS_WEB}/scriptText"
+  script=()
   while [ ! -z "${1:-}" ]; do
     case $1 in
       -j|--jenkins)
           shift
           jenkins="$1"
+          shift
+        ;;
+      -s|--script)
+          shift
+          script+=(-d "$1")
+          shift
+        ;;
+    esac
+  done
+  if [ -z "${script}" ]; then
+    echo 'ERROR Missing --script SCRIPT for jenkins_console() function.'
+    exit 1
+  fi
+
+  "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url -m POST --data-string script= "${script[@]}" ${jenkins}
+)
+
+function curl_item_script() (
+  set -euo pipefail
+  #parse options
+  jenkins="${JENKINS_WEB}/scriptText"
+  args=()
+  while [ ! -z "${1:-}" ]; do
+    case $1 in
+      -j|--jenkins)
+          shift
+          args+=(--jenkins "$1")
           shift
         ;;
       -s|--script)
@@ -42,32 +70,7 @@ function curl_item_script() (
     echo 'ERROR Missing an option for curl_item_script() function.'
     exit 1
   fi
-  "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url -m POST --data-string script= -d <(echo "String itemName='${item_name}';String xmlData='''$(<${xml_data})''';") -d "${script}" ${jenkins}
-)
-
-function jenkins_console() (
-  set -euo pipefail
-  #parse options
-  jenkins="${JENKINS_WEB}/scriptText"
-  while [ ! -z "${1:-}" ]; do
-    case $1 in
-      -j|--jenkins)
-          shift
-          jenkins="$1"
-          shift
-        ;;
-      -s|--script)
-          shift
-          script="$1"
-          shift
-        ;;
-    esac
-  done
-  if [ -z "${script:-}" ]; then
-    echo 'ERROR Missing --script SCRIPT for jenkins_console() function.'
-    exit 1
-  fi
-  "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url -m POST --data-string script= -d "${script}" ${jenkins}
+  jenkins_console -s <(echo "String itemName='${item_name}';String xmlData='''$(<${xml_data})''';") -s "${script}" "${args[@]:-}"
 )
 
 function create_job() (
@@ -97,9 +100,7 @@ function create_job() (
     echo 'ERROR Missing an option for create_job() function.'
     exit 1
   fi
-  curl_item_script --item-name "${job_name}" \
-    --xml-data "${xml_data}" \
-    --script "${SCRIPT_LIBRARY_PATH}/create-job.groovy"
+  curl_item_script -n "${job_name}" -x "${xml_data}" -s "${SCRIPT_LIBRARY_PATH}/create-job.groovy"
 )
 
 function create_view() (
@@ -129,7 +130,5 @@ function create_view() (
     echo 'ERROR Missing an option for create_job() function.'
     exit 1
   fi
-  curl_item_script --item-name "${view_name}" \
-    --xml-data "${xml_data}" \
-    --script "${SCRIPT_LIBRARY_PATH}/create-view.groovy"
+  curl_item_script -n "${view_name}" -x "${xml_data}" -s "${SCRIPT_LIBRARY_PATH}/create-view.groovy"
 )
