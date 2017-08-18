@@ -27,7 +27,6 @@ source env.sh
 [ -n "${VAGRANT_JENKINS}" ] && source "${SCRIPT_LIBRARY_PATH}/vagrant-env.sh"
 export JENKINS_HEADERS_FILE="$(mktemp)"
 export JENKINS_USER="admin"
-export JENKINS_PASSWORD="${JENKINS_PASSWORD:-$(<"${JENKINS_HOME}"/secrets/initialAdminPassword)}"
 
 set -e
 
@@ -74,6 +73,7 @@ fi
 "${SCRIPT_LIBRARY_PATH}/provision_jenkins.sh" url-ready "${JENKINS_WEB}/jnlpJars/jenkins-cli.jar"
 
 #persist credentials
+export JENKINS_PASSWORD="${JENKINS_PASSWORD:-$(<"${JENKINS_HOME}"/secrets/initialAdminPassword)}"
 "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url -a -m HEAD -o /dev/null ${JENKINS_WEB}
 
 if grep -- '^ \+getplugins' dependencies.gradle > /dev/null; then
