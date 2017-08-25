@@ -1,0 +1,100 @@
+/*
+   Copyright (c) 2015-2017 Sam Gleske - https://github.com/samrocketman/jenkins-bootstrap-shared
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+   */
+/*
+   Configure multiple types of credentials.
+ */
+import com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey
+import com.cloudbees.plugins.credentials.CredentialsScope
+import com.cloudbees.plugins.credentials.SystemCredentialsProvider
+import com.cloudbees.plugins.credentials.domains.Domain
+import hudson.util.Secret
+import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl
+
+def addCredential(String credentials_id, def credential) {
+    boolean modified_creds = false
+    Domain domain
+    SystemCredentialsProvider system_creds = SystemCredentialsProvider.getInstance()
+    Map system_creds_map = system_creds.getDomainCredentialsMap()
+    domain = (system_creds_map.keySet() as List).find { it.getName() == null }
+    if(!system_creds_map[domain] || (system_creds_map[domain].findAll {credentials_id.equals(it.id)}).size() < 1) {
+        if(system_creds_map[domain] && system_creds_map[domain].size() > 0) {
+            //other credentials exist so should only append
+            system_creds_map[domain] << credential
+        }
+        else {
+            system_creds_map[domain] = [credential]
+        }
+        modified_creds = true
+    }
+    //save any modified credentials
+    if(modified_creds) {
+        println "${credentials_id} credentials added to Jenkins."
+        system_creds.setDomainCredentialsMap(system_creds_map)
+        system_creds.save()
+    }
+    else {
+        println "Nothing changed.  ${credentials_id} credentials already configured."
+    }
+}
+
+def setBasicSSHUserPrivateKey(Map settings) {
+    String credentials_id = ((settings['credentials_id'])?:'').toString()
+    String user = ((settings['user'])?:'').toString()
+    String key = ((settings['key'])?:'').toString()
+    String key_passwd = ((settings['key_passwd'])?:'').toString()
+    String description = ((settings['description'])?:'').toString()
+
+    addCredential(
+            credentials_id,
+            new BasicSSHUserPrivateKey(
+                CredentialsScope.GLOBAL,
+                credentials_id,
+                user,
+                new BasicSSHUserPrivateKey.DirectEntryPrivateKeySource(key),
+                key_passwd,
+                description)
+            )
+}
+
+def setStringCredentialsImpl(Map settings) {
+    String credentials_id = ((settings['credentials_id'])?:'').toString()
+    String description = ((settings['description'])?:'').toString()
+    String secret = ((settings['secret'])?:'').toString()
+    addCredential(
+            credentials_id,
+            new StringCredentialsImpl(
+                CredentialsScope.GLOBAL,
+                credentials_id,
+                description,
+                Secret.fromString(secret))
+            )
+}
+
+if(!binding.hasVariable('credentials')) {
+    credentials = []
+}
+if(!(credentials instanceof List<Map>)) {
+    throw new Exception('Error: credentials must be a list of maps.')
+}
+
+//iterate through credentials and add them to Jenkins
+credentials.each {
+    if("set${(it['credential_type'])?:'not exist'}".toString() in this.metaClass.methods*.name.toSet()) {
+        "set${it['credential_type']}"(it)
+    }
+}
+
+null
