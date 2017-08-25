@@ -17,7 +17,7 @@ function cleanup_on() {
   if [ "$1" = '0' ]; then
     echo "Jenkins is ready.  Visit ${JENKINS_WEB}/"
     echo "User: ${JENKINS_USER}"
-    echo "Password: ${JENKINS_PASSWORD}"
+    [ ! "$JENKINS_USER" = 'admin' ] || echo "Password: ${JENKINS_PASSWORD}"
   fi
 }
 trap 'cleanup_on $?' EXIT
