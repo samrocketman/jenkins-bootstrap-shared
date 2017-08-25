@@ -42,7 +42,7 @@ if(!(master_settings instanceof Map)) {
 
 master_settings = master_settings as JSONObject
 
-def requiredDefaultValues(def value, List values, def default_value)
+def requiredDefaultValues(def value, List values, def default_value) {
     (value in values)? value : default_value
 }
 
