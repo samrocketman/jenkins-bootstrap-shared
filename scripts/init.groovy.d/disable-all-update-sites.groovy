@@ -40,3 +40,4 @@ for(UpdateSite site : j.getUpdateCenter().getSiteList()) {
 
 //https://wiki.jenkins-ci.org/display/JENKINS/Features+controlled+by+system+properties
 System.setProperty('hudson.model.UpdateCenter.never', 'true')
+null
