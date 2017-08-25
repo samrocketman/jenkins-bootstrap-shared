@@ -54,7 +54,7 @@ if(!(Jenkins.instance.securityRealm instanceof LDAPSecurityRealm)) {
 	List<LDAPConfiguration> configurations = [conf]
 	Jenkins.instance.securityRealm = new LDAPSecurityRealm(
             configurations,
-            false,
+            ldap_settings.optBoolean('disableMailAddressResolver'),
             null,
             IdStrategy.CASE_INSENSITIVE,
             IdStrategy.CASE_INSENSITIVE)
