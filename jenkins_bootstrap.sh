@@ -26,7 +26,7 @@ source env.sh
 #set password if using vagrant
 [ -n "${VAGRANT_JENKINS}" ] && source "${SCRIPT_LIBRARY_PATH}/vagrant-env.sh"
 export JENKINS_HEADERS_FILE="$(mktemp)"
-export JENKINS_USER="admin"
+export JENKINS_USER="${JENKINS_USER:-admin}"
 
 set -e
 
