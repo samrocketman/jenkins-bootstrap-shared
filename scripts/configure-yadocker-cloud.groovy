@@ -64,7 +64,20 @@ import net.sf.json.JSONObject
    values are optional with defaults set.
  */
 
-JSONArray clouds_yadocker = [
+
+if(!binding.hasVariable('clouds_yadocker')) {
+    clouds_yadocker = []
+}
+
+if(!(clouds_yadocker instanceof List)) {
+    throw new Exception('clouds_yadocker must be a List.')
+}
+
+clouds_yadocker = clouds_yadocker as JSONArray
+
+/* JUST AN EXAMPLE
+
+clouds_yadocker = [
     //YET ANOTHER DOCKER CLOUD (this is an item in a list of clouds)
     [
         cloud_name: "docker-local",
@@ -161,6 +174,7 @@ JSONArray clouds_yadocker = [
 
     ]
 ] as JSONArray
+*/
 
 //detect an existing global tool
 def detectGlobalToolExists(String location) {
