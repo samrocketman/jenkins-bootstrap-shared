@@ -14,7 +14,32 @@
    limitations under the License.
    */
 /*
-   Configure multiple types of credentials.
+   Configure multiple types of credentials.  Set the `credentials` binding with
+   a list of maps containing supported credential types.
+
+   Supported credential types include:
+     - BasicSSHUserPrivateKey
+     - StringCredentialsImpl
+   Example binding:
+
+     credentials = [
+         [
+             'credential_type': 'BasicSSHUserPrivateKey',
+             'credentials_id': 'some-credential-id',
+             'description': 'A description of this credential',
+             'user': 'some user',
+             'key_passwd': 'secret phrase',
+             'key': '''
+private key contents (do not indent it)
+             '''.trim()
+         ],
+         [
+             'credential_type': 'StringCredentialsImpl',
+             'credentials_id': 'some-credential-id',
+             'description': 'A description of this credential',
+             'secret': 'super secret text'
+         ]
+     ]
  */
 import com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey
 import com.cloudbees.plugins.credentials.CredentialsScope
@@ -23,6 +48,10 @@ import com.cloudbees.plugins.credentials.domains.Domain
 import hudson.util.Secret
 import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl
 
+/**
+  A shared method used by other "setCredential" methods to safely create a
+  credential in the global domain.
+  */
 def addCredential(String credentials_id, def credential) {
     boolean modified_creds = false
     Domain domain
@@ -50,6 +79,22 @@ def addCredential(String credentials_id, def credential) {
     }
 }
 
+/**
+  Supports SSH username and private key (directly entered private key)
+  credential provided by BasicSSHUserPrivateKey class.
+  Example:
+
+    [
+        'credential_type': 'BasicSSHUserPrivateKey',
+        'credentials_id': 'some-credential-id',
+        'description': 'A description of this credential',
+        'user': 'some user',
+        'key_passwd': 'secret phrase',
+        'key': '''
+private key contents (do not indent it)
+        '''.trim()
+    ]
+  */
 def setBasicSSHUserPrivateKey(Map settings) {
     String credentials_id = ((settings['credentials_id'])?:'').toString()
     String user = ((settings['user'])?:'').toString()
@@ -69,6 +114,17 @@ def setBasicSSHUserPrivateKey(Map settings) {
             )
 }
 
+/**
+  Supports String credential provided by StringCredentialsImpl class.
+  Example:
+
+    [
+        'credential_type': 'StringCredentialsImpl',
+        'credentials_id': 'some-credential-id',
+        'description': 'A description of this credential',
+        'secret': 'super secret text'
+    ]
+  */
 def setStringCredentialsImpl(Map settings) {
     String credentials_id = ((settings['credentials_id'])?:'').toString()
     String description = ((settings['description'])?:'').toString()
@@ -92,8 +148,11 @@ if(!(credentials instanceof List<Map>)) {
 
 //iterate through credentials and add them to Jenkins
 credentials.each {
-    if("set${(it['credential_type'])?:'not exist'}".toString() in this.metaClass.methods*.name.toSet()) {
+    if("set${(it['credential_type'])?:'empty credential_type'}".toString() in this.metaClass.methods*.name.toSet()) {
         "set${it['credential_type']}"(it)
+    }
+    else {
+        println "WARNING: Unknown credential type: ${(it['credential_type'])?:'empty credential_type'}.  Nothing changed."
     }
 }
 
