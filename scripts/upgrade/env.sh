@@ -5,7 +5,7 @@ function canonicalize() (
 )
 
 if [ -f build.gradle ]; then
-  export JENKINS_USER="admin"
+  [ -z "${FORCE_UPGRADE}" ] && export JENKINS_USER="admin" || export JENKINS_USER="${JENKINS_USER:-admin}"
   export JENKINS_PASSWORD="${JENKINS_PASSWORD:-$(<"${JENKINS_HOME}"/secrets/initialAdminPassword)}"
   unset JENKINS_CALL_ARGS
   jenkins-call-url -a -v -v "${JENKINS_WEB}"/api/json -o /dev/null
