@@ -23,7 +23,7 @@
    builds.  However, if there are previously configured yet another docker
    clouds then they will be removed.
 
-   Yet Another Docker Plugin 0.1.0-rc31
+   Yet Another Docker Plugin 0.1.0-rc38
  */
 
 import com.github.kostyasha.yad.DockerCloud
@@ -50,12 +50,6 @@ import hudson.tools.ToolLocationNodeProperty
 import jenkins.model.Jenkins
 import net.sf.json.JSONArray
 import net.sf.json.JSONObject
-
-/*
-  TODO: things left to implement
-
-    Contribute upstream remoteFsRootMapping
-*/
 
 /*
    Configure the Yet Another Docker Plugin via this clouds_yadocker variable.
@@ -154,7 +148,7 @@ clouds_yadocker = [
                 launch_ssh_time_wait_between_retries: 10,
                 //settings specific to launch_jnlp
                 launch_jnlp_linux_user: "jenkins",
-                launch_jnlp_lauch_timeout: 120,
+                launch_jnlp_launch_timeout: 120,
                 launch_jnlp_slave_jar_options: "",
                 launch_jnlp_slave_jvm_options: "",
                 launch_jnlp_different_jenkins_master_url: "",
@@ -167,8 +161,7 @@ clouds_yadocker = [
                 //For example let's say you have a global tool configuration named OracleJDK8 for JDK installations
                 //tool_locations would be something like ['hudson.model.JDK$DescriptorImpl@OracleJDK8': '/path/to/java_home']
                 //If you're unsure of the tool@name then check config.xml where YADocker configurations are saved.
-                tool_locations: [:],
-                remote_fs_root_mapping: ""
+                tool_locations: [:]
             ]
         ]
 
@@ -201,7 +194,7 @@ def selectLauncher(String launcherType, JSONObject obj) {
         case 'launch_jnlp':
             DockerComputerJNLPLauncher dockerComputerJNLPLauncher = new DockerComputerJNLPLauncher()
             dockerComputerJNLPLauncher.setUser(obj.optString('launch_jnlp_linux_user','jenkins'))
-            dockerComputerJNLPLauncher.setLaunchTimeout(obj.optLong('launch_jnlp_lauch_timeout', 120L))
+            dockerComputerJNLPLauncher.setLaunchTimeout(obj.optLong('launch_jnlp_launch_timeout', 120L))
             dockerComputerJNLPLauncher.setSlaveOpts(obj.optString('launch_jnlp_slave_jar_options'))
             dockerComputerJNLPLauncher.setJvmOpts(obj.optString('launch_jnlp_slave_jvm_options'))
             dockerComputerJNLPLauncher.setJenkinsUrl(obj.optString('launch_jnlp_different_jenkins_master_url'))
@@ -343,8 +336,6 @@ def newDockerSlaveTemplate(JSONObject obj) {
     dockerSlaveTemplate.setLauncher(launcher)
     dockerSlaveTemplate.setRemoteFs(obj.optString('remote_fs_root', '/srv/jenkins'))
     dockerSlaveTemplate.setMaxCapacity(obj.optInt('max_instances', 10))
-    //dockerSlaveTemplate.setRemoteFsMapping(obj.optString('remote_fs_root_mapping'))
-    dockerSlaveTemplate.remoteFsMapping = obj.optString('remote_fs_root_mapping')
     //define NODE PROPERTIES
     List<NodeProperty> nodeProperties = [] as List<NodeProperty>
     if(obj.optJSONObject('environment_variables')) {
