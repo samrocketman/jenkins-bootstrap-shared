@@ -102,7 +102,7 @@ RETVAL=0
 
 case "$1" in
     start)
-        if [ ! -d "${JENKINS_HOME}/plugins" -o -n "${JENKINS_OVERWRITE}" ]; then
+        if [ ! -d "${JENKINS_HOME}/plugins" -o -f "${JENKINS_HOME}/overwrite" ]; then
             echo "Overwriting plugins."
             mkdir -p "${JENKINS_HOME}/plugins"
             rsync -a --delete-after "@@PREFIX@@/lib/@@ARTIFACTNAME@@/plugins/" "${JENKINS_HOME}/plugins/"
@@ -115,7 +115,7 @@ case "$1" in
             done
             chown -R "${JENKINS_USER}": "${JENKINS_HOME}"/plugins
         fi
-        if [ ! -d "${JENKINS_HOME}/init.groovy.d" -o -n "${JENKINS_OVERWRITE}" ]; then
+        if [ ! -d "${JENKINS_HOME}/init.groovy.d" -o -f "${JENKINS_HOME}/overwrite" ]; then
             echo "Overwriting init.groovy.d scripts."
             mkdir -p "${JENKINS_HOME}/init.groovy.d"
             rsync -a --delete-after "@@PREFIX@@/lib/@@ARTIFACTNAME@@/scripts/init.groovy.d/" "${JENKINS_HOME}/init.groovy.d/"
