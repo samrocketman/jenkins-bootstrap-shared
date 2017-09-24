@@ -334,7 +334,7 @@ def newDockerSlaveTemplate(JSONObject obj) {
     dockerSlaveTemplate.setNumExecutors(obj.optInt('executors', 1))
     dockerSlaveTemplate.setRetentionStrategy(retentionStrategy)
     dockerSlaveTemplate.setLauncher(launcher)
-    dockerSlaveTemplate.setRemoteFs(obj.optString('remote_fs_root', '/srv/jenkins'))
+    dockerSlaveTemplate.setRemoteFs(obj.optString('remote_fs_root', '/home/jenkins'))
     dockerSlaveTemplate.setMaxCapacity(obj.optInt('max_instances', 10))
     //define NODE PROPERTIES
     List<NodeProperty> nodeProperties = [] as List<NodeProperty>
