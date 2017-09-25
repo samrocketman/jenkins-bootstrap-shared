@@ -38,6 +38,13 @@ private key contents (do not indent it)
              'credentials_id': 'some-credential-id',
              'description': 'A description of this credential',
              'secret': 'super secret text'
+         ],
+         [
+             'credential_type': 'UsernamePasswordCredentialsImpl',
+             'credentials_id': 'some-credential-id',
+             'description': 'A description of this credential',
+             'user': 'some user',
+             'password': 'secret phrase'
          ]
      ]
  */
@@ -45,6 +52,7 @@ import com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey
 import com.cloudbees.plugins.credentials.CredentialsScope
 import com.cloudbees.plugins.credentials.SystemCredentialsProvider
 import com.cloudbees.plugins.credentials.domains.Domain
+import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl
 import hudson.util.Secret
 import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl
 
@@ -136,6 +144,37 @@ def setStringCredentialsImpl(Map settings) {
                 credentials_id,
                 description,
                 Secret.fromString(secret))
+            )
+}
+
+/**
+  Supports username and password credential provided by
+  UsernamePasswordCredentialsImpl class.
+
+  Example:
+
+    [
+        'credential_type': 'UsernamePasswordCredentialsImpl',
+        'credentials_id': 'some-credential-id',
+        'description': 'A description of this credential',
+        'user': 'some user',
+        'password': 'secret phrase'
+    ]
+  */
+def setUsernamePasswordCredentialsImpl(Map settings) {
+    String credentials_id = ((settings['credentials_id'])?:'').toString()
+    String user = ((settings['user'])?:'').toString()
+    String password = ((settings['password'])?:'').toString()
+    String description = ((settings['description'])?:'').toString()
+
+    addCredential(
+            credentials_id,
+            new UsernamePasswordCredentialsImpl(
+                CredentialsScope.GLOBAL,
+                credentials_id,
+                description,
+                user,
+                password)
             )
 }
 
