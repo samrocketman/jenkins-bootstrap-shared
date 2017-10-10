@@ -35,5 +35,5 @@ fi
 
 
 if git remote -v 2> /dev/null | grep origin > /dev/null; then
-  git push origin master
+  timeout 300 git push origin master
 fi
