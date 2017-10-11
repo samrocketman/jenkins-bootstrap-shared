@@ -202,6 +202,25 @@ do_check_started_ok() {
 
 case "$1" in
   start)
+    if [ ! -d "${JENKINS_HOME}/plugins" -o -f "${JENKINS_HOME}/overwrite" ]; then
+      echo "Overwriting plugins."
+      mkdir -p "${JENKINS_HOME}/plugins"
+      rsync -a --delete-after "@@PREFIX@@/lib/@@ARTIFACTNAME@@/plugins/" "${JENKINS_HOME}/plugins/"
+      echo "Pinning all plugins in '${JENKINS_HOME}/plugins/'."
+      echo "See https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins for more info."
+      for plugin in "${JENKINS_HOME}"/plugins/*.jpi;do
+        #pin plugin versions
+        #https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins
+        touch "${plugin}.pinned"
+      done
+      chown -R "${JENKINS_USER}": "${JENKINS_HOME}"/plugins
+    fi
+    if [ ! -d "${JENKINS_HOME}/init.groovy.d" -o -f "${JENKINS_HOME}/overwrite" ]; then
+      echo "Overwriting init.groovy.d scripts."
+      mkdir -p "${JENKINS_HOME}/init.groovy.d"
+      rsync -a --delete-after "@@PREFIX@@/lib/@@ARTIFACTNAME@@/scripts/init.groovy.d/" "${JENKINS_HOME}/init.groovy.d/"
+      chown -R "${JENKINS_USER}": "${JENKINS_HOME}"/init.groovy.d
+    fi
     log_daemon_msg "Starting $DESC" "$NAME"
     do_start
     START_STATUS="$?"

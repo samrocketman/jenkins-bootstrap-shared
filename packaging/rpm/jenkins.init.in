@@ -109,9 +109,9 @@ case "$1" in
             echo "Pinning all plugins in '${JENKINS_HOME}/plugins/'."
             echo "See https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins for more info."
             for plugin in "${JENKINS_HOME}"/plugins/*.jpi;do
-              #pin plugin versions
-              #https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins
-              touch "${plugin}.pinned"
+                #pin plugin versions
+                #https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins
+                touch "${plugin}.pinned"
             done
             chown -R "${JENKINS_USER}": "${JENKINS_HOME}"/plugins
         fi
