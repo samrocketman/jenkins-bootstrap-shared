@@ -91,7 +91,7 @@ pipeline_shared_libraries.each { name, config ->
         library.defaultVersion = config.optString('defaultVersion')
         library.implicit = config.optBoolean('implicit', false)
         library.allowVersionOverride = config.optBoolean('allowVersionOverride', true)
-        library.includeInChangesets = config.optBoolean('allowVersionOverride', true)
+        library.includeInChangesets = config.optBoolean('includeInChangesets', true)
         libraries << library
     }
 }
