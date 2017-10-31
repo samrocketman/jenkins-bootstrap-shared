@@ -105,7 +105,7 @@ if(libraries && !isLibrariesEqual(global_settings.libraries, libraries)) {
     println 'Configured Pipeline Global Shared Libraries:\n    ' + global_settings.libraries.collect { it.name }.join('\n    ')
 }
 else {
-    if(libraries) {
+    if(pipeline_shared_libraries) {
         println 'Nothing changed.  Pipeline Global Shared Libraries already configured.'
     }
     else {
