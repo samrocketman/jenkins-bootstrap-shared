@@ -101,7 +101,7 @@ def global_settings = Jenkins.instance.getExtensionList(GlobalLibraries.class)[0
 if(libraries && !librariesEqual(global_settings.libraries, libraries)) {
     global_settings.libraries = libraries
     global_settings.save()
-    print 'Configured Pipeline Global Shared Libraries:\n    ' + global_settings.libraries.collect { it.name }.join('\n    ')
+    println 'Configured Pipeline Global Shared Libraries:\n    ' + global_settings.libraries.collect { it.name }.join('\n    ')
 }
 else {
     if(libraries) {
