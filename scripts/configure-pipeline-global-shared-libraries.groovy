@@ -31,29 +31,29 @@ import net.sf.json.JSONObject
 /**
   Function to compare if the two global shared libraries are equal.
  */
-boolean librariesEqual(List lib1, List lib2) {
-  //compare returns true or false
-  lib1.size() == lib2.size() &&
-  !(
-    false in [lib1, lib2].transpose().collect { l1, l2 ->
-      def s1 = l1.retriever.scm
-      def s2 = l2.retriever.scm
-      l1.retriever.class == l2.retriever.class &&
-      l1.name == l2.name &&
-      l1.defaultVersion == l2.defaultVersion &&
-      l1.implicit == l2.implicit &&
-      l1.allowVersionOverride == l2.allowVersionOverride &&
-      l1.includeInChangesets == l2.includeInChangesets &&
-      s1.remote == s2.remote &&
-      s1.credentialsId == s2.credentialsId &&
-      s1.traits.size() == s2.traits.size() &&
-      !(
-        false in [s1.traits, s2.traits].transpose().collect { t1, t2 ->
-          t1.class == t2.class
+boolean isLibrariesEqual(List lib1, List lib2) {
+    //compare returns true or false
+    lib1.size() == lib2.size() &&
+    !(
+        false in [lib1, lib2].transpose().collect { l1, l2 ->
+            def s1 = l1.retriever.scm
+            def s2 = l2.retriever.scm
+            l1.retriever.class == l2.retriever.class &&
+            l1.name == l2.name &&
+            l1.defaultVersion == l2.defaultVersion &&
+            l1.implicit == l2.implicit &&
+            l1.allowVersionOverride == l2.allowVersionOverride &&
+            l1.includeInChangesets == l2.includeInChangesets &&
+            s1.remote == s2.remote &&
+            s1.credentialsId == s2.credentialsId &&
+            s1.traits.size() == s2.traits.size() &&
+            !(
+                false in [s1.traits, s2.traits].transpose().collect { t1, t2 ->
+                    t1.class == t2.class
+                }
+            )
         }
-      )
-    }
-  )
+    )
 }
 
 /* Example configuration
@@ -98,7 +98,7 @@ pipeline_shared_libraries.each { name, config ->
 
 def global_settings = Jenkins.instance.getExtensionList(GlobalLibraries.class)[0]
 
-if(libraries && !librariesEqual(global_settings.libraries, libraries)) {
+if(libraries && !isLibrariesEqual(global_settings.libraries, libraries)) {
     global_settings.libraries = libraries
     global_settings.save()
     println 'Configured Pipeline Global Shared Libraries:\n    ' + global_settings.libraries.collect { it.name }.join('\n    ')
