@@ -37,9 +37,7 @@ boolean isServerConfigsEqual(List s1, List s2) {
     )
 }
 
-boolean isGlobalSettingsEqual(def global_settings, JSONObject github_plugin) {
-    global_settings.hookSecretConfig &&
-    global_settings.hookSecretConfig.credentialsId == github_plugin.optString('hookSharedSecretId') &&
+boolean isOverrideHookEqual(def global_settings, JSONObject github_plugin) {
     (
         (
             global_settings.isOverrideHookURL() &&
@@ -51,6 +49,12 @@ boolean isGlobalSettingsEqual(def global_settings, JSONObject github_plugin) {
             !github_plugin.optString('overrideHookUrl')
         )
     )
+}
+
+boolean isGlobalSettingsEqual(def global_settings, JSONObject github_plugin) {
+    global_settings.hookSecretConfig &&
+    global_settings.hookSecretConfig.credentialsId == github_plugin.optString('hookSharedSecretId') &&
+    isOverrideHookEqual(global_settings, github_plugin)
 }
 
 /* Example configuration
@@ -95,13 +99,15 @@ github_plugin.optJSONObject('servers').each { name, config ->
 def global_settings = Jenkins.instance.getExtensionList(GitHubPluginConfig.class)[0]
 
 if(github_plugin && (!isGlobalSettingsEqual(global_settings, github_plugin) || !isServerConfigsEqual(global_settings.configs, configs))) {
-    if(global_settings.hookSecretConfig && global_settings.hookSecretConfig.credentialsId == github_plugin.optString('hookSharedSecretId')) {
+    if(global_settings.hookSecretConfig && global_settings.hookSecretConfig.credentialsId != github_plugin.optString('hookSharedSecretId')) {
         global_settings.hookSecretConfig = new HookSecretConfig(github_plugin.optString('hookSharedSecretId'))
     }
-    if(global_settings.isOverrideHookURL() && !github_plugin.optString('overrideHookUrl')) {
-        global_settings.hookUrl = null
-    } else if(global_settings.@hookUrl != new URL(github_plugin.optString('overrideHookUrl'))) {
-        global_settings.hookUrl = new URL(github_plugin.optString('overrideHookUrl'))
+    if(!isOverrideHookEqual(global_settings, github_plugin)) {
+        if(global_settings.isOverrideHookURL() && !github_plugin.optString('overrideHookUrl')) {
+            global_settings.hookUrl = null
+        } else if(global_settings.@hookUrl != new URL(github_plugin.optString('overrideHookUrl'))) {
+            global_settings.hookUrl = new URL(github_plugin.optString('overrideHookUrl'))
+        }
     }
     if(!isServerConfigsEqual(global_settings.configs, configs)) {
         global_settings.configs = configs
