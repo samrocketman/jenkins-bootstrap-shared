@@ -108,6 +108,6 @@ else {
         println 'Nothing changed.  Pipeline Global Shared Libraries already configured.'
     }
     else {
-        println 'Nothing changed.  Pipeline Global Shared Libraries empty.'
+        println 'Nothing changed.  Skipped configuring Pipeline Global Shared Libraries because settings are empty.'
     }
 }
