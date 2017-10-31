@@ -64,7 +64,7 @@ pipeline_shared_libraries = [
         'allowVersionOverride': false,
         'includeInChangesets': false,
         'scm': [
-            'remote': 'git@github.com:example/project.git',
+            'remote': 'https://github.com/example/project.git',
             'credentialsId': 'your-credentials-id'
         ]
     ]
@@ -76,6 +76,7 @@ if(!binding.hasVariable('pipeline_shared_libraries')) {
 }
 
 if(!pipeline_shared_libraries in Map) {
+    throw new Exception("pipeline_shared_libraries must be an instance of Map but instead is instance of: ${pipeline_shared_libraries.getClass()}")
 }
 
 pipeline_shared_libraries = pipeline_shared_libraries as JSONObject
