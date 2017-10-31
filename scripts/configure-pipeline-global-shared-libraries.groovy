@@ -14,7 +14,7 @@
    limitations under the License.
    */
 /*
-   Configure pipline shared libraries in the global Jenkins configuration.
+   Configure pipeline shared libraries in the global Jenkins configuration.
    This will safely compare configured libraries and only overwrite the global
    shared library config if changes have been made.
 
