@@ -1,4 +1,5 @@
 #!/bin/bash
 
-docker pull centos:7
-docker run -w /mnt -t --rm -v "$PWD":/mnt centos:7 /mnt/tests/rpm/validate.sh
+DOCKER_IMAGE="centos:7.4.1708"
+docker pull "${DOCKER_IMAGE}"
+docker run -w /mnt -t --rm -v "$PWD":/mnt "${DOCKER_IMAGE}" /mnt/tests/rpm/validate.sh

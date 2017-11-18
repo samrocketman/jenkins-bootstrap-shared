@@ -62,21 +62,18 @@ file:
     contains: []
   /var/lib/jenkins/init.groovy.d/disable-all-update-sites.groovy:
     exists: true
-    mode: "0664"
     owner: jenkins
     group: jenkins
     filetype: file
     contains: []
   /var/lib/jenkins/init.groovy.d/disable-jenkins-cli.groovy:
     exists: true
-    mode: "0644"
     owner: jenkins
     group: jenkins
     filetype: file
     contains: []
   /var/lib/jenkins/jenkins-bootstrap-commit:
     exists: true
-    mode: "0644"
     size: 41
     owner: jenkins
     group: jenkins
@@ -84,7 +81,6 @@ file:
     contains: []
   /var/lib/jenkins/jenkins-versions.manifest:
     exists: true
-    mode: "0644"
     owner: jenkins
     group: jenkins
     filetype: file
