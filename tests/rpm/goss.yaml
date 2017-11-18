@@ -103,8 +103,6 @@ service:
 user:
   jenkins:
     exists: true
-    uid: 999
-    gid: 997
     groups:
     - jenkins
     home: /var/lib/jenkins
