@@ -1,0 +1,115 @@
+file:
+  /etc/cron.daily/jenkins:
+    exists: true
+    mode: "0755"
+    owner: root
+    group: root
+    filetype: file
+    contains: ["dailycommit.sh"]
+  /etc/init.d/jenkins:
+    exists: true
+    mode: "0755"
+    owner: root
+    group: root
+    filetype: file
+    contains: []
+  /etc/logrotate.d/jenkins:
+    exists: true
+    mode: "0644"
+    size: 221
+    owner: root
+    group: root
+    filetype: file
+    contains: ["jenkins.log", "access_log"]
+  /etc/sysconfig/jenkins:
+    exists: true
+    mode: "0600"
+    size: 3141
+    owner: jenkins
+    group: jenkins
+    filetype: file
+    contains: ["JENKINS_HOME"]
+  /var/lib/jenkins:
+    exists: true
+    mode: "0755"
+    size: 4096
+    owner: jenkins
+    group: jenkins
+    filetype: directory
+    contains: []
+  /var/lib/jenkins/.gitignore:
+    exists: true
+    mode: "0644"
+    owner: jenkins
+    group: jenkins
+    filetype: file
+    contains: ["\\/*", "\\!/jobs", "\\!/*.xml", "jobs/**", "\\!jobs/**/", "\\!config.xml"]
+  /var/lib/jenkins/dailycommit.sh:
+    exists: true
+    mode: "0755"
+    size: 886
+    owner: jenkins
+    group: jenkins
+    filetype: file
+    contains: ["JENKINS_HOME", "git init", "git add","git commit", "git push"]
+  /var/lib/jenkins/init.groovy.d:
+    exists: true
+    mode: "0755"
+    size: 4096
+    owner: jenkins
+    group: jenkins
+    filetype: directory
+    contains: []
+  /var/lib/jenkins/init.groovy.d/disable-all-update-sites.groovy:
+    exists: true
+    mode: "0664"
+    owner: jenkins
+    group: jenkins
+    filetype: file
+    contains: []
+  /var/lib/jenkins/init.groovy.d/disable-jenkins-cli.groovy:
+    exists: true
+    mode: "0644"
+    owner: jenkins
+    group: jenkins
+    filetype: file
+    contains: []
+  /var/lib/jenkins/jenkins-bootstrap-commit:
+    exists: true
+    mode: "0644"
+    size: 41
+    owner: jenkins
+    group: jenkins
+    filetype: file
+    contains: []
+  /var/lib/jenkins/jenkins-versions.manifest:
+    exists: true
+    mode: "0644"
+    owner: jenkins
+    group: jenkins
+    filetype: file
+    contains: ["jenkins-war"]
+  /var/lib/jenkins/plugins:
+    exists: true
+    mode: "0755"
+    size: 4096
+    owner: jenkins
+    group: jenkins
+    filetype: directory
+    contains: []
+package:
+  jenkins-bootstrap:
+    installed: true
+service:
+  jenkins:
+    enabled: true
+    running: false
+user:
+  jenkins:
+    exists: true
+    uid: 999
+    gid: 997
+    groups:
+    - jenkins
+    home: /var/lib/jenkins
+    shell: /sbin/nologin

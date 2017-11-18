@@ -1,0 +1,4 @@
+#!/bin/bash
+
+docker pull centos:7
+docker run -w /mnt -t --rm -v "$PWD":/mnt centos:7 /mnt/tests/rpm/validate.sh
