@@ -1,4 +1,4 @@
-# jenkins-bootstrap shared scripts
+# jenkins-bootstrap shared scripts [![Build Status][ci-img]][ci-link]
 
 Jenkins is traditionally challenging to safely QA and test upgrades.  This
 project aims to make managing a Jenkins instance and all of its plugins easy.
@@ -163,5 +163,7 @@ For service control and other usage see [`USAGE`](USAGE.md).
 * [ASL 2](LICENSE)
 * [3rd party licenses](3rd_party)
 
+[ci-img]: https://travis-ci.org/samrocketman/jenkins-bootstrap-shared.svg?branch=master
+[ci-link]: https://travis-ci.org/samrocketman/jenkins-bootstrap-shared
 [vagrant]: https://www.vagrantup.com/
 [vbox]: https://www.virtualbox.org/
