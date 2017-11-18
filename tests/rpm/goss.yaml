@@ -12,7 +12,6 @@ file:
     owner: root
     group: root
     filetype: file
-    contains: []
   /etc/logrotate.d/jenkins:
     exists: true
     mode: "0644"
@@ -36,7 +35,6 @@ file:
     owner: jenkins
     group: jenkins
     filetype: directory
-    contains: []
   /var/lib/jenkins/.gitignore:
     exists: true
     mode: "0644"
@@ -59,26 +57,24 @@ file:
     owner: jenkins
     group: jenkins
     filetype: directory
-    contains: []
   /var/lib/jenkins/init.groovy.d/disable-all-update-sites.groovy:
     exists: true
     owner: jenkins
     group: jenkins
     filetype: file
-    contains: []
+    sha256: 7979a88e6356a0bf230abc6bf92c419cc908f3ece644267964f74e00a3d784cf
   /var/lib/jenkins/init.groovy.d/disable-jenkins-cli.groovy:
     exists: true
     owner: jenkins
     group: jenkins
     filetype: file
-    contains: []
+    sha256: 06defb6916c7b481bb48a34e96a2752de6bffc52e10990dce82be74076e037a4
   /var/lib/jenkins/jenkins-bootstrap-commit:
     exists: true
     size: 41
     owner: jenkins
     group: jenkins
     filetype: file
-    contains: []
   /var/lib/jenkins/jenkins-versions.manifest:
     exists: true
     owner: jenkins
@@ -92,7 +88,6 @@ file:
     owner: jenkins
     group: jenkins
     filetype: directory
-    contains: []
 package:
   jenkins-bootstrap:
     installed: true
