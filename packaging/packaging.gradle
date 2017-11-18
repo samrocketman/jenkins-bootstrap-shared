@@ -143,6 +143,7 @@ buildRpm {
     obsoletes 'hudson'
     requires 'cronie'
     requires 'glibc-common'
+    requires 'initscripts'
 
     from("${buildDir}/packaging-filtered/rpm/jenkins.init") {
         into '/etc/init.d'

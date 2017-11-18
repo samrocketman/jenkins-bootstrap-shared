@@ -59,7 +59,9 @@ echo "See https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins for more in
 for plugin in "${JENKINS_HOME}"/plugins/*.jpi;do
   #pin plugin versions
   #https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins
-  touch "${plugin}.pinned"
+  if [ -f "${plugin}" ]; then
+    touch "${plugin}.pinned"
+  fi
 done
 
 #change ownership of just the plugins dir but not children
