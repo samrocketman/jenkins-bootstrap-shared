@@ -5,27 +5,40 @@ file:
     owner: root
     group: root
     filetype: file
-    contains: ["dailycommit.sh"]
+    contains:
+    - dailycommit.sh
   /etc/init.d/jenkins:
     exists: true
     mode: "0755"
     owner: root
     group: root
     filetype: file
+    contains: []
   /etc/logrotate.d/jenkins:
     exists: true
     mode: "0644"
     owner: root
     group: root
     filetype: file
-    contains: ["jenkins.log", "access_log"]
+    contains:
+    - jenkins.log
+    - access_log
   /etc/sysconfig/jenkins:
     exists: true
     mode: "0600"
     owner: jenkins
     group: jenkins
     filetype: file
-    contains: ["JENKINS_HOME"]
+    contains:
+    - JENKINS_HOME
+  /var/cache/jenkins:
+    exists: true
+    mode: "0755"
+    size: 4096
+    owner: jenkins
+    group: jenkins
+    filetype: directory
+    contains: []
   /var/lib/jenkins:
     exists: true
     mode: "0755"
@@ -33,20 +46,32 @@ file:
     owner: jenkins
     group: jenkins
     filetype: directory
+    contains: []
   /var/lib/jenkins/.gitignore:
     exists: true
     mode: "0644"
     owner: jenkins
     group: jenkins
     filetype: file
-    contains: ["\\/*", "\\!/jobs", "\\!/*.xml", "jobs/**", "\\!jobs/**/", "\\!config.xml"]
+    contains:
+    - \/*
+    - \!/jobs
+    - \!/*.xml
+    - jobs/**
+    - \!jobs/**/
+    - \!config.xml
   /var/lib/jenkins/dailycommit.sh:
     exists: true
     mode: "0755"
     owner: jenkins
     group: jenkins
     filetype: file
-    contains: ["JENKINS_HOME", "git init", "git add","git commit", "git push"]
+    contains:
+    - JENKINS_HOME
+    - git init
+    - git add
+    - git commit
+    - git push
   /var/lib/jenkins/init.groovy.d:
     exists: true
     mode: "0755"
@@ -54,17 +79,20 @@ file:
     owner: jenkins
     group: jenkins
     filetype: directory
+    contains: []
   /var/lib/jenkins/init.groovy.d/disable-all-update-sites.groovy:
     exists: true
     owner: jenkins
     group: jenkins
     filetype: file
+    contains: []
     sha256: 7979a88e6356a0bf230abc6bf92c419cc908f3ece644267964f74e00a3d784cf
   /var/lib/jenkins/init.groovy.d/disable-jenkins-cli.groovy:
     exists: true
     owner: jenkins
     group: jenkins
     filetype: file
+    contains: []
     sha256: 06defb6916c7b481bb48a34e96a2752de6bffc52e10990dce82be74076e037a4
   /var/lib/jenkins/jenkins-bootstrap-commit:
     exists: true
@@ -72,12 +100,14 @@ file:
     owner: jenkins
     group: jenkins
     filetype: file
+    contains: []
   /var/lib/jenkins/jenkins-versions.manifest:
     exists: true
     owner: jenkins
     group: jenkins
     filetype: file
-    contains: ["jenkins-war"]
+    contains:
+    - jenkins-war
   /var/lib/jenkins/plugins:
     exists: true
     mode: "0755"
@@ -85,6 +115,7 @@ file:
     owner: jenkins
     group: jenkins
     filetype: directory
+    contains: []
 package:
   jenkins-bootstrap:
     installed: true

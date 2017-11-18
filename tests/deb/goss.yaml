@@ -31,6 +31,14 @@ file:
     contains:
     - jenkins.log
     - access_log
+  /var/cache/jenkins:
+    exists: true
+    mode: "0755"
+    size: 4096
+    owner: jenkins
+    group: jenkins
+    filetype: directory
+    contains: []
   /var/lib/jenkins:
     exists: true
     mode: "0755"
