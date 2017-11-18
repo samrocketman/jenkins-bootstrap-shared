@@ -130,3 +130,6 @@ user:
     - jenkins
     home: /var/lib/jenkins
     shell: /sbin/nologin
+group:
+  jenkins:
+    exists: true
