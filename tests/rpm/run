@@ -1,5 +1,29 @@
 #!/bin/bash
+# Created by Sam Gleske - https://github.com/samrocketman
+
+# DESCRIPTION
+#   A simple script to test installing the RPM and run goss infrastructure
+#   tests.  Run tests or boot a docker image for experimentation.  This script
+#   is meant to be run from the root of this repository.
+
+# USAGE:
+#  Generic usage where `options` are arguments for "docker run" and `command` is executed in the docker image.
+#      ./tests/rpm/run [options ...] [command]
+#
+#  Run tests
+#      ./tests/rpm/run
+#
+#  Interactively start bash.
+#      ./tests/rpm/run -i /bin/bash
+
+# collect docker arguments
+args=()
+while [ $# -gt 1 ]; do
+  args+=( "${1}" )
+  shift
+done
+# $1 is left intact to be run as the shell command in the docker image
 
 DOCKER_IMAGE="centos:7.4.1708"
 docker pull "${DOCKER_IMAGE}"
-docker run -w /mnt -t --rm -v "$PWD":/mnt "${DOCKER_IMAGE}" /mnt/tests/rpm/validate.sh
+docker run "${args[@]}" -w /mnt -t --rm -v "$PWD":/mnt "${DOCKER_IMAGE}" "${1:-/mnt/tests/rpm/validate.sh}"
