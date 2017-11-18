@@ -24,6 +24,6 @@ while [ $# -gt 1 ]; do
 done
 # $1 is left intact to be run as the shell command in the docker image
 
-DOCKER_IMAGE="centos:7.4.1708"
+DOCKER_IMAGE="centos:7"
 docker pull "${DOCKER_IMAGE}"
 docker run "${args[@]}" -w /mnt -t --rm -v "$PWD":/mnt "${DOCKER_IMAGE}" "${1:-/mnt/tests/rpm/validate.sh}"
