@@ -6,6 +6,7 @@ branches:
   only:
     - master
 env:
+ - PACKAGE=deb
  - PACKAGE=rpm
 script:
   - ./gradlew packages
