@@ -1,0 +1,9 @@
+language: java
+sudo: required
+services:
+  - docker
+env:
+ - PACKAGE=rpm
+script:
+  - ./gradlew packages
+  - ./tests/"${PACKAGE}"/run
