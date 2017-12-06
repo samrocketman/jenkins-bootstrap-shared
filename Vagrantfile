@@ -35,9 +35,9 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "shell", inline: <<-SHELL
     #Download Java from Oracle
-    [ ! -f /tmp/jdk8.rpm ] && curl -H 'Cookie: oraclelicense=accept-securebackup-cookie' -Lo /tmp/jdk8.rpm http://download.oracle.com/otn-pub/java/jdk/8u144-b01/090f390dda5b47b9b721c7dfaa008135/jdk-8u144-linux-x64.rpm
+    [ ! -f /tmp/jdk8.rpm ] && curl -H 'Cookie: oraclelicense=accept-securebackup-cookie' -Lo /tmp/jdk8.rpm http://download.oracle.com/otn-pub/java/jdk/8u151-b12/e758a0de34e24606bca991d704f6dcbf/jdk-8u151-linux-x64.rpm
     #validate the download from Oracle using official checksum
-    echo 'cdb016da0c509d7414ee3f0c15b2dae5092d9a77edf7915be4386d5127e8092f  /tmp/jdk8.rpm' | sha256sum -c -
+    echo '2c1137859aecc0a6aef8960d11967797466e9b812f8c170a43a2597e97dc8a08  /tmp/jdk8.rpm' | sha256sum -c -
     #Install Oracle JDK 8
     rpm -i /tmp/jdk8.rpm
     #install Jenkins
