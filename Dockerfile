@@ -4,7 +4,7 @@ FROM anapsix/alpine-java
 ADD build/distributions/*.tar /usr/
 
 RUN adduser -h /var/lib/jenkins -S jenkins && \
-apk add --no-cache git rsync && \
+apk add --no-cache git rsync openssh && \
 mkdir -p /var/cache/jenkins && \
 chown -R jenkins: /usr/lib/jenkins /usr/distribution-scripts /var/cache/jenkins && \
 cp /usr/distribution-scripts/docker/run.sh /run.sh
