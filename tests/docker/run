@@ -1,0 +1,7 @@
+#!/bin/bash
+# Created by Sam Gleske - https://github.com/samrocketman
+
+# DESCRIPTION
+#   A simple script which tests building the docker container.
+
+docker build -t jenkins .

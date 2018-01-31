@@ -8,6 +8,7 @@ branches:
 env:
  - PACKAGE=deb
  - PACKAGE=rpm
+ - PACKAGE=docker
 script:
   - ./gradlew packages
   - ./tests/"${PACKAGE}"/run
