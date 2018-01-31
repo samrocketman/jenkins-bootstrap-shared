@@ -124,7 +124,8 @@ TASKs include:
 - `clean` - cleans the build directory and all bootstrap related files.
 - `buildRpm` - builds an RPM package for RHEL based Linux distros.
 - `buildDeb` - builds a DEB package for Debian based Linux distros.
-- `packages` - executes both `buildRpm` and `buildDeb` tasks.
+- `buildTar` - builds a TAR file which is used to build a docker container.
+- `packages` - executes `buildRpm`, `buildDeb`, and `buildTar` tasks.
 - `getjenkins` - Downloads `jenkins.war` to the current directory.
 - `getplugins` - Downloads Jenkins plugin HPI files to `./plugins`.
 
@@ -153,6 +154,43 @@ To upgrade Jenkins master and plugin versions do the following:
 ### Build an RPM package
 
     ./gradlew clean buildRpm
+
+### Build a docker image
+
+    ./gradlew clean buildTar
+    docker build -t jenkins .
+
+The following environment variables can be overridden in the docker container
+if using docker-compose.
+
+| VARIABLE                  | TYPE | DESCRIPTION |
+| ------------------------- | ---- | ----------- |
+| `JENKINS_HOME`            | Path | Jenkins configuration location. Default is `/var/lib/jenkins`. |
+| `JENKINS_PORT`            | int  | set the http listening port. -1 to disable, Default is 8080 |
+| `JENKINS_DEBUG_LEVEL`     | int  | set the level of debug msgs (1-9). Default is 5 (INFO level) |
+| `JENKINS_HANDLER_MAX`     | int  | set the max no of worker threads to allow. Default is 100 |
+| `JENKINS_HANDLER_IDLE`    | int  | set the max no of idle worker threads to allow. Default is 20 |
+| `JENKINS_ARGS`            | Str  | Any additional args available to `jenkins.war` |
+
+Docker environment variables related to HTTPS.  Note: HTTPS will only be
+available if a keystore is defined.  All other variables are disabled without
+it.
+
+| VARIABLE                               | TYPE | DESCRIPTION |
+| -------------------------------------- | ---- | ----------- |
+| `JENKINS_KEYSTORE`                     | Path | the location of the SSL KeyStore file. |
+| `JENKINS_HTTPS_PORT`                   | int  | set the https listening port. -1 to disable, Default is 8443. |
+| `JENKINS_HTTPS_KEYSTORE_PASSWORD`      | Str  | the password for the SSL KeyStore file. Default is changeit |
+| `JENKINS_HTTPS_KEYSTORE_PASSWORD_FILE` | Path | Same as password but in a file. |
+
+> Note: if you plan to start the docker container from an existing Jenkins home,
+> you must first set permissions to the uid/gid of the jenkins user inside the
+> container.  Example:
+>
+>     $ docker run -it --rm jenkinsbootstrapshared_jenkins id
+>     uid=100(jenkins) gid=65533(nogroup) groups=65533(nogroup)
+>
+>     $ chown -R 100:65533 /path/to/jenkins/home
 
 ### Other Usage
 
