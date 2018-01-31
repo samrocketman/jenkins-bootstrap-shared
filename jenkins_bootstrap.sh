@@ -25,6 +25,7 @@ trap 'cleanup_on $?' EXIT
 source env.sh
 #set password if using vagrant
 [ -n "${VAGRANT_JENKINS}" ] && source "${SCRIPT_LIBRARY_PATH}/vagrant-env.sh"
+[ -n "${DOCKER_JENKINS}" ] && source "${SCRIPT_LIBRARY_PATH}/docker-env.sh"
 export JENKINS_HEADERS_FILE="$(mktemp)"
 export JENKINS_USER="${JENKINS_USER:-admin}"
 
@@ -40,7 +41,7 @@ else
 fi
 
 #provision jenkins and plugins
-if [ -z "${REMOTE_JENKINS}" -a -z "${VAGRANT_JENKINS}" ]; then
+if [ -z "${REMOTE_JENKINS}" -a -z "${VAGRANT_JENKINS}" -a -z "${DOCKER_JENKINS}" ]; then
   echo 'Downloading specific versions of Jenkins and plugins...'
   ./gradlew getjenkins getplugins
 fi
@@ -59,7 +60,7 @@ if [ -d "./plugins" ]; then
 fi
 
 #download jenkins, start it up, and update the plugins
-if [ -z "${REMOTE_JENKINS}" -a -z "${VAGRANT_JENKINS}" ]; then
+if [ -z "${REMOTE_JENKINS}" -a -z "${VAGRANT_JENKINS}" -a -z "${DOCKER_JENKINS}" ]; then
   if [ ! -e "${JENKINS_WAR}" ]; then
     "${SCRIPT_LIBRARY_PATH}/provision_jenkins.sh" download-file "${jenkins_url}" "${JENKINS_WAR}"
   fi

@@ -222,6 +222,15 @@ it.
 >
 >     $ chown -R 100:65533 /path/to/jenkins/home
 
+### Bootstrapping with docker-compose
+
+Bootstrapping Jenkins while using docker-compose is similar to bootstrapping
+with Vagrant.
+
+    docker-compose up -d
+    export DOCKER_JENKINS=1
+    ./jenkins_bootstrap.sh
+
 ### Other Usage
 
 For service control and other usage see [`USAGE`](USAGE.md).
