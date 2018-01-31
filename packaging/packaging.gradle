@@ -211,16 +211,52 @@ buildDeb.finalizedBy removeDebChangesFile
 task buildTar(type: Tar) {
     dirMode = 0755
     fileMode = 0644
-    from(fileTree("${buildDir}/packaging-filtered") { include '*.sh'; include 'rpm/**/*'; include 'deb/**/*' }) {
-        into "distribution-scripts"
-        fileMode = 0755
-    }
 	extension = 'tar'
 	//compression = Compression.GZIP
+
+    from(fileTree("${buildDir}/packaging-filtered") { include '*.sh'; include 'rpm/**/*'; include 'deb/**/*' }) {
+        into 'distribution-scripts'
+        fileMode = 0755
+    }
+    from("${buildDir}/packaging-filtered/jenkins.logrotate") {
+        into 'distribution-scripts/etc/logrotate.d'
+        rename '.*', tokens['ARTIFACTNAME']
+    }
+    from("${buildDir}/packaging-filtered/jenkins.cron") {
+        into 'distribution-scripts/etc/cron.daily'
+        fileMode 0755
+        rename '.*', tokens['ARTIFACTNAME']
+    }
+
+    from(configurations.getjenkins) {
+        into "lib/${tokens['ARTIFACTNAME']}"
+        rename '.*', "${tokens['ARTIFACTNAME']}.war"
+    }
+    from(configurations.getplugins) {
+        into "lib/${tokens['ARTIFACTNAME']}/plugins"
+        include '*.hpi'
+        rename '(.*)-[.0-9]+.hpi$', '$1.jpi'
+    }
+    from('scripts') {
+        into "lib/${tokens['ARTIFACTNAME']}/scripts"
+    }
+    from("${bootstrapHome}/scripts") {
+        into "lib/${tokens['ARTIFACTNAME']}/scripts"
+    }
+    from(tokens['LICENSE_FILE']) {
+        into "lib/${tokens['ARTIFACTNAME']}"
+        rename '.*', 'LICENSE'
+    }
+    from("${buildDir}/${tokens['MANIFEST']}") {
+        into "lib/${tokens['ARTIFACTNAME']}"
+    }
+    from("${buildDir}/packaging-filtered/share") {
+        into "lib/${tokens['ARTIFACTNAME']}/share"
+    }
 }
 buildTar.dependsOn createManifest, filterPackagingScripts, userOverridenFilterPackagingScripts
 
 
 //packages task to create all system packages
 task packages
-packages.dependsOn buildRpm, buildDeb
+packages.dependsOn buildRpm, buildDeb, buildTar
