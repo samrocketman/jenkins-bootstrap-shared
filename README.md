@@ -15,7 +15,8 @@ height=48 width=48 alt="Vagrant Logo" />
 - Jenkins as immutable infrastructure made easy.
 
 Jenkins is traditionally challenging to safely QA and test upgrades.  This
-project aims to make managing a Jenkins instance and all of its plugins easy.
+project aims to make safely managing a Jenkins instance and all of its plugins
+easy.
 
 Goals of this project:
 
@@ -30,10 +31,10 @@ Goals of this project:
 - More than two CPU cores recommended.
 - More than 6GB of RAM recommended if running Jenkins.
 
-Optional requirements:
+Optional requirements for other types of provisioning:
 
-- [VirtualBox][vbox]
-- [Vagrant][vagrant]
+- [Docker][docker]
+- [Vagrant][vagrant] + [VirtualBox][vbox]
 
 # Getting Started
 
@@ -185,6 +186,10 @@ over the official image:
     ./gradlew clean buildTar
     docker build -t jenkins .
 
+Alternatively, if you're building from a downstream project:
+
+    docker build -f jenkins-bootstrap-shared/Dockerfile -t jenkins .
+
 The following environment variables can be overridden in the docker container
 if using docker-compose.
 
@@ -228,5 +233,6 @@ For service control and other usage see [`USAGE`](USAGE.md).
 
 [ci-img]: https://travis-ci.org/samrocketman/jenkins-bootstrap-shared.svg?branch=master
 [ci-link]: https://travis-ci.org/samrocketman/jenkins-bootstrap-shared
+[docker]: https://www.docker.com/
 [vagrant]: https://www.vagrantup.com/
 [vbox]: https://www.virtualbox.org/
