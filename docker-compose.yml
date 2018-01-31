@@ -1,0 +1,9 @@
+version: '2.2'
+services:
+  jenkins:
+    init: true
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
