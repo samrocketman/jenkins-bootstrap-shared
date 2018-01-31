@@ -91,7 +91,8 @@ fi
 git config --local --get user.name || git config user.name "${JENKINS_GIT_USER}"
 git config --local --get user.email || git config user.email "${JENKINS_GIT_EMAIL}"
 git add -A
-git commit -m 'pre-start checkpoint commit saving configs'
+#commit only if changes exist
+git diff-index --quiet HEAD || git commit -m 'pre-start checkpoint commit saving configs'
 
 #save the current version of the bootstrapper to JENKINS_HOME on startup
 echo "Overwriting manifest in '${JENKINS_HOME}/plugins/@@MANIFEST@@'."
