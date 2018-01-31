@@ -1,5 +1,7 @@
 # jenkins-bootstrap shared scripts [![Build Status][ci-img]][ci-link]
 
+[!jenkins][img-jenkins]
+
 Jenkins is traditionally challenging to safely QA and test upgrades.  This
 project aims to make managing a Jenkins instance and all of its plugins easy.
 
@@ -157,6 +159,17 @@ To upgrade Jenkins master and plugin versions do the following:
 
 ### Build a docker image
 
+**Why not the official image?** Using this docker image has a few advantages
+over the official image:
+
+- This image is minimal (~292MB) vs official (~809MB).  Based on Alpine Linux.
+- Dependencies during the build when including plugins can be cached in
+  Artifactory or Nexus
+- More options are exposed while some defaults are sane for running within
+  Docker.
+
+**Build it:**
+
     ./gradlew clean buildTar
     docker build -t jenkins .
 
@@ -205,3 +218,4 @@ For service control and other usage see [`USAGE`](USAGE.md).
 [ci-link]: https://travis-ci.org/samrocketman/jenkins-bootstrap-shared
 [vagrant]: https://www.vagrantup.com/
 [vbox]: https://www.virtualbox.org/
+[img-jenkins]: https://wiki.jenkins-ci.org/download/attachments/2916393/jenkins-thpr.svg
