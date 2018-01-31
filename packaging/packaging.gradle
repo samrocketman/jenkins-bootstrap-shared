@@ -214,7 +214,7 @@ task buildTar(type: Tar) {
 	extension = 'tar'
 	//compression = Compression.GZIP
 
-    from(fileTree("${buildDir}/packaging-filtered") { include '*.sh'; include 'rpm/**/*'; include 'deb/**/*' }) {
+    from(fileTree("${buildDir}/packaging-filtered") { include '*.sh'; include 'rpm/**/*'; include 'deb/**/*'; include 'docker/**/*' }) {
         into 'distribution-scripts'
         fileMode = 0755
     }
