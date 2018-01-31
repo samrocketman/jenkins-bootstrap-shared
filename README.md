@@ -1,8 +1,18 @@
 # jenkins-bootstrap shared scripts [![Build Status][ci-img]][ci-link]
 
-- This repository can immutably package Jenkins in the following formats:
-  ![Ubuntu][img-u] ![RedHat][img-r] ![Vagrant][img-v] * ![Docker][img-d]
-- All packages contain pinned plugins.
+<img
+src="https://user-images.githubusercontent.com/875669/35621130-2acb1e78-0638-11e8-8777-0f56edc79c32.png"
+height=48 width=48 alt="Jenkins CI logo" /> <img
+src="https://user-images.githubusercontent.com/875669/35621286-b3d3b9b4-0638-11e8-956c-169993f8042e.png"
+height=48 width=48 alt="Ubuntu Logo" /> <img
+src="https://user-images.githubusercontent.com/875669/35621322-cf8ec752-0638-11e8-8dbc-72760b696d64.png"
+height=48 width=48 alt="Red Hat Logo" /> <img
+src="https://user-images.githubusercontent.com/875669/35621353-e78a6956-0638-11e8-8e07-3d96e9e91dd7.png"
+height=48 width=72 alt="Docker Logo" /> <img
+src="https://user-images.githubusercontent.com/875669/35621372-f72f6d16-0638-11e8-93d6-2ae335fc2382.png"
+height=48 width=48 alt="Vagrant Logo" />
+
+- Jenkins as immutable infrastructure made easy.
 
 Jenkins is traditionally challenging to safely QA and test upgrades.  This
 project aims to make managing a Jenkins instance and all of its plugins easy.
@@ -218,9 +228,5 @@ For service control and other usage see [`USAGE`](USAGE.md).
 
 [ci-img]: https://travis-ci.org/samrocketman/jenkins-bootstrap-shared.svg?branch=master
 [ci-link]: https://travis-ci.org/samrocketman/jenkins-bootstrap-shared
-[img-d]: http://emojis.slackmojis.com/emojis/images/1462400762/397/docker.png?1462400762
-[img-r]: http://emojis.slackmojis.com/emojis/images/1492181855/2030/fedora.png?1492181855
-[img-u]: http://emojis.slackmojis.com/emojis/images/1473870830/1159/ubuntu.png?1473870830
-[img-v]: http://emojis.slackmojis.com/emojis/images/1492979700/2117/vagrant.png?1492979700
 [vagrant]: https://www.vagrantup.com/
 [vbox]: https://www.virtualbox.org/
