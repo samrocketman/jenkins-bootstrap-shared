@@ -21,6 +21,8 @@ JENKINS_KEYSTORE="${JENKINS_KEYSTORE:-~~HTTPS_KEYSTORE~~}"
 JENKINS_DEBUG_LEVEL="${JENKINS_DEBUG_LEVEL:-5}"
 JENKINS_HANDLER_MAX="${JENKINS_HANDLER_MAX:-~~HTTP_MAX_WORKER_THREADS~~}"
 JENKINS_HANDLER_IDLE="${JENKINS_HANDLER_IDLE:-~~HTTP_MAX_IDLE_THREADS~~}"
+JENKINS_GIT_USER="${JENKINS_GIT_USER:-Jenkins Automation}"
+JENKINS_GIT_EMAIL="${JENKINS_GIT_EMAIL:-noreply@example.com}"
 [ -n "${JENKINS_ARGS}" ] || JENKINS_ARGS="-~~ADDITIONAL_JENKINS_ARGS~~"
 
 if [ "${JENKINS_KEYSTORE}" ]; then
@@ -62,6 +64,48 @@ if [ -d "@@PREFIX@@/lib/@@ARTIFACTNAME@@/scripts/init.groovy.d/" ]; then
   mkdir -p "${JENKINS_HOME}/init.groovy.d"
   rsync -a --delete-after "@@PREFIX@@/lib/@@ARTIFACTNAME@@/scripts/init.groovy.d/" "${JENKINS_HOME}/init.groovy.d/"
 fi
+#configure tracking JENKINS_HOME with git
+if [ ! -e "${JENKINS_HOME}/.gitignore" ]; then
+  echo "Creating '${JENKINS_HOME}/.gitignore'."
+  cp "@@PREFIX@@/lib/@@ARTIFACTNAME@@/share/gitignore" "${JENKINS_HOME}/.gitignore"
+  chmod 644 "${JENKINS_HOME}/.gitignore"
+fi
+if ! diff -q "@@PREFIX@@/lib/@@ARTIFACTNAME@@/share/gitignore" "${JENKINS_HOME}/.gitignore"; then
+  diff -u "@@PREFIX@@/lib/@@ARTIFACTNAME@@/share/gitignore" "${JENKINS_HOME}/.gitignore"
+  echo "To resolve the changes you can optionally:"
+  echo "    cp -f '@@PREFIX@@/lib/@@ARTIFACTNAME@@/share/gitignore' '${JENKINS_HOME}/.gitignore'"
+fi
+#create git repo if it doesn't exist
+if [ ! -d "${JENKINS_HOME}/.git" ]; then
+  (
+    cd "${JENKINS_HOME}"
+    git init
+    git config user.name "${JENKINS_GIT_USER}"
+    git config user.email "${JENKINS_GIT_EMAIL}"
+    git add .gitignore
+    git commit -m 'initial commit'
+  )
+fi
+
+#commit unsaved configuration before starting up/upgrading
+git config --local --get user.name || git config user.name "${JENKINS_GIT_USER}"
+git config --local --get user.email || git config user.email "${JENKINS_GIT_EMAIL}"
+git add -A
+git commit -m 'pre-start checkpoint commit saving configs'
+
+#save the current version of the bootstrapper to JENKINS_HOME on startup
+echo "Overwriting manifest in '${JENKINS_HOME}/plugins/@@MANIFEST@@'."
+cp -f "@@PREFIX@@/lib/@@ARTIFACTNAME@@/@@MANIFEST@@" "${JENKINS_HOME}/"
+echo '@@COMMIT@@' > "${JENKINS_HOME}/@@PACKAGENAME@@-commit"
+
+#overwrite dailycommit which is meant for daily
+echo "Overwriting '${JENKINS_HOME}/dailycommit.sh'."
+cp -f "@@PREFIX@@/lib/@@ARTIFACTNAME@@/share/dailycommit.sh" "${JENKINS_HOME}/"
+chmod 755 "${JENKINS_HOME}/dailycommit.sh"
+
+for x in ~/.bash_profile ~/.bashrc; do
+  grep JENKINS_HOME "${x}" || echo "export JENKINS_HOME=\"${JENKINS_HOME}\"" >> "${x}"
+done
 
 echo "Starting @@PRODUCTNAME@@"
 #launch in foreground for docker to collect logs on stdout
