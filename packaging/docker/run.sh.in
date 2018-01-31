@@ -1,15 +1,15 @@
-#!/bin/sh
+#!/bin/bash
 #Created by Sam Gleske
 #Tue Jan 30 23:53:18 PST 2018
 #Docker runner for Jenkins
 
 set -e
 
-if [ -n "${JAVA_HOME}" ]; then
+if [ -z "${JAVA_HOME}" ]; then
   echo "Error: JAVA_HOME not set."
   exit 1
 fi
-export "${JAVA_HOME}/bin:${PATH}"
+export PATH="${JAVA_HOME}/bin:${PATH}"
 
 JENKINS_WAR="~~WAR~~"
 
@@ -34,7 +34,7 @@ if [ "${JENKINS_KEYSTORE}" ]; then
 fi
 
 JAVA_CMD=( java ${JAVA_OPTS} ${JENKINS_JAVA_OPTIONS} -DJENKINS_HOME="${JENKINS_HOME}" -jar "${JENKINS_WAR}" )
-ARGS=()
+ARGS=( "--webroot=/var/cache/@@ARTIFACTNAME@@/war" "--pluginroot=/var/cache/@@ARTIFACTNAME@@/plugins" )
 [ -z "${JENKINS_PORT}" ] || ARGS+=( "--httpPort=${JENKINS_PORT}" )
 [ -z "${JENKINS_LISTEN_ADDRESS}" ] || ARGS+=( "--httpListenAddress=${JENKINS_LISTEN_ADDRESS}" )
 [ -z "${JENKINS_HTTPS_PORT}" ] || ARGS+=( "--httpsPort=${JENKINS_HTTPS_PORT}" )
@@ -48,19 +48,23 @@ ARGS=()
 [ -z "${JENKINS_ARGS}" ] || ARGS+=( ${JENKINS_ARGS} )
 
 #synchronize plugins
-echo "Overwriting Jenkins plugins."
-mkdir -p "${JENKINS_HOME}/plugins"
-rsync -a --delete-after "@@PREFIX@@/lib/@@ARTIFACTNAME@@/plugins/" "${JENKINS_HOME}/plugins/"
-for plugin in "${JENKINS_HOME}"/plugins/*.jpi;do
-  #pin plugin versions
-  #https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins
-  touch "${plugin}.pinned"
-done
+if [ -d "@@PREFIX@@/lib/@@ARTIFACTNAME@@/plugins/" ]; then
+  echo "Overwriting Jenkins plugins."
+  mkdir -p "${JENKINS_HOME}/plugins"
+  rsync -a --delete-after "@@PREFIX@@/lib/@@ARTIFACTNAME@@/plugins/" "${JENKINS_HOME}/plugins/"
+  for plugin in "${JENKINS_HOME}"/plugins/*.jpi;do
+    #pin plugin versions
+    #https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins
+    touch "${plugin}.pinned"
+  done
+fi
 #synchronize scripts
-echo "Overwriting Jenkins init scripts."
-mkdir -p "${JENKINS_HOME}/init.groovy.d"
-rsync -a --delete-after "@@PREFIX@@/lib/@@ARTIFACTNAME@@/scripts/init.groovy.d/" "${JENKINS_HOME}/init.groovy.d/"
+if [ -d "@@PREFIX@@/lib/@@ARTIFACTNAME@@/scripts/init.groovy.d/" ]; then
+  echo "Overwriting Jenkins init scripts."
+  mkdir -p "${JENKINS_HOME}/init.groovy.d"
+  rsync -a --delete-after "@@PREFIX@@/lib/@@ARTIFACTNAME@@/scripts/init.groovy.d/" "${JENKINS_HOME}/init.groovy.d/"
+fi
 
 echo "Starting @@PRODUCTNAME@@"
 #launch in foreground for docker to collect logs on stdout
-exec "${JAVA_CMD[@]}" ${ARGS[@]}"
+exec "${JAVA_CMD[@]}" "${ARGS[@]}"
