@@ -199,6 +199,28 @@ buildDeb {
 }
 buildDeb.dependsOn createManifest, filterPackagingScripts, userOverridenFilterPackagingScripts
 
+task removeDebChangesFile(type: Delete) {
+	delete fileTree("${buildDir}/distributions") {
+        include '*.changes'
+    }
+
+}
+removeDebChangesFile.mustRunAfter buildDeb
+buildDeb.finalizedBy removeDebChangesFile
+
+task buildTar(type: Tar) {
+    dirMode = 0755
+    fileMode = 0644
+    from(fileTree("${buildDir}/packaging-filtered") { include '*.sh'; include 'rpm/**/*'; include 'deb/**/*' }) {
+        into "distribution-scripts"
+        fileMode = 0755
+    }
+	extension = 'tar'
+	//compression = Compression.GZIP
+}
+buildTar.dependsOn createManifest, filterPackagingScripts, userOverridenFilterPackagingScripts
+
+
 //packages task to create all system packages
 task packages
 packages.dependsOn buildRpm, buildDeb
