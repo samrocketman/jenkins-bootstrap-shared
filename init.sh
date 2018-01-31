@@ -21,6 +21,7 @@ export SED
   mkdir -p ../scripts
   cp scripts/vagrant-up.sh ../scripts/
   $SED 's#^\( \+\.\)\(/scripts/upgrade/.*\)$#\1/jenkins-bootstrap-shared\2#' README.md > ../README.md
+  $SED 's#\([^:]*:\) \(Dockerfile\)#\1 jenkins-bootstrap-shared/\2#' docker-compose.yml > ../docker-compose.yml
 )
 
 echo 'bootstrapHome=jenkins-bootstrap-shared' > gradle.properties
