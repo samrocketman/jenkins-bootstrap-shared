@@ -23,12 +23,13 @@
    builds.  However, if there are previously configured yet another docker
    clouds then they will be removed.
 
-   Yet Another Docker Plugin 0.1.0-rc38
+   Yet Another Docker Plugin 0.1.0-rc47
  */
 
 import com.github.kostyasha.yad.DockerCloud
 import com.github.kostyasha.yad.DockerConnector
 import com.github.kostyasha.yad.DockerContainerLifecycle
+import com.github.kostyasha.yad.DockerGlobalConfiguration
 import com.github.kostyasha.yad.DockerSlaveTemplate
 import com.github.kostyasha.yad.commons.DockerCreateContainer
 import com.github.kostyasha.yad.commons.DockerImagePullStrategy
@@ -39,6 +40,7 @@ import com.github.kostyasha.yad.launcher.DockerComputerJNLPLauncher
 import com.github.kostyasha.yad.launcher.DockerComputerLauncher
 import com.github.kostyasha.yad.launcher.DockerComputerSSHLauncher
 import com.github.kostyasha.yad.other.ConnectorType
+import com.github.kostyasha.yad.other.cloudorder.RandomLeastLoadedDockerCloudOrder
 import com.github.kostyasha.yad.strategy.DockerOnceRetentionStrategy
 
 import hudson.model.Node
@@ -398,6 +400,17 @@ def bindJSONToList(Class type, Object src) {
 }
 
 if(!Jenkins.instance.isQuietingDown()) {
+    //configure global docker settings
+    DockerGlobalConfiguration docker_global = Jenkins.instance.getExtensionList(DockerGlobalConfiguration)[0]
+    if(docker_global.cloudOrder.class.simpleName != 'RandomLeastLoadedDockerCloudOrder') {
+        println 'Configured random least loaded cloud provisioning strategy for Yet Another Docker Plugin.'
+        docker_global.cloudOrder = new RandomLeastLoadedDockerCloudOrder()
+        docker_global.save()
+    } else {
+        println 'Nothing changed.  Already using random least loaded provisioning strategy for docker.'
+    }
+
+    //configure docker clouds
     ArrayList<DockerCloud> clouds = new ArrayList<DockerCloud>()
     clouds = bindJSONToList(DockerCloud.class, clouds_yadocker)
     if(clouds.size() > 0) {
