@@ -1,5 +1,5 @@
 #https://github.com/anapsix/docker-alpine-java
-FROM anapsix/alpine-java
+FROM anapsix/alpine-java:8_jdk
 
 ADD build/distributions/*.tar /usr/
 
