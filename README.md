@@ -158,6 +158,15 @@ run the following to start Jenkins.
 
 Visit `http://localhost:8080/` to see Jenkins running.
 
+### Provision Jenkins via docker-compose
+
+Bootstrapping Jenkins while using docker-compose is similar to bootstrapping
+with Vagrant.
+
+    docker-compose up -d
+    export DOCKER_JENKINS=1
+    ./jenkins_bootstrap.sh
+
 ### Upgrade Jenkins and plugins
 
 To upgrade Jenkins master and plugin versions do the following:
@@ -221,15 +230,6 @@ it.
 >     uid=100(jenkins) gid=65533(nogroup) groups=65533(nogroup)
 >
 >     $ chown -R 100:65533 /path/to/jenkins/home
-
-### Bootstrapping with docker-compose
-
-Bootstrapping Jenkins while using docker-compose is similar to bootstrapping
-with Vagrant.
-
-    docker-compose up -d
-    export DOCKER_JENKINS=1
-    ./jenkins_bootstrap.sh
 
 ### Other Usage
 
