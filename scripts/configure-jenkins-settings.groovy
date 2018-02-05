@@ -54,7 +54,7 @@ int quiet_period = master_settings.optInt('quiet_period', 5)
 int scm_checkout_retry_count = master_settings.optInt('scm_checkout_retry_count', 0)
 int master_executors = master_settings.optInt('master_executors', 2)
 String master_labels = master_settings.optString('master_labels')
-String master_usage = requiredDefaultValues(master_settings.optString('master_usage').toUpperCase(), ['NORMAL', 'EXCLUSIVE'], 'NORMAL')
+String master_usage = requiredDefaultValues(master_settings.optString('master_usage').toUpperCase(), ['NORMAL', 'EXCLUSIVE'], 'EXCLUSIVE')
 int jnlp_slave_port = master_settings.optInt('jnlp_slave_port', -1)
 
 Jenkins j = Jenkins.instance
