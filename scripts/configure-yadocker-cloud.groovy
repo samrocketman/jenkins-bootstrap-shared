@@ -402,7 +402,7 @@ def bindJSONToList(Class type, Object src) {
 if(!Jenkins.instance.isQuietingDown()) {
     //configure global docker settings
     DockerGlobalConfiguration docker_global = Jenkins.instance.getExtensionList(DockerGlobalConfiguration)[0]
-    if(docker_global.cloudOrder.class.simpleName != 'RandomLeastLoadedDockerCloudOrder') {
+    if(!docker_global.cloudOrder || docker_global.cloudOrder.class.simpleName != 'RandomLeastLoadedDockerCloudOrder') {
         println 'Configured random least loaded cloud provisioning strategy for Yet Another Docker Plugin.'
         docker_global.cloudOrder = new RandomLeastLoadedDockerCloudOrder()
         docker_global.save()
