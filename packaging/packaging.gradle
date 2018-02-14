@@ -215,6 +215,7 @@ task prepareTarJenkinsScripts(type: Copy) {
 }
 
 task buildTar(type: Tar) {
+    baseName = tokens['PACKAGENAME']
     dirMode = 0755
     fileMode = 0644
 	extension = 'tar'
