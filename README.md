@@ -13,6 +13,7 @@ src="https://user-images.githubusercontent.com/875669/35621372-f72f6d16-0638-11e
 height=48 width=48 alt="Vagrant Logo" />
 
 - Jenkins as immutable infrastructure made easy.
+- See a [real world example][jbj].
 
 Jenkins is traditionally challenging to safely QA and test upgrades.  This
 project aims to make safely managing a Jenkins instance and all of its plugins
@@ -243,5 +244,6 @@ For service control and other usage see [`USAGE`](USAGE.md).
 [ci-img]: https://travis-ci.org/samrocketman/jenkins-bootstrap-shared.svg?branch=master
 [ci-link]: https://travis-ci.org/samrocketman/jenkins-bootstrap-shared
 [docker]: https://www.docker.com/
+[jbj]: https://github.com/samrocketman/jenkins-bootstrap-jervis
 [vagrant]: https://www.vagrantup.com/
 [vbox]: https://www.virtualbox.org/
