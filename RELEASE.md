@@ -18,12 +18,23 @@ The following is a recommended release process.
 git tag <your tag>
 git push origin --tags
 
-# build binaries
+# build binaries, copy manifest, and checksum files
 ./jenkins-bootstrap-shared/scripts/buildRelease.sh
 
 # upload binaries to GitHub (parallelized)
 ./jenkins-bootstrap-shared/scripts/uploadRelease.sh
 ```
+
+# Troubleshooting
+
+If you get a 404 not found error, then you might not be using `repo` scope on a
+private repository.  It's also possible you incorrectly set the `GITHUB_REPO`
+environment variable.
+
+If using GitHub Enterprise, then you'll need to set the following additional
+environment variable.
+
+    export GITHUB_API=http://github.example.com/api/v3
 
 [os]: https://developer.github.com/apps/building-oauth-apps/scopes-for-oauth-apps/
 [pat]: https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/

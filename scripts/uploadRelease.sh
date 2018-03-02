@@ -7,10 +7,13 @@
 #Upload GitHub releases
 
 if [ -z "${GITHUB_TOKEN}" -o -z "${GITHUB_USER}" -o -z "${GITHUB_REPO}" ]; then
-  echo $'ERROR: Missing environment variables:\n  - GITHUB_TOKEN\n  - GITHUB_USER\n  - GITHUB_REPO'
+  echo $'ERROR: Missing required environment variables:\n  - GITHUB_TOKEN\n  - GITHUB_USER\n  - GITHUB_REPO'
   [ -z "${!GITHUB_*}" ] || echo "You have defined: ${!GITHUB_*}"
   exit 1
 fi
+
+export GITHUB_API="${GITHUB_REPO:-https://api.github.com}"
+GITHUB_API="${GITHUB_API%/}"
 
 function tempdir() {
   TMP_DIR=$(mktemp -d)
@@ -43,7 +46,7 @@ function checkGHRbin() {
 #exit non-zero if no "repo" or "public_repo" OAuth scope found for API token
 function checkOAuthScopes() {
   set  +ex
-  curl -sIH "Authorization: token $GITHUB_TOKEN" https://api.github.com/ |
+  curl -sIH "Authorization: token $GITHUB_TOKEN" "${GITHUB_REPO}/" |
   awk '
   BEGIN {
     code=1
