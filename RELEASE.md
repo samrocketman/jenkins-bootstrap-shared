@@ -8,9 +8,9 @@ must have at least `repo` scope if releasing to a private repository or
 `public_repo` scope to release to a public repository.  Learn more [about GitHub
 OAuth scopes][os].  Then set up your environment with the following settings.
 
-    export GITHUB_USER=<github username>
+    export GITHUB_USER=<github username or organization>
     export GITHUB_TOKEN=<personal access token>
-    export GITHUB_REPO=<org or user>/<repository>
+    export GITHUB_REPO=<repository name>
 
 The following is a recommended release process.
 
