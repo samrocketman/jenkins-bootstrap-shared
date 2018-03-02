@@ -48,19 +48,21 @@ export JENKINS_HEADERS_FILE=$(mktemp)
 source "${SCRIPT_LIBRARY_PATH}"/upgrade/env.sh
 
 #upgrade jenkins.war and all plugins
-"${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/upgradeJenkinsAndPlugins.groovy || (
-  echo "Upgrading Jenkins and plugins failed.  Likely, jenkins.war or plugins"
-  echo "are not writeable.  This is typical if upgrading jenkins.war via"
-  echo "vagrant because jenkins.war is owned by root"
-  exit 1
-) >&2
+if [ -z "${NO_UPGRADE}" ]; then
+  "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/upgradeJenkinsAndPlugins.groovy || (
+    echo "Upgrading Jenkins and plugins failed.  Likely, jenkins.war or plugins"
+    echo "are not writeable.  This is typical if upgrading jenkins.war via"
+    echo "vagrant because jenkins.war is owned by root"
+    exit 1
+  ) >&2
 
-echo -n 'Waiting for Jenkins and plugins to be downloaded.'
-while [ "$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/isUpgradeInProgress.groovy)" = 'true' ]; do
-  sleep 3
-  echo -n '.'
-done
-echo
+  echo -n 'Waiting for Jenkins and plugins to be downloaded.'
+  while [ "$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/isUpgradeInProgress.groovy)" = 'true' ]; do
+    sleep 3
+    echo -n '.'
+  done
+  echo
+fi
 
 if [ "$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/needsRestart.groovy)" = 'true' ]; then
   #restart Jenkins
