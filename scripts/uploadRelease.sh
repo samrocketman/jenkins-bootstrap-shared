@@ -115,6 +115,8 @@ checkOAuthScopes || exit 15
 checkGHRbin
 type -P github-release || exit 16
 
+cd build/distributions/
+
 #cut a release
 github-release release --tag "${1}"
 #upload all files in parallel
