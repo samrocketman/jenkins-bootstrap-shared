@@ -31,14 +31,29 @@ function read_err_on() {
   fi
 }
 trap 'read_err_on $? "${1}"' EXIT
+
+function determine_shasum_prog() {
+  set +x
+  if type -P sha256sum; then
+    SHASUM+=( 'sha256sum' '--' )
+  elif type -P shasum; then
+    SHASUM+=( 'shasum' '-a' '256' '--' )
+  else
+    return 1
+  fi
+  set -x
+}
+
+SHASUM=()
+
 set -ex
 
 #pre-flight tests (any failures will exit non-zero)
 [ -f build.gradle ] || exit 10
-type -P sha256sum || exit 11
+determine_shasum_prog || exit 11
 
 ./gradlew clean packages
 [ -d build/distributions ] || exit 20
 cd build/distributions/
-sha256sum -- * > sha256sum.txt
+"${SHASUM[@]}" * > sha256sum.txt
 cp ../jenkins-versions.manifest ./
