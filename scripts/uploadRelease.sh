@@ -40,6 +40,25 @@ function checkGHRbin() {
   fi
 }
 
+#exit non-zero if no "repo" or "public_repo" OAuth scope found for API token
+function checkOAuthScopes() {
+  set  +ex
+  curl -sIH "Authorization: token $GITHUB_TOKEN" https://api.github.com/ |
+  awk '
+  BEGIN {
+    code=1
+  };
+  $0 ~ /^X-OAuth-Scopes:.*\y(public_)?repo,?\y.*/ {
+    code=0;
+    exit
+  };
+  END { exit code }
+  '
+  local code=$?
+  set -ex
+  return ${code}
+}
+
 function read_err_on() {
   set +x
   exec >&2
@@ -63,10 +82,10 @@ function read_err_on() {
       echo "ERROR: Remote git tag ${2} does not exist."
       ;;
     15)
-      echo 'ERROR: github-release does not exist and could not be downloaded.'
+      echo $'ERROR: GITHUB_TOKEN must have one of the following scopes:\n  - repo\n  - public_repo'
       ;;
-    20)
-      echo 'ERROR: Build "succeeded" but did not produce proper output.'
+    16)
+      echo 'ERROR: github-release does not exist and could not be downloaded.'
       ;;
     0)
       echo 'SUCCESS: all files released.'
@@ -89,8 +108,9 @@ type -P sha256sum || exit 11
 type -P mktemp || exit 12
 git tag | grep "${1}" || exit 13
 git ls-remote | grep "refs/tags/${1}" || exit 14
+checkOAuthScopes || exit 15
 checkGHRbin
-type -P github-release || exit 15
+type -P github-release || exit 16
 
 #cut a release
 github-release release --tag "${1}"
