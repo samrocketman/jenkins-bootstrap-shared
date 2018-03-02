@@ -46,7 +46,7 @@ function checkGHRbin() {
 #exit non-zero if no "repo" or "public_repo" OAuth scope found for API token
 function checkOAuthScopes() {
   set  +ex
-  curl -sIH "Authorization: token $GITHUB_TOKEN" "${GITHUB_REPO}/" |
+  curl -sIH "Authorization: token $GITHUB_TOKEN" "${GITHUB_API}/" |
   awk '
   BEGIN {
     code=1
