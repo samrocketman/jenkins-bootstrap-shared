@@ -12,7 +12,7 @@ if [ -z "${GITHUB_TOKEN}" -o -z "${GITHUB_USER}" -o -z "${GITHUB_REPO}" ]; then
   exit 1
 fi
 
-export GITHUB_API="${GITHUB_REPO:-https://api.github.com}"
+export GITHUB_API="${GITHUB_API:-https://api.github.com}"
 GITHUB_API="${GITHUB_API%/}"
 
 function tempdir() {
