@@ -73,6 +73,14 @@ skip to the next section.
    git add -A && git commit -m 'plugins are installed'
    ```
 
+> **Note:** sometimes upgrading plugins can be unstable from the community.
+> When this happens it may be desirable to upgrade specific plugins but not all
+> plugins.  In this case, you can save the plugins of the local Jenkins
+> instance without upgrading all plugins.  The following is an example.
+>
+>     export NO_UPGRADE=1
+>     ./jenkins-bootstrap-shared/scripts/upgrade/upgrade_build_gradle.sh
+
 ### Import an existing Jenkins instance
 
 Often, readers will already have an existing Jenkins instance.  These
