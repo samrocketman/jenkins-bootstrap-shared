@@ -39,4 +39,6 @@
    See also https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy
 */
 
+import jenkins.model.Jenkins
+
 System.setProperty("hudson.model.DirectoryBrowserSupport.CSP", "default-src 'self' ${Jenkins.instance.rootUrl -~ '/$'} 'unsafe-inline'")
