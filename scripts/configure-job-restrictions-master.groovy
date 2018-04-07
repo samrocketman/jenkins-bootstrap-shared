@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2015-2018 Sam Gleske - https://github.com/samrocketman/jenkins-bootstrap-jervis
+   Copyright (c) 2015-2018 Sam Gleske - https://github.com/samrocketman/jenkins-bootstrap-shared
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,9 +33,11 @@ import io.jenkins.plugins.jobrestrictions.restrictions.job.JobClassNameRestricti
 import io.jenkins.plugins.jobrestrictions.util.ClassSelector
 import jenkins.model.Jenkins
 import org.jenkinsci.plugins.workflow.job.WorkflowJob
+import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject
 
+ClassSelector multibranchJob = new ClassSelector(WorkflowMultiBranchProject.class.name)
 ClassSelector workflowJob = new ClassSelector(WorkflowJob.class.name)
-def classes = new JobClassNameRestriction([workflowJob])
+def classes = new JobClassNameRestriction([multibranchJob, workflowJob])
 def names = new RegexNameRestriction('_jervis_generator', true)
 def restriction = new OrJobRestriction(names, classes)
 def prop = new JobRestrictionProperty(restriction)
