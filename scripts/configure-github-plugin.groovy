@@ -41,12 +41,12 @@ boolean isOverrideHookEqual(def global_settings, JSONObject github_plugin) {
     (
         (
             global_settings.isOverrideHookURL() &&
-            github_plugin.optString('overrideHookUrl') &&
-            global_settings.@hookUrl == new URL(github_plugin.optString('overrideHookUrl'))
+            github_plugin.optString('hookUrl') &&
+            global_settings.hookUrl == new URL(github_plugin.optString('hookUrl'))
         ) ||
         (
             !global_settings.isOverrideHookURL() &&
-            !github_plugin.optString('overrideHookUrl')
+            !github_plugin.optString('hookUrl')
         )
     )
 }
@@ -59,7 +59,7 @@ boolean isGlobalSettingsEqual(def global_settings, JSONObject github_plugin) {
 
 /* Example configuration
 github_plugin = [
-    //overrideHookUrl: 'http://localhost:8080/github-webhook/',
+    //hookUrl: 'http://localhost:8080/github-webhook/',
     hookSharedSecretId: 'webhook-shared-secret',
     servers: [
         'Public GitHub.com': [
@@ -103,10 +103,12 @@ if(github_plugin && (!isGlobalSettingsEqual(global_settings, github_plugin) || !
         global_settings.hookSecretConfig = new HookSecretConfig(github_plugin.optString('hookSharedSecretId'))
     }
     if(!isOverrideHookEqual(global_settings, github_plugin)) {
-        if(global_settings.isOverrideHookURL() && !github_plugin.optString('overrideHookUrl')) {
+        if(global_settings.isOverrideHookURL() && !github_plugin.optString('hookUrl')) {
+            global_settings.overrideHookUrl = false
             global_settings.hookUrl = null
-        } else if(global_settings.@hookUrl != new URL(github_plugin.optString('overrideHookUrl'))) {
-            global_settings.hookUrl = new URL(github_plugin.optString('overrideHookUrl'))
+        } else if(global_settings.@hookUrl != new URL(github_plugin.optString('hookUrl'))) {
+            global_settings.overrideHookUrl = true
+            global_settings.hookUrl = new URL(github_plugin.optString('hookUrl'))
         }
     }
     if(!isServerConfigsEqual(global_settings.configs, configs)) {
