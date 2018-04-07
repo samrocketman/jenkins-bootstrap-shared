@@ -35,7 +35,19 @@ if(!config_files.getById('Jenkinsfile')) {
 	//create global config
 	GroovyScript new_config = new GroovyScript('Jenkinsfile', 'Global Jenkinsfile', '', jenkinsfile_script)
 	config_files.save(new_config)
-	//approve Jenkinsfile script for execution
-	script_approval.approveScript(script_approval.hash(jenkinsfile_script, 'groovy'))
 	println 'Configured global Jenkinsfile.'
+}
+else {
+    println 'Nothing changed.  Global Jenkinsfile already configured.'
+}
+
+//approve Jenkinsfile script for execution
+String hash = script_approval.hash(jenkinsfile_script, 'groovy')
+if(hash in script_approval.approvedScriptHashes) {
+	println 'Nothing changed.  Global Jenkinsfile script already approved.'
+}
+else {
+    script_approval.approveScript(hash)
+    script_approval.save()
+	println 'Global Jenkinsfile script has been approved in script security.'
 }
