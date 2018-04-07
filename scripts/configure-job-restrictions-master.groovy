@@ -18,14 +18,26 @@
    Configure job restrictions plugin.  Configre the master node to only allow
    the _jervis_generator job to execute.
 
+   Pipeline jobs are not allowed to run on the master.  However, pipelines use
+   the master to orchestrate nodes, stages, and steps.  The WorkflowJob class
+   is a workaround for allowing pipeline jobs to orchestrate on the master via
+   a flyweight task.  ref: https://issues.jenkins-ci.org/browse/JENKINS-31866
+
    job-restrictions ver 0.6
  */
 
 import com.synopsys.arc.jenkinsci.plugins.jobrestrictions.nodes.JobRestrictionProperty
 import com.synopsys.arc.jenkinsci.plugins.jobrestrictions.restrictions.job.RegexNameRestriction
+import com.synopsys.arc.jenkinsci.plugins.jobrestrictions.restrictions.logic.OrJobRestriction
+import io.jenkins.plugins.jobrestrictions.restrictions.job.JobClassNameRestriction
+import io.jenkins.plugins.jobrestrictions.util.ClassSelector
 import jenkins.model.Jenkins
+import org.jenkinsci.plugins.workflow.job.WorkflowJob
 
-def restriction = new RegexNameRestriction('_jervis_generator', true)
+ClassSelector workflowJob = new ClassSelector(WorkflowJob.class.name)
+def classes = new JobClassNameRestriction([workflowJob])
+def names = new RegexNameRestriction('_jervis_generator', true)
+def restriction = new OrJobRestriction(names, classes)
 def prop = new JobRestrictionProperty(restriction)
 
 def j = Jenkins.instance
