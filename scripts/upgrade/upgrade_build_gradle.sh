@@ -64,7 +64,7 @@ if [ -z "${NO_UPGRADE}" ]; then
   echo
 fi
 
-if [ "$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/needsRestart.groovy)" = 'true' ]; then
+if [ -z "${NO_UPGRADE}" -a "$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/needsRestart.groovy)" = 'true' ]; then
   #restart Jenkins
   "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url <(echo "Jenkins.instance.restart()")
   #wait for jenkins to become available
