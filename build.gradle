@@ -14,7 +14,7 @@ apply from: "${bootstrapHome}/shared.gradle"
 //version should be the jenkins.war version appended by .1 and increments .1
 //every time there's non-jenkins.war version changes to the package.
 //if upgrading jenkins.war version then it should be reset to .1.
-version = '2.89.4.1'
+version = '2.107.1.1'
 description = "Built from ${tokens['PACKAGENAME']} @ ${tokens['COMMIT']}"
 
 //Jenkins war and plugin versions
