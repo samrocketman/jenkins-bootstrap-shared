@@ -30,6 +30,9 @@ source env.sh
 [ -n "${VAGRANT_JENKINS}" ] && source "${SCRIPT_LIBRARY_PATH}/vagrant-env.sh"
 [ -n "${DOCKER_JENKINS}" ] && source "${SCRIPT_LIBRARY_PATH}/docker-env.sh"
 
+#allow users to import when using no upgrade
+[ -n "${NO_UPGRADE}" ] && FORCE_UPGRADE=1
+
 #protect user from accidentally upgrading a remote Jenkins
 #this should always be localhost
 if [ -z "${FORCE_UPGRADE}" -a ! "${JENKINS_WEB}" = 'http://localhost:8080' ]; then
