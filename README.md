@@ -48,7 +48,7 @@ skip to the next section.
 
 1. Create a new repository.
 
-   ```
+   ```bash
    mkdir my-project
    cd my-project
    git init
@@ -59,7 +59,7 @@ skip to the next section.
 
 2. Bootstrap your new Jenkins version locally.
 
-   ```
+   ```bash
    ./jenkins_bootstrap.sh
    ```
 
@@ -68,7 +68,7 @@ skip to the next section.
 
 4. Save your Jenkins version and plugins to your new repository.
 
-   ```
+   ```bash
    ./jenkins-bootstrap-shared/scripts/upgrade/upgrade_build_gradle.sh
    git add -A && git commit -m 'plugins are installed'
    ```
@@ -90,7 +90,7 @@ instance.
 
 1. Create a new repository.
 
-   ```
+   ```bash
    mkdir my-project
    cd my-project
    git init
@@ -101,26 +101,43 @@ instance.
 
 2. Prepare authentication for your remote Jenkins instance.
 
-   ```
+   ```bash
+   export NO_UPGRADE=1
    export JENKINS_WEB='https://jenkins.example.com/'
-   export JENKINS_HEADERS_FILE=$(mktemp)
-   export SCRIPT_LIBRARY_PATH="./jenkins-bootstrap-shared/scripts"
-   JENKINS_USER=user JENKINS_PASSWORD=pass ./jenkins-bootstrap-shared/scripts/jenkins-call-url -m HEAD -o /dev/null -a -vv "${JENKINS_WEB}"
+   export JENKINS_USER="<your username>"
+   export JENKINS_PASSWORD
+   read -sp 'Password: ' JENKINS_PASSWORD
    ```
 
 3. Import your remote Jenkins version and plugin versions into this repository.
 
-   ```
-   ./jenkins-bootstrap-shared/scripts/upgrade/remote_dependencies.sh
+   ```bash
+   ./jenkins-bootstrap-shared/scripts/upgrade/upgrade_build_gradle.sh
    git add -A && git commit -m 'plugins are installed'
    ```
 
-4. Clean up environment when finished.
+### Defining custom plugins
 
-   ```
-   rm -f "${JENKINS_HEADERS_FILE}"
-   unset JENKINS_WEB SCRIPT_LIBRARY_PATH JENKINS_HEADERS_FILE
-   ```
+By creating a `custom-plugins.txt` file at the root of your repository, plugins
+can be hard coded to specific versions.  Why is this necessary?
+
+- Internal only company plugins can be installed via maven.
+- Install plugins not available in the Jenkins Update Center (i.e. formerly
+  removed).  In general, this is not a good idea but for advanced users may be
+  okay.
+- When importing an existing Jenkins instance, it is possible that the group is
+  wrong for older versions of plugins.
+
+The format of `custom-plugins.txt` is the following.  Everything else is treated
+as a comment.
+
+- `group:artifact:version@hpi`
+- `group:artifact:version@jpi`
+
+Example `custom-plugins.txt` file:
+
+    # An internal only plugin
+    com.example:myplugin:0.1@hpi
 
 # Next steps
 
