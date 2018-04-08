@@ -38,7 +38,7 @@ import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject
 ClassSelector multibranchJob = new ClassSelector(WorkflowMultiBranchProject.class.name)
 ClassSelector workflowJob = new ClassSelector(WorkflowJob.class.name)
 def classes = new JobClassNameRestriction([multibranchJob, workflowJob])
-def names = new RegexNameRestriction('_jervis_generator', true)
+def names = new RegexNameRestriction('_jervis_generator|^__.*', true)
 def restriction = new OrJobRestriction(names, classes)
 def prop = new JobRestrictionProperty(restriction)
 
