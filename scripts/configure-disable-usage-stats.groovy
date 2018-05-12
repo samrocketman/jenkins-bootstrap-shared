@@ -19,6 +19,8 @@
    An option like this shouldn't be enabled by default.
  */
 
+import jenkins.model.Jenkins
+
 def j = Jenkins.instance
 if(!j.isQuietingDown()) {
     if(j.isUsageStatisticsCollected()){
