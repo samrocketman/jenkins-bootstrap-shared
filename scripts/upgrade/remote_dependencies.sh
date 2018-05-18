@@ -62,7 +62,7 @@ EOF
 EOF
 
   while read x; do
-    if grep -F "${x%:*}" "${CUSTOM_TMPFILE}"; then
+    if grep -F "${x%:*}" "${CUSTOM_TMPFILE}" > /dev/null; then
       #skip custom plugins because they're already included in dependencies.gradle
       continue
     fi
