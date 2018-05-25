@@ -23,12 +23,28 @@
         curl --data-urlencode "script=String itemName='_jervis_generator';String xmlData='''$(<./configs/job_jervis_config.xml)''';$(<./scripts/create-job.groovy)" http://localhost:8080/scriptText
  */
 
-import hudson.model.FreeStyleProject
-import hudson.model.Item
+import javax.xml.transform.stream.StreamSource
 import jenkins.model.Jenkins
-import jenkins.model.ModifiableTopLevelItemGroup
 
-boolean isPropertiesSet = false
+void createOrUpdateJob(String name, String xml) {
+    def j = Jenkins.instance
+    String fullName = name
+    if(name.contains('/')) {
+        j = j.getItemByFullName(name.tokenize('/')[0..-2])
+        name = name.tokenize('/')[-1]
+    }
+    Jenkins.checkGoodName(name)
+    if(j.getItem(name) == null) {
+        println "Created job \"${fullName}\"."
+        j.createProjectFromXML(name, new ByteArrayInputStream(xml.getBytes()))
+        j.save()
+    }
+    else {
+        j.getItem(name).updateByXml(new StreamSource(new ByteArrayInputStream(xml.getBytes())))
+        j.getItem(name).save()
+        println "Job \"${fullName}\" already exists.  Updated using XML."
+    }
+}
 
 try {
     //just by trying to access properties should throw an exception
@@ -38,40 +54,7 @@ try {
 } catch(MissingPropertyException e) {
     println 'ERROR Can\'t create job.'
     println 'ERROR Missing properties: itemName, xmlData'
+    return
 }
 
-List<PluginWrapper> plugins = Jenkins.instance.pluginManager.getPlugins()
-//get a list of installed plugins
-Set<String> installed_plugins = []
-plugins.each {
-    installed_plugins << it.getShortName()
-}
-
-Set<String> required_plugins = []
-
-if((required_plugins-installed_plugins).size() == 0) {
-    if(isPropertiesSet) {
-        Jenkins instance = Jenkins.getInstance()
-        ModifiableTopLevelItemGroup itemgroup = instance
-        int i = itemName.lastIndexOf('/')
-        if(i > 0) {
-            String group = itemName.substring(0, i)
-            Item item = instance.getItemByFullName(group)
-            if (item instanceof ModifiableTopLevelItemGroup) {
-                itemgroup = (ModifiableTopLevelItemGroup) item
-            }
-            itemName = itemName.substring(i + 1)
-        }
-        Jenkins.checkGoodName(itemName)
-        if(itemgroup.getJob(itemName) == null) {
-            println "Created job \"${itemName}\"."
-            itemgroup.createProjectFromXML(itemName, new ByteArrayInputStream(xmlData.getBytes()))
-            instance.save()
-        } else {
-            println "Nothing changed.  Job \"${itemName}\" already exists."
-        }
-    }
-} else {
-    println 'Unable to create job.'
-    println "Missing required plugins: ${required_plugins-installed_plugins}"
-}
+createOrUpdateJob(itemName, xmlData)
