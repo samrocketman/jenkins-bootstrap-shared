@@ -61,6 +61,24 @@ fi
 
 #download jenkins, start it up, and update the plugins
 if [ -z "${REMOTE_JENKINS}" -a -z "${VAGRANT_JENKINS}" -a -z "${DOCKER_JENKINS}" ]; then
+  mkdir -p "${JENKINS_HOME}/init.groovy.d"
+  if [ -d "./scripts/init.groovy.d" ]; then
+    ( cd ./scripts/init.groovy.d/; ls -1d * ) | while read x; do
+      if [ ! -e "${JENKINS_HOME}/init.groovy.d/${x}" ]; then
+        echo "Copying init.groovy.d/${x} to JENKINS_HOME"
+        command cp ./scripts/init.groovy.d/"${x}" "${JENKINS_HOME}/init.groovy.d/"
+      fi
+    done
+  fi
+  if [ -d "${SCRIPT_LIBRARY_PATH}/init.groovy.d" ]; then
+    ( cd "${SCRIPT_LIBRARY_PATH}"/init.groovy.d/; ls -1d * ) | while read x; do
+      if [ ! -e "${JENKINS_HOME}/init.groovy.d/${x}" ]; then
+        echo "Copying init.groovy.d/${x} to JENKINS_HOME"
+        command cp "${SCRIPT_LIBRARY_PATH}"/init.groovy.d/"${x}" "${JENKINS_HOME}/init.groovy.d/"
+      fi
+    done
+  fi
+
   if [ ! -e "${JENKINS_WAR}" ]; then
     "${SCRIPT_LIBRARY_PATH}/provision_jenkins.sh" download-file "${jenkins_url}" "${JENKINS_WAR}"
   fi
