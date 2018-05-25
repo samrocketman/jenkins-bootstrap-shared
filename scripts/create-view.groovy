@@ -28,16 +28,30 @@ import hudson.model.View
 import javax.xml.transform.stream.StreamSource
 import jenkins.model.Jenkins
 
-boolean isPropertiesSet = false
+void createOrUpdateView(String name, String xml) {
+    Jenkins instance = Jenkins.getInstance()
+    View newView = View.createViewFromXML(name, new ByteArrayInputStream(xml.getBytes()))
+    Jenkins.checkGoodName(name)
+    if(instance.getView(name) == null) {
+        println "Created view \"${name}\"."
+        instance.addView(newView)
+        instance.save()
+    } else {
+        instance.getView(name).updateByXml(new StreamSource(new ByteArrayInputStream(xml.getBytes())))
+        instance.getView(name).save()
+        println "View \"${name}\" already exists.  Updated using XML."
+    }
+}
+
 
 try {
     //just by trying to access properties should throw an exception
     itemName == null
     xmlData == null
-    isPropertiesSet = true
 } catch(MissingPropertyException e) {
     println 'ERROR Can\'t create view.'
     println 'ERROR Missing properties: itemName, xmlData'
+    return
 }
 
 List<PluginWrapper> plugins = Jenkins.instance.pluginManager.getPlugins()
@@ -49,19 +63,8 @@ plugins.each {
 
 Set<String> required_plugins = ['dashboard-view', 'view-job-filters']
 
-if((required_plugins-installed_plugins).size() == 0) {
-    if(isPropertiesSet) {
-        Jenkins instance = Jenkins.getInstance()
-        View newView = View.createViewFromXML(itemName, new ByteArrayInputStream(xmlData.getBytes()))
-        Jenkins.checkGoodName(itemName)
-        if(instance.getView(itemName) == null) {
-            println "Created view \"${itemName}\"."
-            instance.addView(newView)
-            instance.save()
-        } else {
-            instance.getView(itemName).updateByXml(new StreamSource(new ByteArrayInputStream(xmlData.getBytes())))
-            instance.getView(itemName).save()
-            println "View \"${itemName}\" already exists.  Updated using XML."
-        }
-    }
+if((required_plugins-installed_plugins).size() != 0) {
+    throw new Exception("Missing required plugins: ${required_plugins-installed_plugins}")
 }
+
+createOrUpdateView(itemName, xmlData)
