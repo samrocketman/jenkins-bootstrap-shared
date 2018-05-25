@@ -25,6 +25,7 @@
  */
 
 import hudson.model.View
+import javax.xml.transform.stream.StreamSource
 import jenkins.model.Jenkins
 
 boolean isPropertiesSet = false
@@ -58,7 +59,9 @@ if((required_plugins-installed_plugins).size() == 0) {
             instance.addView(newView)
             instance.save()
         } else {
-            println "Nothing changed.  View \"${itemName}\" already exists."
+            instance.getView(itemName).updateByXml(new StreamSource(new ByteArrayInputStream(xmlData.getBytes())))
+            instance.getView(itemName).save()
+            println "View \"${itemName}\" already exists.  Updated using XML."
         }
     }
 }
