@@ -176,7 +176,7 @@ buildDeb {
     requires 'daemon'
     requires 'net-tools'
     requires 'psmisc'
-    requires('default-jre-headless', '2:1.7', Flags.GREATER | Flags.EQUAL).or('java7-runtime-headless').or('openjdk-8-jdk')
+    requires('default-jre-headless', '2:1.8', Flags.GREATER | Flags.EQUAL).or('java8-runtime-headless').or('openjdk-8-jdk').or('openjdk-8-jre')
     conflicts 'hudson'
     conflicts 'jenkins'
     replaces 'hudson'
