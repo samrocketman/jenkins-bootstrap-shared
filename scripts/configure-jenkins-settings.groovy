@@ -66,7 +66,7 @@ if(location.url != frontend_url) {
     location.url = frontend_url
     save = true
 }
-if(location.adminAddress != admin_email) {
+if(admin_email && location.adminAddress != admin_email) {
     println "Updating Jenkins Email to: ${admin_email}"
     location.adminAddress = admin_email
     save = true
