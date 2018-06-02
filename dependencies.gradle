@@ -1,6 +1,6 @@
 dependencies {
     //get Jenkins
-    getjenkins 'org.jenkins-ci.main:jenkins-war:2.89.4@war'
+    getjenkins 'org.jenkins-ci.main:jenkins-war:2.107.3@war'
 
     //get plugins
     //getplugins configurations go here...
