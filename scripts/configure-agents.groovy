@@ -95,9 +95,9 @@ List convertParameterTypes(List l) {
 
 Boolean compareParameterTypesInListB(List a, List b) {
     if(a.size() == b.size()) {
-        true in [convertParameterTypes(a), convertParameterTypes(b)].transpose().collect {
-            !(it[0] in it[1])
-        }
+        !(false in [convertParameterTypes(a), convertParameterTypes(b)].transpose().collect {
+            it[0] in it[1]
+        })
     }
     else {
         false
@@ -138,16 +138,16 @@ Boolean createOrUpdateLauncher(DumbSlave agent, String launcher_type, JSONObject
                 }
                 //RemotingWorkDirSettings is new since Jenkins 2.72; so defer to dynamic loading instead of assuming the class exists
                 if(loadClass('jenkins.slaves.RemotingWorkDirSettings')) {
-                    if(launcher.workDirSettings.disabled != launcher_settings.optBoolean('disable_workdir', false)) {
+                    if(launcher.workDirSettings?.disabled != launcher_settings.optBoolean('disable_workdir', false)) {
                         launcherConfigurationUpdated = true
                     }
-                    if(launcher.workDirSettings.workDirPath != launcher_settings.optString('custom_workdir_path')) {
+                    if((launcher.workDirSettings?.workDirPath ?: '') != launcher_settings.optString('custom_workdir_path')) {
                         launcherConfigurationUpdated = true
                     }
-                    if(launcher.workDirSettings.internalDir != launcher_settings.optString('internal_data_directory', 'remoting')) {
+                    if(launcher.workDirSettings?.internalDir != (launcher_settings.optString('internal_data_directory', 'remoting') ?: 'remoting')) {
                         launcherConfigurationUpdated = true
                     }
-                    if(launcher.workDirSettings.failIfWorkDirIsMissing != launcher_settings.optBoolean('fail_if_workspace_missing', false)) {
+                    if(launcher.workDirSettings?.failIfWorkDirIsMissing != launcher_settings.optBoolean('fail_if_workspace_missing', false)) {
                         launcherConfigurationUpdated = true
                     }
                 }
@@ -243,6 +243,12 @@ Boolean createOrUpdateAgent(String name, JSONObject agent_settings) {
     if(createOrUpdateLauncher(node, launcher_type, agent_settings.optJSONObject(launcher_type) ?: ([:] as JSONObject))) {
         nodeConfigurationUpdated = true
     }
+    if(nodeConfigurationUpdated) {
+        println "${(configureNewAgent) ? 'Created new' : 'Configuration updated for'} agent '${name}'."
+    }
+    else {
+        println "Nothing changed.  Agent '${name}' already configured."
+    }
     //return true or false
     nodeConfigurationUpdated
 }
@@ -260,6 +266,6 @@ permanent_agents = permanent_agents as JSONObject
 permanent_agents.each { k, v ->
     createOrUpdateAgent(k, v)
 }
-//If ssh slaves plugin is installed, then it will return a new instance.
-//If ssh slaves plugin is not installed, then it will return null.
-//newClassInstance('hudson.plugins.sshslaves.SSHLauncher', ['localhost', 22, '', '', '', '', '', (int) 60, 0, 0, newClassInstance('hudson.plugins.sshslaves.verifiers.NonVerifyingKeyVerificationStrategy')])
+
+//do not return a value
+null
