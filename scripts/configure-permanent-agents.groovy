@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2015-2018 Sam Gleske - https://github.com/samrocketman/jenkins-bootstrap-jervis
+   Copyright (c) 2015-2018 Sam Gleske - https://github.com/samrocketman/jenkins-bootstrap-shared
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,8 +40,7 @@ default_node_usage = 'EXCLUSIVE'
 default_remote_fs = '/tmp/jenkins-agent'
 default_num_executors = 1
 
-/*
-*/
+/* EXAMPLE AGENT SETTINGS Note: all settings are optional
 permanent_agents = [
     "My JNLP Agent": [
         description: "This is my cool agent.",
@@ -59,6 +58,7 @@ permanent_agents = [
         ]
     ]
 ]
+*/
 
 /**
   These methods are necessary for dynamic class loading.  This way, we can
