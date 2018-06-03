@@ -130,10 +130,10 @@ Boolean createOrUpdateLauncher(DumbSlave agent, String launcher_type, JSONObject
         case "launcher_java_webstart":
             if(launcher in JNLPLauncher) {
                 //since we are a JNLPLauncher, check launcher settings
-                if(launcher.tunnel != launcher_settings.optString('tunnel_connection_through')) {
+                if((launcher.tunnel ?: '') != launcher_settings.optString('tunnel_connection_through')) {
                     launcherConfigurationUpdated = true
                 }
-                if(launcher.vmargs != launcher_settings.optString('jvm_options')) {
+                if((launcher.vmargs ?: '') != launcher_settings.optString('jvm_options')) {
                     launcherConfigurationUpdated = true
                 }
                 //RemotingWorkDirSettings is new since Jenkins 2.72; so defer to dynamic loading instead of assuming the class exists
