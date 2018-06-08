@@ -48,11 +48,11 @@ EOF
   #load custom plugins if a user has defined custom-plugins.txt
   if [ -f custom-plugins.txt ]; then
     #get a list of the custom entries
-    awk '$0 ~ /^([-.a-zA-Z0-9]+:){2}[-.a-zA-Z0-9]+@[hj]pi$/ { print $0 }' custom-plugins.txt | while read gav; do
+    gawk '$0 ~ /^([-.a-zA-Z0-9]+:){2}[-.a-zA-Z0-9]+@[hj]pi$/ { print $0 }' custom-plugins.txt | while read gav; do
       echo "    getplugins '${gav}'"
     done >> dependencies.gradle
     #get a list of the plugin IDs only
-    awk 'BEGIN { FS=":" }; $0 ~ /^([-.a-zA-Z0-9]+:){2}[-.a-zA-Z0-9]+@[hj]pi$/ { print $2 }' custom-plugins.txt > "${CUSTOM_TMPFILE}"
+    gawk 'BEGIN { FS=":" }; $0 ~ /^([-.a-zA-Z0-9]+:){2}[-.a-zA-Z0-9]+@[hj]pi$/ { print $2 }' custom-plugins.txt > "${CUSTOM_TMPFILE}"
   fi
   touch "${CUSTOM_TMPFILE}"
 
@@ -67,7 +67,7 @@ EOF
       continue
     fi
     [ -f "${GAV_TMPFILE}" ] || "${SCRIPT_LIBRARY_PATH}"/upgrade/plugins_gav.sh > "${GAV_TMPFILE}"
-    GROUP=$(awk "BEGIN {FS=\":\"};\$2 == \"${x%:*}\" { print \$1 }" "${GAV_TMPFILE}")
+    GROUP=$(gawk "BEGIN {FS=\":\"};\$2 == \"${x%:*}\" { print \$1 }" "${GAV_TMPFILE}")
     echo "    getplugins '${GROUP}:${x}@hpi'"
     unset GROUP
   done < "${TMPFILE}" | LC_COLLATE=C sort >> dependencies.gradle
