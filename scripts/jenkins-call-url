@@ -37,7 +37,7 @@ try:
 except ImportError:
     socks_supported = False
 
-version = "0.3"
+version = "0.4"
 
 parser = argparse.ArgumentParser(description="Reads Jenkins API and can make calls to arbitrary Jenkins URL endpoints.  Useful for calling Jenkins URLs for killing jobs or executing script console scripts.", epilog="""
 environment variables:
@@ -99,7 +99,10 @@ def printCurl(settings, url=trim_url_slash(args.jenkins_web)):
     if 'socks_proxy' in settings and len(settings['socks_proxy']) > 0:
         curl += ' --proxy socks5h://%s' % settings['socks_proxy']
     if args.http_method != 'GET' and url != trim_url_slash(args.jenkins_web):
-        curl += " -X%s" % args.http_method
+        if args.http_method == 'HEAD':
+            curl += " --head"
+        else:
+            curl += " -X%s" % args.http_method
     if len(args.http_data_files) > 0 and url != trim_url_slash(args.jenkins_web):
         curl += ' --data-urlencode "'
         if len(args.http_data_strings) > 0:
@@ -114,6 +117,9 @@ def printCurl(settings, url=trim_url_slash(args.jenkins_web)):
         curl += " -H '%s:%s'" % (k, v)
     print curl, url
     sys.exit(1)
+
+def getHost(url):
+    return url.split('/')[2].split(':')[0]
 
 #print to stderr
 def printErr(message=''):
@@ -143,8 +149,12 @@ else:
     headers = {
         'Accept-Encoding': '',
         'Connection': 'close',
-        'Host': args.jenkins_web.split('/')[2].split(':')[0],
+        'Host': getHost(args.jenkins_web),
     }
+
+if args.auto_jenkins_web:
+    headers['Host'] = getHost(trim_url_slash(args.JENKINS_URL))
+
 #always set the User-Agent
 headers['User-Agent'] = 'jenkins-call-url %s' % version
 
@@ -190,7 +200,10 @@ else:
 
 if args.print_curl_init:
     settings['headers'] = headers
-    printCurl(settings)
+    if args.auto_jenkins_web:
+        printCurl(settings, args.JENKINS_URL)
+    else:
+        printCurl(settings)
 
 #
 ### POST-PROXY SETTINGS using urllib and urllib2
@@ -265,10 +278,6 @@ if args.auto_jenkins_web:
         if jenkins_web.split('/')[-1] in ['job', 'view']:
             continue
         jenkins_root_api_response = getJSONUrl(jenkins_web + '/api/json', headers)
-        if 'useCrumbs' in jenkins_root_api_response:
-            #use -a to update host header
-            headers['Host'] = jenkins_web.split('/')[2].split(':')[0]
-            break
 
 if len(args.load_headers_file) == 0 or args.force_crumb or not os.path.exists(args.load_headers_file):
     if not args.auto_jenkins_web:
@@ -340,6 +349,10 @@ if reason:
 sys.exit(STATUS)
 
 # CHANGELOG
+# 0.4
+#   - Bugfix incorrect host header being set when --automatic-jenkins-server.
+#   - Bugfix --curl and --curl-init options rendering wrong HEAD method.
+#   - Bugfix --curl and --curl-init renedering wrong URLs for troubleshooting.
 # 0.3
 #   - Bugfix empty JSON file decoding with an error.
 # 0.2
