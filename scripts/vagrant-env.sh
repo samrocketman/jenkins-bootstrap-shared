@@ -19,7 +19,7 @@ VAGRANT_JENKINS_HOME="$(get_jenkins_home)"
 
 if [ -z "${JENKINS_PASSWORD}" ]; then
   while ! ssh -nF "${VAGRANT_SSH_CONFIG}" default "sudo test -f \"${VAGRANT_JENKINS_HOME}\"/secrets/initialAdminPassword"; do
-    echo '/var/lib/jenkins/secrets/initialAdminPassword not available, yet...'
+    echo "${VAGRANT_JENKINS_HOME}/secrets/initialAdminPassword not available, yet..."
     sleep 5
   done
   export JENKINS_PASSWORD=$(ssh -F "${VAGRANT_SSH_CONFIG}" default "sudo cat \"${VAGRANT_JENKINS_HOME}\"/secrets/initialAdminPassword")
