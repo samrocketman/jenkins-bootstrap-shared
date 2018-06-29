@@ -39,10 +39,13 @@ void createOrUpdateJob(String name, String xml) {
         j.createProjectFromXML(name, new ByteArrayInputStream(xml.getBytes()))
         j.save()
     }
-    else {
+    else if(j.getItem(name).configFile.asString().trim() != xml.trim()) {
         j.getItem(name).updateByXml(new StreamSource(new ByteArrayInputStream(xml.getBytes())))
         j.getItem(name).save()
         println "Job \"${fullName}\" already exists.  Updated using XML."
+    }
+    else {
+        println "Nothing changed.  Job \"${fullName}\" already exists."
     }
 }
 
