@@ -1,4 +1,6 @@
-export VAGRANT_SSH_CONFIG=$(mktemp)
+#!/bin/bash
+VAGRANT_SSH_CONFIG="$(mktemp)"
+export VAGRANT_SSH_CONFIG
 vagrant ssh-config > "$VAGRANT_SSH_CONFIG"
 function get_jenkins_home() {
   ssh -F "${VAGRANT_SSH_CONFIG}" default /bin/bash <<'EOF'
@@ -17,10 +19,16 @@ EOF
 
 VAGRANT_JENKINS_HOME="$(get_jenkins_home)"
 
+function password_ready() {
+  ssh -nF "${VAGRANT_SSH_CONFIG}" default "sudo test -f \"${VAGRANT_JENKINS_HOME}\"/secrets/initialAdminPassword"
+}
+
+
 if [ -z "${JENKINS_PASSWORD}" ]; then
-  while ! ssh -nF "${VAGRANT_SSH_CONFIG}" default "sudo test -f \"${VAGRANT_JENKINS_HOME}\"/secrets/initialAdminPassword"; do
+  until password_ready; do
     echo "${VAGRANT_JENKINS_HOME}/secrets/initialAdminPassword not available, yet..."
     sleep 5
   done
-  export JENKINS_PASSWORD=$(ssh -F "${VAGRANT_SSH_CONFIG}" default "sudo cat \"${VAGRANT_JENKINS_HOME}\"/secrets/initialAdminPassword")
+  JENKINS_PASSWORD="$(ssh -F "${VAGRANT_SSH_CONFIG}" default "sudo cat \"${VAGRANT_JENKINS_HOME}\"/secrets/initialAdminPassword")"
+  export JENKINS_PASSWORD
 fi
