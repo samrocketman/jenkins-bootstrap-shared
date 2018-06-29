@@ -28,6 +28,19 @@ import hudson.model.View
 import javax.xml.transform.stream.StreamSource
 import jenkins.model.Jenkins
 
+String getViewXml(String name) {
+    Jenkins instance = Jenkins.getInstance()
+    View existingView = instance.getView(name)
+    if(existingView) {
+        ByteArrayOutputStream viewXml = new ByteArrayOutputStream()
+        existingView.writeXml(viewXml)
+        viewXml.toString()
+    }
+    else {
+        ''
+    }
+}
+
 void createOrUpdateView(String name, String xml) {
     Jenkins instance = Jenkins.getInstance()
     View newView = View.createViewFromXML(name, new ByteArrayInputStream(xml.getBytes()))
@@ -36,10 +49,12 @@ void createOrUpdateView(String name, String xml) {
         println "Created view \"${name}\"."
         instance.addView(newView)
         instance.save()
-    } else {
+    } else if(getViewXml(name).trim() != xml.trim()) {
         instance.getView(name).updateByXml(new StreamSource(new ByteArrayInputStream(xml.getBytes())))
         instance.getView(name).save()
         println "View \"${name}\" already exists.  Updated using XML."
+    } else {
+        println "Nothing changed.  View \"${name}\" already exists."
     }
 }
 
