@@ -1,4 +1,6 @@
 version: '2.2'
+volumes:
+  jenkins-data:
 services:
   jenkins:
     init: true
@@ -7,3 +9,5 @@ services:
       dockerfile: Dockerfile
     ports:
       - 8080:8080
+    volumes:
+      - 'jenkins-data:/var/lib/jenkins'
