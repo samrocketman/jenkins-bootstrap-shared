@@ -1,3 +1,4 @@
+#!/bin/bash
 #Created by Sam Gleske (https://github.com/samrocketman)
 #Copyright (c) 2015-2018 Sam Gleske - https://github.com/samrocketman/jenkins-bootstrap-jervis
 #Sun Jul 26 14:30:25 EDT 2015
@@ -29,12 +30,12 @@ function jenkins_console() (
         ;;
     esac
   done
-  if [ -z "${script}" ]; then
+  if [ "${#script}" -eq 0 ]; then
     echo 'ERROR Missing --script SCRIPT for jenkins_console() function.'
     exit 1
   fi
 
-  "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url -m POST --data-string script= "${script[@]}" ${jenkins}
+  "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url -m POST --data-string script= "${script[@]}" "${jenkins}"
 )
 
 function curl_item_script() (
@@ -70,7 +71,7 @@ function curl_item_script() (
     echo 'ERROR Missing an option for curl_item_script() function.'
     exit 1
   fi
-  jenkins_console -s <(echo "String itemName='${item_name}';String xmlData='''$(<${xml_data})''';") -s "${script}" "${args[@]:-}"
+  jenkins_console -s <(echo "String itemName='${item_name}';String xmlData='''$(< "${xml_data}")''';") -s "${script}" "${args[@]:-}"
 )
 
 function create_job() (
