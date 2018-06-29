@@ -17,7 +17,7 @@ fi
 # GNU or BSD sed is required.  Homebrew on Mac installs GNU sed as gsed.
 # Try to detect gsed; otherwise, fall back to detecting OS for using sed.
 SED=()
-if type -P gsed > /dev/null; then
+if type -P gsed &> /dev/null; then
   SED=(gsed -r)
 elif [ "$(uname -s)" = "Darwin" ] || uname -s | grep -- 'BSD$' &> /dev/null; then
   SED=(sed -E)
@@ -25,10 +25,6 @@ else
   # assume Linux GNU sed
   SED=(sed -r)
 fi
-
-SED=gsed || SED=sed
-export SED
-
 
 function cleanup_temp_on() {
   [ -z "${TMP_DIR}" ] || rm -rf "${TMP_DIR}"
