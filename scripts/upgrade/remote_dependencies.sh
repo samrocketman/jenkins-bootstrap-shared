@@ -7,9 +7,19 @@ if [ -z "${JENKINS_WEB}" -o -z "${SCRIPT_LIBRARY_PATH}" ]; then
   exit 1
 fi
 
-#GNU sed is required.  Homebrew on Mac installs GNU sed as gsed.
-#Try to detect gsed; otherwise, fall back to just using sed.
-[ -x "$(type -P gsed)" ] && SED=gsed || SED=sed
+# GNU or BSD sed is required.  Homebrew on Mac installs GNU sed as gsed.
+# Try to detect gsed; otherwise, fall back to detecting OS for using sed.
+SED=()
+if type -P gsed > /dev/null; then
+  SED=(gsed -r)
+elif [ "$(uname -s)" = "Darwin" ] || uname -s | grep -- 'BSD$' &> /dev/null; then
+  SED=(sed -E)
+else
+  # assume Linux GNU sed
+  SED=(sed -r)
+fi
+
+SED=gsed || SED=sed
 export SED
 
 
@@ -27,7 +37,7 @@ CUSTOM_TMPFILE="${TMP_DIR}/custom"
 echo 'Upgrade build.gradle file.'
 export JENKINS_CALL_ARGS="-m POST ${JENKINS_WEB}/scriptText --data-string script= -d"
 "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/generateSedExpr.groovy > "${TMPFILE}"
-$SED -i.bak -rf "${TMPFILE}" build.gradle
+"${SED[@]}" -i.bak -f "${TMPFILE}" build.gradle
 rm build.gradle.bak
 
 #generate a new dependencies.gradle file
@@ -73,7 +83,7 @@ EOF
   done < "${TMPFILE}" | LC_COLLATE=C sort >> dependencies.gradle
   echo '}' >> dependencies.gradle
 else
-  $SED -i.bak -rf "${TMPFILE}" dependencies.gradle
+  "${SED[@]}" -i.bak -f "${TMPFILE}" dependencies.gradle
   rm dependencies.gradle.bak
 fi
 echo 'Done.'
