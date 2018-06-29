@@ -29,6 +29,8 @@ Goals of this project:
 # Requirements
 
 - Mac OS X or Linux.
+- GNU awk.  Not installed by default on Mac but available via Homebrew.  `brew
+  install gawk`
 - More than two CPU cores recommended.
 - More than 6GB of RAM recommended if running Jenkins.
 
