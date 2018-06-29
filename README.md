@@ -191,9 +191,28 @@ Visit `http://localhost:8080/` to see Jenkins running.
 Bootstrapping Jenkins while using docker-compose is similar to bootstrapping
 with Vagrant.
 
-    docker-compose up -d
     export DOCKER_JENKINS=1
+    docker-compose up -d
     ./jenkins_bootstrap.sh
+
+Alternatively, the following command will bring up Jenkins and force a rebuild
+of the docker image.
+
+    docker-compose up --build -d
+
+Stop and start Jenkins using `docker-compose`.
+
+```bash
+# shut down but keep persisted Jenkins data in the docker volume
+docker-compose down
+
+# start Jenkins
+docker-compose up -d
+```
+
+Shut down and delete all Jenkins data.
+
+    docker-compose down --rmi local --volumes
 
 ### Upgrade Jenkins and plugins
 
