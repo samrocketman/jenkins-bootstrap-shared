@@ -25,6 +25,15 @@ a local Jenkins instance is upgraded and all of the plugins are upgraded.  Once
 Jenkins is upgraded then `build.gradle` and `dependencies.gradle` is updated
 with the new Jenkins master and plugin versions.
 
+### Override Jenkins Update Center
+
+During the upgrade process it might be desirable to use a different Jenkins
+Update Center (e.g. the [experimental update center][4]).
+
+    export JENKINS_UPDATE_CENTER='https://updates.jenkins.io/experimental/update-center.json'
+    ./scripts/upgrade/upgrade_build_gradle.sh
+
 [1]: https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+Script+Console
 [2]: https://repo.jenkins-ci.org/
 [3]: https://maven.apache.org/pom.html#Maven_Coordinates
+[4]: https://jenkins.io/doc/developer/publishing/releasing-experimental-updates/
