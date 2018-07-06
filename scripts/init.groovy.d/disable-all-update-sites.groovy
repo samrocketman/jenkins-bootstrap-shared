@@ -33,7 +33,9 @@ def j = Jenkins.instance
 for(UpdateSite site : j.getUpdateCenter().getSiteList()) {
     site.neverUpdate = true
     site.data = null
-    site.dataLastReadFromFile = -1
+    if('setDataLastReadFromFile' in site.metaClass.methods*.name.sort().unique()) {
+        site.dataLastReadFromFile = -1
+    }
     site.dataTimestamp = 0
     new File(j.getRootDir(), "updates/${site.id}.json").delete()
 }
