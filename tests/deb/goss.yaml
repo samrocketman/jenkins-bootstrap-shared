@@ -86,7 +86,7 @@ file:
     group: jenkins
     filetype: file
     contains: []
-    sha256: d04f195e87bcf09a288a18634d9baf47c097671961637bd93c638329d5af0eda
+    sha256: 276d166a24945dd4b5a43e5a57927104f4c7c3441de1f5548190b9f6de548293
   /var/lib/jenkins/init.groovy.d/disable-jenkins-cli.groovy:
     exists: true
     owner: jenkins
