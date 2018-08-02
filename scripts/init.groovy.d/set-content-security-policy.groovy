@@ -41,4 +41,4 @@
 
 import jenkins.model.Jenkins
 
-System.setProperty("hudson.model.DirectoryBrowserSupport.CSP", "default-src 'self' ${Jenkins.instance.rootUrl -~ '/$'} 'unsafe-inline'")
+System.setProperty("hudson.model.DirectoryBrowserSupport.CSP", "default-src 'self' ${(Jenkins.instance.rootUrl ?: 'http://localhost:8080') -~ '/$'} 'unsafe-inline'")
