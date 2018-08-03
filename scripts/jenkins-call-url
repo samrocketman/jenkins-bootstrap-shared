@@ -37,7 +37,7 @@ try:
 except ImportError:
     socks_supported = False
 
-version = "0.4"
+version = "0.5"
 
 parser = argparse.ArgumentParser(description="Reads Jenkins API and can make calls to arbitrary Jenkins URL endpoints.  Useful for calling Jenkins URLs for killing jobs or executing script console scripts.", epilog="""
 environment variables:
@@ -278,6 +278,8 @@ if args.auto_jenkins_web:
         if jenkins_web.split('/')[-1] in ['job', 'view']:
             continue
         jenkins_root_api_response = getJSONUrl(jenkins_web + '/api/json', headers)
+        if "useSecurity" in jenkins_root_api_response:
+            break
 
 if len(args.load_headers_file) == 0 or args.force_crumb or not os.path.exists(args.load_headers_file):
     if not args.auto_jenkins_web:
@@ -349,6 +351,9 @@ if reason:
 sys.exit(STATUS)
 
 # CHANGELOG
+# 0.5
+#   - Bugfix --automatic-jenkins-server not working when Jenkins is under a URL
+#     path.  e.g. https://example.com/jenkins/
 # 0.4
 #   - Bugfix incorrect host header being set when --automatic-jenkins-server.
 #   - Bugfix --curl and --curl-init options rendering wrong HEAD method.
