@@ -30,6 +30,18 @@ function tempdir() {
   export TMP_DIR PATH
 }
 
+function checkForGawk() {
+  if ! type -P gawk; then
+    if [ "$(uname -s)" = Darwin ]; then
+      echo 'ERROR: Missing required GNU Awk.  If using homebrew then "brew install gawk".'
+    else
+      echo 'ERROR: Missing required GNU Awk.'
+    fi
+    return 1
+  fi
+  return 0
+}
+
 function checkGHRbin() {
   local url sha256
   case $(uname -s) in
@@ -119,6 +131,7 @@ set -ex
 [ -n "${1}" ] || exit 5
 type -P sha256sum || exit 11
 type -P mktemp || exit 12
+checkForGawk
 git tag | grep "${1}" || exit 13
 git ls-remote | grep "refs/tags/${1}" || exit 14
 checkOAuthScopes || exit 15
