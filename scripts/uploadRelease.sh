@@ -6,6 +6,15 @@
 
 #Upload GitHub releases
 
+if [[ -z "${GITHUB_USER}" && -z "${GITHUB_REPO}" ]] && git config --get remote.origin.url | grep ':' > /dev/null; then
+  GITHUB_USER="$(git config --get remote.origin.url)"
+  GITHUB_USER="${GITHUB_USER#*:}"
+  GITHUB_USER="${GITHUB_USER%.git}"
+  GITHUB_REPO="${GITHUB_USER#*/}"
+  GITHUB_USER="${GITHUB_USER%/*}"
+  export GITHUB_USER GITHUB_REPO
+fi
+
 if [ -z "${GITHUB_TOKEN}" -o -z "${GITHUB_USER}" -o -z "${GITHUB_REPO}" ]; then
   echo $'ERROR: Missing required environment variables:\n  - GITHUB_TOKEN\n  - GITHUB_USER\n  - GITHUB_REPO'
   [ -z "${!GITHUB_*}" ] || echo "You have defined: ${!GITHUB_*}"
@@ -47,12 +56,13 @@ function checkGHRbin() {
 function checkOAuthScopes() {
   set  +ex
   curl -sIH "Authorization: token $GITHUB_TOKEN" "${GITHUB_API}/" |
-  awk '
+  gawk '
   BEGIN {
     code=1
   };
-  $0 ~ /^X-OAuth-Scopes:.*\y(public_)?repo,?\y.*/ {
+  $0 ~ /^.*X-OAuth-Scopes:.*\y(public_)?repo,?\y.*/ {
     code=0;
+    print $0
     exit
   };
   END { exit code }
