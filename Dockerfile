@@ -3,7 +3,7 @@ FROM anapsix/alpine-java:8_jdk
 
 ADD build/distributions/*.tar /usr/
 
-RUN adduser -h /var/lib/jenkins -S jenkins && \
+RUN adduser -u 100 -G nogroup -h /var/lib/jenkins -S jenkins && \
 apk add --no-cache git rsync openssh && \
 mkdir -p /var/cache/jenkins && \
 chown -R jenkins: /usr/lib/jenkins /usr/distribution-scripts /var/cache/jenkins && \
