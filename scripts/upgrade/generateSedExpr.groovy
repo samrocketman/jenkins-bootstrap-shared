@@ -23,12 +23,13 @@
 
 import jenkins.model.Jenkins
 
-//update build.grade package version string
+//update build.gradle package version string
 println "s/^(version ?= ?)'[^']+'(.*)\$/\\1'${Jenkins.instance.version}.1'\\2/"
-//update jenkins.war version in build.gradle
+println "s/^(version)=.*\$/\\1=${Jenkins.instance.version}.1/"
+//update jenkins.war version in dependencies.gradle
 println "s/(.*getjenkins.*:jenkins-war):[^@]+@(war')/\\1:${Jenkins.instance.version}@\\2/"
 
-//update all plugins in build.gradle
+//update all plugins in dependencies.gradle
 Jenkins.instance.pluginManager.plugins.each { p ->
     println "s/(.*getplugins.*:${p.shortName}):[^@]+@(hpi')/\\1:${p.version}@\\2/"
 }

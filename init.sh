@@ -25,6 +25,7 @@ export SED
 )
 
 echo 'bootstrapHome=jenkins-bootstrap-shared' > gradle.properties
+grep -- '^version' jenkins-bootstrap-shared/gradle.properties >> gradle.properties
 cat > jenkins_bootstrap.sh <<'EOF'
 #!/bin/bash
 source jenkins-bootstrap-shared/jenkins_bootstrap.sh

@@ -77,5 +77,39 @@ if [ -z "${NO_UPGRADE}" -a "$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIP
   source "${SCRIPT_LIBRARY_PATH}"/upgrade/env.sh
 fi
 
+if grep -- '^version' gradle.properties; then
+  export USE_GRADLE_PROPERTIES=1
+fi
+
+function get_version() {
+  awk 'BEGIN { FS="=" }; $1 == "version" { print $2 }' < gradle.properties
+}
+
+if [ -n "${USE_GRADLE_PROPERTIES:-}" ]; then
+  VERSION="$(get_version)"
+  # increment the patch
+  VERSION="${VERSION%.*}.$(( ${VERSION##*.} + 1 ))"
+fi
+
 #write jenkins master and plugin versions to build.gradle and dependencies.gradle
 "${SCRIPT_LIBRARY_PATH}"/upgrade/remote_dependencies.sh
+
+# GNU or BSD sed is required.  Homebrew on Mac installs GNU sed as gsed.
+# Try to detect gsed; otherwise, fall back to detecting OS for using sed.
+SED=()
+if type -P gsed &> /dev/null; then
+  SED=(gsed -r)
+elif [ "$(uname -s)" = "Darwin" ] || uname -s | grep -- 'BSD$' &> /dev/null; then
+  SED=(sed -E)
+else
+  # assume Linux GNU sed
+  SED=(sed -r)
+fi
+
+if [ -n "${USE_GRADLE_PROPERTIES:-}" ]; then
+  NEW_VERSION="$(get_version)"
+  if [ "${NEW_VERSION%.*}" = "${VERSION%.*}" ]; then
+    "${SED[@]}" -i.bak -- "s/^(version)=.*/\\1=${VERSION}/" gradle.properties
+    rm gradle.properties.bak
+  fi
+fi

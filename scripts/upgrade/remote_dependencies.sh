@@ -40,8 +40,13 @@ CUSTOM_TMPFILE="${TMP_DIR}/custom"
 echo 'Upgrade build.gradle file.'
 export JENKINS_CALL_ARGS="-m POST ${JENKINS_WEB}/scriptText --data-string script= -d"
 "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/generateSedExpr.groovy > "${TMPFILE}"
-"${SED[@]}" -i.bak -f "${TMPFILE}" build.gradle
-rm build.gradle.bak
+if [ -n "${USE_GRADLE_PROPERTIES:-}" ]; then
+  VERSION_FILE=gradle.properties
+else
+  VERSION_FILE=build.gradle
+fi
+"${SED[@]}" -i.bak -f "${TMPFILE}" "${VERSION_FILE}"
+rm "${VERSION_FILE}.bak"
 
 #generate a new dependencies.gradle file
 echo 'Upgrade dependencies.gradle file.'
