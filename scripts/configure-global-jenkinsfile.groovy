@@ -40,7 +40,7 @@ if(!jenkinsfile_script) {
     return
 }
 
-if(!config_files.getById('Jenkinsfile')) {
+if(!config_files.getById('Jenkinsfile') || (config_files.getById('Jenkinsfile').content != jenkinsfile_script)) {
 	//create global config
 	GroovyScript new_config = new GroovyScript('Jenkinsfile', 'Global Jenkinsfile', '', jenkinsfile_script)
 	config_files.save(new_config)
