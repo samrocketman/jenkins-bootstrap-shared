@@ -44,21 +44,24 @@ function checkForGawk() {
 
 function checkGHRbin() {
   local url sha256
+  local TAR=()
   case $(uname -s) in
     Linux)
       url='https://github.com/aktau/github-release/releases/download/v0.7.2/linux-amd64-github-release.tar.bz2'
       sha256='3feae868828f57a24d1bb21a5f475de4a116df3063747e3290ad561b4292185c'
+      TAR+=( tar --transform 's/.*\///g' )
       ;;
     Darwin)
       url='https://github.com/aktau/github-release/releases/download/v0.7.2/darwin-amd64-github-release.tar.bz2'
       sha256='92d7472d6c872aa5f614c5141e84ee0a67fbdae87c0193dcf0a0476d9f1bc250'
+      TAR+=( tar --strip-components 3 )
       ;;
   esac
   if ! type -P github-release && [ -n "${sha256}" ]; then
     pushd "${TMP_DIR}"
     curl -LO "${url}"
-    sha256sum -c - <<< "${sha256}  ${url##*/}"
-    tar --transform 's/.*\///g' -xjf "${url##*/}"
+    "${SHASUM[@]}" -c - <<< "${sha256}  ${url##*/}"
+    "${TAR[@]}" -xjf "${url##*/}"
     \rm "${url##*/}"
     popd
   fi
@@ -125,11 +128,26 @@ function read_err_on() {
 }
 trap 'read_err_on $? "${1}"' EXIT
 tempdir
+
+function determine_shasum_prog() {
+  set +x
+  if type -P sha256sum; then
+    SHASUM+=( 'sha256sum' )
+  elif type -P shasum; then
+    SHASUM+=( 'shasum' '-a' '256' )
+  else
+    return 1
+  fi
+  set -x
+}
+
+SHASUM=()
+
 set -ex
 
 #pre-flight tests (any failures will exit non-zero)
 [ -n "${1}" ] || exit 5
-type -P sha256sum || exit 11
+determine_shasum_prog || exit 11
 type -P mktemp || exit 12
 checkForGawk
 git tag | grep "${1}" || exit 13
@@ -142,6 +160,16 @@ cd build/distributions/
 
 #cut a release
 github-release release --tag "${1}"
+XARGS=()
+case $(uname -s) in
+  Linux)
+    XARGS+=( xargs -P0 )
+    ;;
+  Darwin)
+    XARGS+=( xargs -P4 )
+    ;;
+esac
+
 #upload all files in parallel
-ls -1 | xargs -n1 -P0 -I{} -- \
+ls -1 | "${XARGS[@]}" -n1 -I{} -- \
 github-release upload --tag "${1}" --name '{}' --file '{}'
