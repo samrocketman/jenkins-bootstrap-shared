@@ -50,6 +50,9 @@ fi
 export JENKINS_HEADERS_FILE=$(mktemp)
 source "${SCRIPT_LIBRARY_PATH}"/upgrade/env.sh
 
+#wait for jenkins to become available
+"${SCRIPT_LIBRARY_PATH}"/provision_jenkins.sh url-ready "${JENKINS_WEB}/jnlpJars/jenkins-cli.jar"
+
 #upgrade jenkins.war and all plugins
 if [ -z "${NO_UPGRADE}" ]; then
   "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/upgradeJenkinsAndPlugins.groovy || (
