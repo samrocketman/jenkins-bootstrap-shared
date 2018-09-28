@@ -57,6 +57,17 @@ import hudson.util.Secret
 import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl
 
 /**
+  Resolves a credential scope if given a string.
+  */
+def resolveScope(String scope) {
+    scope = scope.toString().toUpperCase()
+    if(!(scope in ['GLOBAL', 'SYSTEM'])) {
+        scope = 'GLOBAL'
+    }
+    CredentialsScope."${scope}"
+}
+
+/**
   A shared method used by other "setCredential" methods to safely create a
   credential in the global domain.
   */
@@ -113,7 +124,7 @@ def setBasicSSHUserPrivateKey(Map settings) {
     addCredential(
             credentials_id,
             new BasicSSHUserPrivateKey(
-                CredentialsScope.GLOBAL,
+                resolveScope(settings['scope']),
                 credentials_id,
                 user,
                 new BasicSSHUserPrivateKey.DirectEntryPrivateKeySource(key),
@@ -140,7 +151,7 @@ def setStringCredentialsImpl(Map settings) {
     addCredential(
             credentials_id,
             new StringCredentialsImpl(
-                CredentialsScope.GLOBAL,
+                resolveScope(settings['scope']),
                 credentials_id,
                 description,
                 Secret.fromString(secret))
@@ -170,7 +181,7 @@ def setUsernamePasswordCredentialsImpl(Map settings) {
     addCredential(
             credentials_id,
             new UsernamePasswordCredentialsImpl(
-                CredentialsScope.GLOBAL,
+                resolveScope(settings['scope']),
                 credentials_id,
                 description,
                 user,
