@@ -92,7 +92,7 @@ Map getCurrentPermissions() {
             nmap[k] += v
         }
     }
-    Jenkins.instance.authorizationStrategy.grantedPermissions.collect { permission, userList ->
+    Jenkins.instance.authorizationStrategy.getGrantedPermissions().collect { permission, userList ->
         userList.collect { user ->
             [ (user): shortName(permission) ]
         }
