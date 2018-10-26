@@ -85,8 +85,11 @@ String shortName(Permission p) {
         .replace('CredentialsProvider', 'Credentials')
 }
 
-Map getCurrentPermissions() {
+Map getCurrentPermissions(Map config = [:]) {
     Map currentPermissions = [:].withDefault { [].toSet() }
+    if(!('getGrantedPermissions' in Jenkins.instance.authorizationStrategy.metaClass.methods*.name.sort().unique())) {
+        return currentPermissions
+    }
     Closure merger = { Map nmap, Map m ->
         m.each { k, v ->
             nmap[k] += v
@@ -101,7 +104,7 @@ Map getCurrentPermissions() {
 }
 
 boolean isConfigurationEqual(Map config) {
-    Map currentPermissions = getCurrentPermissions()
+    Map currentPermissions = getCurrentPermissions(config)
     Jenkins.instance.authorizationStrategy.class.name.endsWith(config['strategy']) &&
     !(false in config['user_permissions'].collect { k, v -> currentPermissions[k] == v.toSet() }) &&
     currentPermissions.keySet() == config['user_permissions'].keySet()
