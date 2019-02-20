@@ -16,6 +16,8 @@
 /*
    Configure slack plugin global settings.
  */
+import jenkins.model.Jenkins
+
 if(!binding.hasVariable('slack_settings')) {
     slack_settings = [:]
 }
