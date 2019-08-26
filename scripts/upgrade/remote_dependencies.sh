@@ -50,11 +50,11 @@ rm "${VERSION_FILE}.bak"
 
 #generate a new dependencies.gradle file
 echo 'Upgrade dependencies.gradle file.'
-if [ ! "$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url <(echo 'println Jenkins.instance.pluginManager.plugins.size()'))" = '0' ]; then
+if [ ! "$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url - <<< 'println Jenkins.instance.pluginManager.plugins.size()')" = '0' ]; then
   #create an index of installed plugins
   "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/listShortNameVersion.groovy > "${TMPFILE}"
 
-  JENKINS_WAR_VERSION=$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url <(echo 'println Jenkins.instance.version'))
+  JENKINS_WAR_VERSION=$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url - <<< 'println Jenkins.instance.version')
   cat > dependencies.gradle <<-EOF
 dependencies {
     //get Jenkins

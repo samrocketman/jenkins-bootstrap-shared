@@ -37,7 +37,7 @@ try:
 except ImportError:
     socks_supported = False
 
-version = "0.5"
+version = "0.6"
 
 parser = argparse.ArgumentParser(description="Reads Jenkins API and can make calls to arbitrary Jenkins URL endpoints.  Useful for calling Jenkins URLs for killing jobs or executing script console scripts.", epilog="""
 environment variables:
@@ -109,7 +109,10 @@ def printCurl(settings, url=trim_url_slash(args.jenkins_web)):
             for s in args.http_data_strings:
                 curl += '%s' % s
         for f in args.http_data_files:
-            curl += '$(<%s)' % f
+            if f == '-':
+                curl += sys.stdin.read()
+            else:
+                curl += '$(<%s)' % f
         curl += '"'
     if args.pinned_cert:
         curl += ' --cacert %s' % args.pinned_cert
@@ -317,8 +320,11 @@ if len(args.http_data_files) > 0:
     for string in args.http_data_strings:
         data += string
     for path in args.http_data_files:
-        with open(path) as f:
-            data += urllib.quote(f.read())
+        if path == '-':
+            data += urllib.quote(sys.stdin.read())
+        else:
+            with open(path) as f:
+                data += urllib.quote(f.read())
 
 #Call the URL
 code, response, reason = getUrl(jenkins_url, headers, method=args.http_method, data=data)
@@ -327,7 +333,7 @@ if args.verbosity >= 1:
 #print without newline at end
 if len(response) > 0:
     if args.output == '-':
-        sys.stdout.write(response)
+        sys.stdout.write(response.strip() + '\n')
         sys.stdout.flush()
     else:
         with open(args.output, 'w') as f:
@@ -351,6 +357,11 @@ if reason:
 sys.exit(STATUS)
 
 # CHANGELOG
+# 0.6
+#   - Feature, support reading Jenkins scripts from stdin when -d file path is
+#     a single hyphen (-).  e.g. "-d -"
+#   - Bugfix Jenkins scriptText endpoint returning many spaces.  It now stripts
+#     spaces.
 # 0.5
 #   - Bugfix --automatic-jenkins-server not working when Jenkins is under a URL
 #     path.  e.g. https://example.com/jenkins/
