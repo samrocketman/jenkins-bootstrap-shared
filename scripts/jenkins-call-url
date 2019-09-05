@@ -37,7 +37,7 @@ try:
 except ImportError:
     socks_supported = False
 
-version = "0.6"
+version = "0.8"
 
 parser = argparse.ArgumentParser(description="Reads Jenkins API and can make calls to arbitrary Jenkins URL endpoints.  Useful for calling Jenkins URLs for killing jobs or executing script console scripts.", epilog="""
 environment variables:
@@ -67,6 +67,7 @@ examples:
 parser.add_argument('--version', action='version', version="%(prog)s "+version)
 parser.add_argument('--curl', action='store_true', dest='print_curl', help='Print a fully formatted curl command which includes all options for debugging and exit.')
 parser.add_argument('--curl-init', action='store_true', dest='print_curl_init', help='Print a formatted initial curl command for debugging and exit.')
+parser.add_argument('--curl-crumb', action='store_true', dest='print_curl_crumb', help='Print a formatted curl command for getting CSRF crumb for debugging and exit.')
 parser.add_argument('--data-string', action="append", default=[], metavar='arg', dest='http_data_strings', help='Data to pass via message body of an HTTP request and prepends -d.  Can specify one or more -d data-file.')
 parser.add_argument('--force-crumb', action='store_true', dest='force_crumb', help='Force resolving the CSRF crumb even if --load-headers option is used.')
 parser.add_argument('--load-headers', default=os.getenv('JENKINS_HEADERS_FILE', ''), metavar='json-file', dest='load_headers_file', help='Loads HTTP headers from a JSON file to use.  It can also be set via JENKINS_HEADERS_FILE environment variable.')
@@ -79,6 +80,7 @@ parser.add_argument('--proxy', default=os.getenv('JENKINS_SOCKS_PROXY'), metavar
 parser.add_argument('-s', '--jenkins-server', default='http://localhost:8080', metavar='JENKINS_WEB', dest='jenkins_web', help='Root web URL for the Jenkins server.')
 parser.add_argument('-o', '--output', default='-', metavar='OUTPUT_FILE', dest='output', help='Write output to file instead of stdout.  Default: - for stdout.')
 parser.add_argument('-v', '--verbosity', action="count", dest='verbosity', help="Increase output verbosity.")
+parser.add_argument('--raw-response', action='store_true', dest='raw_response', help='By default, script console responses are stripped of leading and trailing spaces.  This option disables the behavior and renders the literal response from Jenkins.')
 parser.add_argument('JENKINS_URL', help='The URL to a Jenkins endpoint to call.')
 
 #prepend additional arguments from environment
@@ -201,6 +203,14 @@ else:
         printErr("Removing proxy configuration from headers file.")
     settings.pop('socks_proxy', None)
 
+if args.print_curl_crumb:
+    settings['headers'] = headers
+    args.http_method = 'POST'
+    if args.auto_jenkins_web:
+        printCurl(settings, args.JENKINS_URL + '/crumbIssuer/api/json?pretty=true')
+    else:
+        printCurl(settings, args.jenkins_web + '/crumbIssuer/api/json?pretty=true')
+
 if args.print_curl_init:
     settings['headers'] = headers
     if args.auto_jenkins_web:
@@ -240,6 +250,12 @@ def getUrl(url, headers, data=None, method='GET'):
                 req.get_method = lambda: method
             urlconn = urllib2.urlopen(req)
         responseString = urlconn.read()
+        if url.endswith('crumbIssuer/api/json'):
+            if headers.has_key('Cookie'):
+                headers.pop('Cookie')
+            headers['Cookie'] = urlconn.info()['Set-Cookie']
+            if args.verbosity >= 2:
+                printErr('Set a new session cookie ' + headers['Cookie'])
         responseCode = urlconn.getcode()
         urlconn.close()
     except urllib2.HTTPError as e:
@@ -333,7 +349,10 @@ if args.verbosity >= 1:
 #print without newline at end
 if len(response) > 0:
     if args.output == '-':
-        sys.stdout.write(response.strip() + '\n')
+        if args.raw_response:
+            sys.stdout.write(response)
+        else:
+            sys.stdout.write(response.strip() + '\n')
         sys.stdout.flush()
     else:
         with open(args.output, 'w') as f:
@@ -357,11 +376,24 @@ if reason:
 sys.exit(STATUS)
 
 # CHANGELOG
+# 0.8
+#  - Bugfix: A security fix in newer versions of Jenkins broke jenkins-call-url
+#    from being able to post to the Jenkins API with CSRF crumbs.
+#    Jenkins issues SECURITY-1491, SECURITY-626
+#    See https://jenkins.io/security/advisory/2019-08-28/#SECURITY-1491
+#  - Feature, new option --curl-crumb which will output a curl command for
+#    querying the crumbIssuer URL.  This will simplify development debugging in
+#    the future related to this feature of Jenkins..
+# 0.7
+#   - Feature, new option --raw-response which outputs the raw non-stripped
+#     output of the Jenkins response.
 # 0.6
 #   - Feature, support reading Jenkins scripts from stdin when -d file path is
 #     a single hyphen (-).  e.g. "-d -"
-#   - Bugfix Jenkins scriptText endpoint returning many spaces.  It now stripts
-#     spaces.
+#   - Bugfix Jenkins scriptText endpoint returning many spaces.  It now strips
+#     leading and trailing spaces from the Jenkins response by default.  This
+#     hack is a workaround for the following issue.
+#     https://issues.jenkins-ci.org/browse/JENKINS-58548
 # 0.5
 #   - Bugfix --automatic-jenkins-server not working when Jenkins is under a URL
 #     path.  e.g. https://example.com/jenkins/
