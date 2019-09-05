@@ -37,7 +37,7 @@ try:
 except ImportError:
     socks_supported = False
 
-version = "0.8"
+version = "0.9"
 
 parser = argparse.ArgumentParser(description="Reads Jenkins API and can make calls to arbitrary Jenkins URL endpoints.  Useful for calling Jenkins URLs for killing jobs or executing script console scripts.", epilog="""
 environment variables:
@@ -253,9 +253,10 @@ def getUrl(url, headers, data=None, method='GET'):
         if url.endswith('crumbIssuer/api/json'):
             if headers.has_key('Cookie'):
                 headers.pop('Cookie')
-            headers['Cookie'] = urlconn.info()['Set-Cookie']
-            if args.verbosity >= 2:
-                printErr('Set a new session cookie ' + headers['Cookie'])
+            if urlconn.info().has_key('Set-Cookie'):
+                headers['Cookie'] = urlconn.info()['Set-Cookie']
+                if args.verbosity >= 2:
+                    printErr('Set a new session cookie ' + headers['Cookie'])
         responseCode = urlconn.getcode()
         urlconn.close()
     except urllib2.HTTPError as e:
@@ -376,6 +377,9 @@ if reason:
 sys.exit(STATUS)
 
 # CHANGELOG
+# 0.9
+#  - Bugfix backwards compatibility for older Jenkins when fixing security
+#    issues in version 0.8.
 # 0.8
 #  - Bugfix: A security fix in newer versions of Jenkins broke jenkins-call-url
 #    from being able to post to the Jenkins API with CSRF crumbs.
