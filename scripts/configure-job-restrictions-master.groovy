@@ -31,13 +31,19 @@ import com.synopsys.arc.jenkinsci.plugins.jobrestrictions.restrictions.job.Regex
 import com.synopsys.arc.jenkinsci.plugins.jobrestrictions.restrictions.logic.OrJobRestriction
 import io.jenkins.plugins.jobrestrictions.restrictions.job.JobClassNameRestriction
 import io.jenkins.plugins.jobrestrictions.util.ClassSelector
+import jenkins.branch.OrganizationFolder
 import jenkins.model.Jenkins
 import org.jenkinsci.plugins.workflow.job.WorkflowJob
 import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject
 
-ClassSelector multibranchJob = new ClassSelector(WorkflowMultiBranchProject.class.name)
-ClassSelector workflowJob = new ClassSelector(WorkflowJob.class.name)
-def classes = new JobClassNameRestriction([multibranchJob, workflowJob])
+List<ClassSelector> classList = [
+    OrganizationFolder,
+    WorkflowMultiBranchProject,
+    WorkflowJob
+].collect { Class clazz ->
+    new ClassSelector(clazz.name)
+}
+def classes = new JobClassNameRestriction(classList)
 def names = new RegexNameRestriction('_jervis_generator|^__.*', true)
 def restriction = new OrJobRestriction(names, classes)
 def prop = new JobRestrictionProperty(restriction)
