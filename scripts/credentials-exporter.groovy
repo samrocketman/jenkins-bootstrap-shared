@@ -14,7 +14,9 @@
    limitations under the License.
    */
 /*
-   Exports known credentials from a Jenkins instance.
+   Exports known credentials from a Jenkins instance.  This exports credentials
+   meant to be used by credentials-multitype.groovy.  This makes it quick and
+   easy to turn credentials into code.
   */
 import com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey
 import com.cloudbees.plugins.credentials.CredentialsScope
