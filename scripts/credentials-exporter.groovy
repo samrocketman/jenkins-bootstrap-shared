@@ -66,7 +66,24 @@ Map getBasicSSHUserPrivateKey(BasicSSHUserPrivateKey c) {
         description: c.description,
         user: c.username,
         key_passwd: c?.passphrase?.plainText ?: '',
-        key: c.privateKey
+        key: c.privateKey,
+        scope: c.scope.toString().toLowerCase()
+    ]
+}
+
+/**
+  * Method to export EC2 credentials for access key ID and access key secret.
+  */
+Map getAWSCredentialsImpl(def c) {
+    [
+        credential_type: 'AWSCredentialsImpl',
+        credentials_id: c.id,
+        description: c.description,
+        access_key: c.accessKey ?: '',
+        secret_key: c?.secretKey?.plainText ?: '',
+        iam_role_arn: c.iamRoleArn ?: '',
+        iam_mfa_serial_number: c.iamMfaSerialNumber ?: '',
+        scope: c.scope.toString().toLowerCase()
     ]
 }
 
@@ -179,10 +196,10 @@ Domain domain = (system_creds_map.keySet() as List).find { it.getName() == null 
 List<Map> credentials_export = []
 
 system_creds_map[domain].each {
-  if(!(it.class.simpleName in ['UsernamePasswordCredentialsImpl', 'StringCredentialsImpl', 'BasicSSHUserPrivateKey'])) {
-    return
-  }
-  credentials_export << "get${it.class.simpleName}"(it)
+    if(!("get${it.class.simpleName}".toString() in this.metaClass.methods*.name.toSet())) {
+        return
+    }
+    credentials_export << "get${it.class.simpleName}"(it)
 }
 
 println 'credentials = ' + prettyPrint(credentials_export.inspect(), usePrettyPrint)
