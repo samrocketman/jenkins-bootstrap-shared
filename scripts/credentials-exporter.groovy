@@ -111,14 +111,21 @@ String prettyPrint(String groovy_code, boolean usePrettyPrint) {
                 break
             case ']':
                 result += groovy_code[i]
+                if((i+1) == groovy_code.size()) {
+                    result += '\n'
+                    break
+                }
                 if(!insideString) {
                     indentLevel -= 1
                     if(indentLevel < 0) {
                         throw new Exception('Indent level cannot be negative.  This is a bug since you should never see this!')
                     }
-                }
-                result += '\n'
-                if((indentLevel-1) > 0) {
+                    if(groovy_code[i+1] != ',') {
+                        result += '\n'
+                        if((indentLevel-1) > 0) {
+                            result += ' ' * ((indentLevel-1)*4)
+                        }
+                    }
                 }
                 break
             case ':':
@@ -130,7 +137,7 @@ String prettyPrint(String groovy_code, boolean usePrettyPrint) {
             case '\'':
                 result += groovy_code[i]
                 if(escapeChar) {
-                    escapeChar = !escapeChar
+                    escapeChar = false
                 }
                 else {
                     insideString = !insideString
@@ -154,7 +161,7 @@ String prettyPrint(String groovy_code, boolean usePrettyPrint) {
                 break
             default:
                 if(escapeChar) {
-                    escapeChar != escapeChar
+                    escapeChar = false
                 }
                 result += groovy_code[i]
         }
