@@ -78,6 +78,7 @@ String prettyPrint(String groovy_code, boolean usePrettyPrint) {
     if(!usePrettyPrint) {
         return groovy_code
     }
+    String indentChar = '    '
     int indentLevel = 0
     boolean insideString = false
     boolean escapeChar = false
@@ -91,10 +92,10 @@ String prettyPrint(String groovy_code, boolean usePrettyPrint) {
                     if(indentLevel > 0) {
                         if(groovy_code[i+1] == ']') {
                             if((indentLevel-1) > 0) {
-                                result += ' ' * ((indentLevel-1)*4)
+                                result += indentChar * (indentLevel-1)
                             }
                         } else {
-                            result += ' ' * (indentLevel*4)
+                            result += indentChar * indentLevel
                         }
                     }
                 }
@@ -105,7 +106,7 @@ String prettyPrint(String groovy_code, boolean usePrettyPrint) {
                     indentLevel += 1
                     result += '\n'
                     if(indentLevel > 0) {
-                        result += ' ' * ( indentLevel * 4 )
+                        result += indentChar * indentLevel
                     }
                 }
                 break
@@ -123,7 +124,7 @@ String prettyPrint(String groovy_code, boolean usePrettyPrint) {
                     if(groovy_code[i+1] != ',') {
                         result += '\n'
                         if((indentLevel-1) > 0) {
-                            result += ' ' * ((indentLevel-1)*4)
+                            result += indentChar * (indentLevel-1)
                         }
                     }
                 }
@@ -146,10 +147,10 @@ String prettyPrint(String groovy_code, boolean usePrettyPrint) {
                         if(indentLevel > 0) {
                             if(groovy_code[i+1] == ']') {
                                 if((indentLevel-1) > 0) {
-                                    result += ' ' * ((indentLevel-1)*4)
+                                    result += indentChar * (indentLevel-1)
                                 }
                             } else {
-                                result += ' ' * (indentLevel*4)
+                                result += indentChar * indentLevel
                             }
                         }
                     }
