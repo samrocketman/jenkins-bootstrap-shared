@@ -31,41 +31,41 @@ boolean usePrettyPrint = false
   * Method to export username and password credentials.
   */
 Map getUsernamePasswordCredentialsImpl(UsernamePasswordCredentialsImpl c) {
-  [
-    credential_type: 'UsernamePasswordCredentialsImpl',
-    credentials_id: c.id,
-    description: c.description,
-    user: c.username,
-    password: c.password.plainText,
-    scope: c.scope.toString().toLowerCase()
-  ]
+    [
+        credential_type: 'UsernamePasswordCredentialsImpl',
+        credentials_id: c.id,
+        description: c.description,
+        user: c.username,
+        password: c.password.plainText,
+        scope: c.scope.toString().toLowerCase()
+    ]
 }
 
 /**
   * Method to export String credentials typically used for API tokens.
   */
 Map getStringCredentialsImpl(StringCredentialsImpl c) {
-  [
-    credential_type: 'StringCredentialsImpl',
-    credentials_id: c.id,
-    description: c.description,
-    secret: c.secret.plainText,
-    scope: c.scope.toString().toLowerCase()
-  ]
+    [
+        credential_type: 'StringCredentialsImpl',
+        credentials_id: c.id,
+        description: c.description,
+        secret: c.secret.plainText,
+        scope: c.scope.toString().toLowerCase()
+    ]
 }
 
 /**
   * Method to export user and SSH private key credentials.
   */
 Map getBasicSSHUserPrivateKey(BasicSSHUserPrivateKey c) {
-  [
-    credential_type: 'BasicSSHUserPrivateKey',
-    credentials_id: c.id,
-    description: c.description,
-    user: c.username,
-    key_passwd: c?.passphrase?.plainText ?: '',
-    key: c.privateKey
-  ]
+    [
+        credential_type: 'BasicSSHUserPrivateKey',
+        credentials_id: c.id,
+        description: c.description,
+        user: c.username,
+        key_passwd: c?.passphrase?.plainText ?: '',
+        key: c.privateKey
+    ]
 }
 
 /**
