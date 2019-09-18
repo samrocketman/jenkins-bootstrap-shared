@@ -74,11 +74,10 @@ Map getBasicSSHUserPrivateKey(BasicSSHUserPrivateKey c) {
   *
   * Pretty print obj.inspect() output.
   */
-String prettyPrint(String groovy_code, boolean usePrettyPrint) {
+String prettyPrint(String groovy_code, boolean usePrettyPrint, String indentChar = '    ') {
     if(!usePrettyPrint) {
         return groovy_code
     }
-    String indentChar = '    '
     int indentLevel = 0
     boolean insideString = false
     boolean escapeChar = false
@@ -165,6 +164,7 @@ String prettyPrint(String groovy_code, boolean usePrettyPrint) {
                     escapeChar = false
                 }
                 result += groovy_code[i]
+                break
         }
     }
     result
