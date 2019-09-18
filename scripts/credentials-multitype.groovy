@@ -49,12 +49,77 @@ private key contents (do not indent it)
      ]
  */
 import com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey
+import com.cloudbees.plugins.credentials.CredentialsMatchers
+import com.cloudbees.plugins.credentials.CredentialsProvider
 import com.cloudbees.plugins.credentials.CredentialsScope
 import com.cloudbees.plugins.credentials.SystemCredentialsProvider
 import com.cloudbees.plugins.credentials.domains.Domain
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl
+import hudson.security.ACL
 import hudson.util.Secret
 import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl
+
+/**
+  These methods are necessary for dynamic class loading.  This way, we can
+  optionally support agent plugins.  For example, we can support the SSH agent
+  plugin without requiring that it be installed if an admin does not need to
+  configure SSH agents.
+
+  This script will succeed both with and without the SSH slaves plugin
+  installed.
+ */
+Class loadClass(String clazz) {
+    try {
+        this.class.classLoader.loadClass(clazz)
+    }
+    catch(ClassNotFoundException e) {
+        null
+    }
+}
+
+List convertParameterTypes(List l) {
+    //this method is necessary to handle Java primitives defined in constructors
+    l.collect {
+        if(it in int) {
+            Integer
+        }
+        else if(it in boolean) {
+            Boolean
+        }
+        else if(it in CredentialsScope) {
+            CredentialsScope
+        }
+        else {
+            it
+        }
+    }
+}
+
+Boolean compareParameterTypesInListB(List a, List b) {
+    if(a.size() == b.size()) {
+        !(false in [convertParameterTypes(a), convertParameterTypes(b)].transpose().collect {
+            it[0] in it[1]
+        })
+    }
+    else {
+        false
+    }
+}
+
+/**
+  Return a new instance of a dynamically loaded class or null.  Useful to
+  attempt to instantiate classes on optional plugins and using in logic.
+ */
+def newClassInstance(String clazz, List argv = []) {
+    if(argv) {
+        loadClass(clazz)?.getConstructors().find {
+            compareParameterTypesInListB(it.parameterTypes.toList(), argv*.class)
+        }?.newInstance(*argv)
+    }
+    else {
+        loadClass(clazz)?.newInstance()
+    }
+}
 
 /**
   Resolves a credential scope if given a string.
@@ -77,7 +142,10 @@ def addCredential(String credentials_id, def credential) {
     SystemCredentialsProvider system_creds = SystemCredentialsProvider.getInstance()
     Map system_creds_map = system_creds.getDomainCredentialsMap()
     domain = (system_creds_map.keySet() as List).find { it.getName() == null }
-    if(!system_creds_map[domain] || (system_creds_map[domain].findAll {credentials_id.equals(it.id)}).size() < 1) {
+
+    List credentials = CredentialsProvider.lookupCredentials(credential.class, Jenkins.instance, ACL.SYSTEM)
+
+    if(!system_creds_map[domain] || !CredentialsMatchers.firstOrNull(credentials, CredentialsMatchers.withId(credentials_id))) {
         if(system_creds_map[domain] && system_creds_map[domain].size() > 0) {
             //other credentials exist so should only append
             system_creds_map[domain] << credential
@@ -186,6 +254,42 @@ def setUsernamePasswordCredentialsImpl(Map settings) {
                 description,
                 user,
                 password)
+            )
+}
+
+/**
+  Supports AWS credentials provided by the EC2 plugin AWSCredentialsImpl class.
+
+  Example:
+
+    [
+        'credential_type': 'AWSCredentialsImpl',
+        'credentials_id': 'some credentials id',
+        'description': 'A description of this credential',
+        'access_key': 'some access key',
+        'secret_key': 'some secret key',
+        'iam_role_arn': 'some iam role arn',
+        'iam_mfa_serial_number': 'some iam mfa serial number',
+        'scope': 'global'
+    ]
+
+  */
+def setAWSCredentialsImpl(Map settings) {
+    String credentials_id = ((settings['credentials_id'])?:'').toString()
+    String description = ((settings['description'])?:'').toString()
+
+    addCredential(
+            credentials_id,
+            newClassInstance('com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl',
+                [
+                    resolveScope(settings['scope']),
+                    credentials_id,
+                    settings['access_key'] ?: '',
+                    settings['secret_key'] ?: '',
+                    description,
+                    settings['iam_role_arn'] ?: '',
+                    settings['iam_mfa_serial_number'] ?: ''
+                ])
             )
 }
 
