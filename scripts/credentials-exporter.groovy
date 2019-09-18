@@ -60,7 +60,7 @@ Map getBasicSSHUserPrivateKey(BasicSSHUserPrivateKey c) {
     credentials_id: c.id,
     description: c.description,
     user: c.username,
-    key_passwd: c.passphrase.plainText,
+    key_passwd: c?.passphrase?.plainText ?: '',
     key: c.privateKey
   ]
 }
