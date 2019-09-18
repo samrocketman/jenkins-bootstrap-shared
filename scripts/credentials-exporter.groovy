@@ -24,6 +24,9 @@ import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl
 import hudson.util.Secret
 import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl
 
+// experimental setting use at your own risk
+boolean usePrettyPrint = false
+
 /**
   * Method to export username and password credentials.
   */
@@ -65,6 +68,99 @@ Map getBasicSSHUserPrivateKey(BasicSSHUserPrivateKey c) {
   ]
 }
 
+/**
+  * Pretty print a groovy inspected object.  Unfortunately, there's no helpful
+  * method in Groovy that I'm aware of which makes this easy.
+  *
+  * Pretty print obj.inspect() output.
+  */
+String prettyPrint(String groovy_code, boolean usePrettyPrint) {
+    if(!usePrettyPrint) {
+        return groovy_code
+    }
+    int indentLevel = 0
+    boolean insideString = false
+    boolean escapeChar = false
+    String result = ''
+    for(int i = 0; i < groovy_code.size(); i++) {
+        switch(groovy_code[i]) {
+            case ',':
+                result += groovy_code[i]
+                if(!insideString) {
+                    result += '\n'
+                    if(indentLevel > 0) {
+                        if(groovy_code[i+1] == ']') {
+                            if((indentLevel-1) > 0) {
+                                result += ' ' * ((indentLevel-1)*4)
+                            }
+                        } else {
+                            result += ' ' * (indentLevel*4)
+                        }
+                    }
+                }
+                break
+            case '[':
+                result += groovy_code[i]
+                if(!insideString) {
+                    indentLevel += 1
+                    result += '\n'
+                    if(indentLevel > 0) {
+                        result += ' ' * ( indentLevel * 4 )
+                    }
+                }
+                break
+            case ']':
+                result += groovy_code[i]
+                if(!insideString) {
+                    indentLevel -= 1
+                    if(indentLevel < 0) {
+                        throw new Exception('Indent level cannot be negative.  This is a bug since you should never see this!')
+                    }
+                }
+                result += '\n'
+                if((indentLevel-1) > 0) {
+                }
+                break
+            case ':':
+                result += groovy_code[i]
+                if(!insideString) {
+                    result += ' '
+                }
+                break
+            case '\'':
+                result += groovy_code[i]
+                if(escapeChar) {
+                    escapeChar = !escapeChar
+                }
+                else {
+                    insideString = !insideString
+                    if(!insideString && !(groovy_code[i+1] in [',', ':'])) {
+                        result += '\n'
+                        if(indentLevel > 0) {
+                            if(groovy_code[i+1] == ']') {
+                                if((indentLevel-1) > 0) {
+                                    result += ' ' * ((indentLevel-1)*4)
+                                }
+                            } else {
+                                result += ' ' * (indentLevel*4)
+                            }
+                        }
+                    }
+                }
+                break
+            case '\\':
+                escapeChar = !escapeChar
+                result += groovy_code[i]
+                break
+            default:
+                if(escapeChar) {
+                    escapeChar != escapeChar
+                }
+                result += groovy_code[i]
+        }
+    }
+    result
+}
 
 SystemCredentialsProvider system_creds = SystemCredentialsProvider.getInstance()
 Map system_creds_map = system_creds.getDomainCredentialsMap()
@@ -78,4 +174,5 @@ system_creds_map[domain].each {
   }
   credentials_export << "get${it.class.simpleName}"(it)
 }
-println 'credentials = ' + credentials_export.inspect()
+
+println 'credentials = ' + prettyPrint(credentials_export.inspect(), usePrettyPrint)
