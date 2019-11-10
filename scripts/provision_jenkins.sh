@@ -54,10 +54,12 @@ CURL="${CURL:-curl}"
 #Get JAVA_HOME for java on Mac OS X
 #will only run if OS X is detected
 if uname -rms | grep Darwin &> /dev/null; then
-  JAVA_HOME="$(/usr/libexec/java_home)"
-  PATH="${JAVA_HOME}/bin:${PATH}"
-  #echo "JAVA_HOME=${JAVA_HOME}"
-  #java -version
+  if [ -z "${JAVA_HOME:-}" ]; then
+    JAVA_HOME="$(/usr/libexec/java_home)"
+    PATH="${JAVA_HOME}/bin:${PATH}"
+  fi
+  echo "JAVA_HOME=${JAVA_HOME}"
+  java -version
 fi
 
 export jenkins_url JENKINS_HOME JAVA_HOME PATH JENKINS_CLI CURL
@@ -345,7 +347,7 @@ case "$1" in
     jenkins_script_console script_skip_wizard
     jenkins_script_console script_disable_usage_stats
     jenkins_script_console script_upgrade_plugins
-    jenkins_script_console script_install_plugins "credentials-binding,git,github,github-oauth,job-dsl,matrix-auth,matrix-project,pipeline-stage-view,ssh-slaves,workflow-aggregator"
+    jenkins_script_console script_install_plugins "credentials-binding,git,github,github-oauth,job-dsl,matrix-auth,matrix-project,ssh-slaves,workflow-aggregator"
 
     if ! ${skip_restart}; then
       start_or_restart_jenkins
