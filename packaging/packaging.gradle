@@ -129,6 +129,10 @@ ospackage {
         fileType CONFIG
         rename '.*', tokens['ARTIFACTNAME']
     }
+    from(fileTree("${buildDir}/packaging-filtered") { include '*.sh'; include 'rpm/**/*'; include 'deb/**/*'; include 'daemon/**/*'; include 'jenkins.*' }) {
+        into "lib/${tokens['ARTIFACTNAME']}/distrib"
+        fileMode = 0755
+    }
 }
 
 buildRpm {
@@ -153,7 +157,7 @@ buildRpm {
         fileType CONFIG
         rename '.*', tokens['ARTIFACTNAME']
     }
-    from("${buildDir}/packaging-filtered/rpm/jenkins.sysconfig") {
+    from("${buildDir}/packaging-filtered/daemon/jenkins.config") {
         addParentDirs = false
         into '/etc/sysconfig'
         fileMode 0600
@@ -189,7 +193,7 @@ buildDeb {
         fileType CONFIG
         rename '.*', tokens['ARTIFACTNAME']
     }
-    from("${buildDir}/packaging-filtered/deb/jenkins.default") {
+    from("${buildDir}/packaging-filtered/daemon/jenkins.config") {
         addParentDirs = false
         into '/etc/default'
         fileMode 0600
@@ -224,20 +228,6 @@ task buildTar(type: Tar) {
 	archiveExtension = 'tar'
 	//compression = Compression.GZIP
 
-    from(fileTree("${buildDir}/packaging-filtered") { include '*.sh'; include 'rpm/**/*'; include 'deb/**/*'; include 'docker/**/*' }) {
-        into 'distribution-scripts'
-        fileMode = 0755
-    }
-    from("${buildDir}/packaging-filtered/jenkins.logrotate") {
-        into 'distribution-scripts/etc/logrotate.d'
-        rename '.*', tokens['ARTIFACTNAME']
-    }
-    from("${buildDir}/packaging-filtered/jenkins.cron") {
-        into 'distribution-scripts/etc/cron.daily'
-        fileMode 0755
-        rename '.*', tokens['ARTIFACTNAME']
-    }
-
     from(configurations.getjenkins) {
         into "lib/${tokens['ARTIFACTNAME']}"
         rename '.*', "${tokens['ARTIFACTNAME']}.war"
@@ -259,6 +249,10 @@ task buildTar(type: Tar) {
     }
     from("${buildDir}/packaging-filtered/share") {
         into "lib/${tokens['ARTIFACTNAME']}/share"
+    }
+    from(fileTree("${buildDir}/packaging-filtered") { include '*.sh'; include 'rpm/**/*'; include 'deb/**/*'; include 'daemon/**/*'; include 'jenkins.*' }) {
+        into "lib/${tokens['ARTIFACTNAME']}/distrib"
+        fileMode = 0755
     }
 }
 buildTar.dependsOn createManifest, filterPackagingScripts, userOverridenFilterPackagingScripts, prepareTarJenkinsScripts

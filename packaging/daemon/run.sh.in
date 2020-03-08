@@ -5,6 +5,11 @@
 
 set -ex
 
+if [ "${JENKINS_ENABLE_SYSV_CONFIG:-@@JENKINS_ENABLE_SYSV_CONFIG@@}" = yes ]; then
+  [ ! -f /etc/sysconfig/jenkins ] || source /etc/sysconfig/jenkins
+  [ ! -f /etc/default/jenkins ] || source /etc/default/jenkins
+fi
+
 if [ -z "${JAVA_HOME}" ]; then
   echo "Error: JAVA_HOME not set."
   exit 1
@@ -23,6 +28,7 @@ JENKINS_HANDLER_MAX="${JENKINS_HANDLER_MAX:-~~HTTP_MAX_WORKER_THREADS~~}"
 JENKINS_HANDLER_IDLE="${JENKINS_HANDLER_IDLE:-~~HTTP_MAX_IDLE_THREADS~~}"
 JENKINS_GIT_USER="${JENKINS_GIT_USER:-Jenkins Automation}"
 JENKINS_GIT_EMAIL="${JENKINS_GIT_EMAIL:-noreply@example.com}"
+JENKINS_JAVA_CMD="${JENKINS_JAVA_CMD:-java}"
 [ -n "${JENKINS_ARGS}" ] || JENKINS_ARGS="-~~ADDITIONAL_JENKINS_ARGS~~"
 
 if [ "${JENKINS_KEYSTORE}" ]; then
@@ -34,8 +40,12 @@ if [ "${JENKINS_KEYSTORE}" ]; then
   JENKINS_HTTPS_LISTEN_ADDRESS="0.0.0.0"
 fi
 
-JAVA_CMD=( java ${JAVA_OPTS} ${JENKINS_JAVA_OPTIONS} -DJENKINS_HOME="${JENKINS_HOME}" -jar "${JENKINS_WAR}" )
+JAVA_CMD=( ${JENKINS_JAVA_CMD} ${JAVA_OPTS} ${JENKINS_JAVA_OPTIONS} -DJENKINS_HOME="${JENKINS_HOME}" -jar "${JENKINS_WAR}" )
 ARGS=( "--webroot=/var/cache/@@ARTIFACTNAME@@/war" "--pluginroot=/var/cache/@@ARTIFACTNAME@@/plugins" )
+# pass shell arguments through as JENKINS_ARGS
+if [ "$#" -gt 0 ]; then
+  ARGS+=( "$@" )
+fi
 [ -z "${JENKINS_PORT}" ] || ARGS+=( "--httpPort=${JENKINS_PORT}" )
 [ -z "${JENKINS_LISTEN_ADDRESS}" ] || ARGS+=( "--httpListenAddress=${JENKINS_LISTEN_ADDRESS}" )
 [ -z "${JENKINS_HTTPS_PORT}" ] || ARGS+=( "--httpsPort=${JENKINS_HTTPS_PORT}" )

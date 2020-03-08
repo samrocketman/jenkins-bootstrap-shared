@@ -9,8 +9,8 @@ RUN set -ex; \
 adduser -u 100 -G nogroup -h ${JENKINS_HOME} -S jenkins && \
 apk add --no-cache git rsync openssh && \
 mkdir -p /var/cache/jenkins && \
-chown -R jenkins: /usr/lib/jenkins /usr/distribution-scripts /var/cache/jenkins && \
-cp /usr/distribution-scripts/docker/run.sh /run.sh
+chown -R jenkins: /usr/lib/jenkins /var/cache/jenkins && \
+ln -s /usr/lib/jenkins/distrib/daemon/run.sh /run.sh
 
 EXPOSE 8080/tcp
 

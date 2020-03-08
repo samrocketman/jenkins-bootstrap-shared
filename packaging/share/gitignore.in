@@ -17,6 +17,7 @@
 !/@@MANIFEST@@
 !/dailycommit.sh
 !/@@PACKAGENAME@@-commit
+!/cron.disabled
 
 # ignore all files in jobs subdirectories except for folders
 # note: git doesn't track folders, only file content

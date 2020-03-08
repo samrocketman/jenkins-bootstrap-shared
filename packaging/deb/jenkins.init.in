@@ -23,7 +23,7 @@ SCRIPTNAME=/etc/init.d/$NAME
 
 #DAEMON=$JENKINS_SH
 DAEMON=/usr/bin/daemon
-DAEMON_ARGS="--name=$NAME --inherit --env=JENKINS_HOME=$JENKINS_HOME --output=$JENKINS_LOG --pidfile=$PIDFILE"
+DAEMON_ARGS="--name=$NAME --inherit --env=USE_JENKINS_ENVIRONMENT_FILE=yes --output=/var/log/@@ARTIFACTNAME@@/@@ARTIFACTNAME@@.log --pidfile=$PIDFILE"
 
 if [ -n "$UMASK" ]; then
     DAEMON_ARGS="$DAEMON_ARGS --umask=$UMASK"
@@ -127,7 +127,7 @@ do_start()
 
     # --user in daemon doesn't prepare environment variables like HOME, USER, LOGNAME or USERNAME,
     # so we let su do so for us now
-    $SU -l $JENKINS_USER --shell=/bin/bash -c "$DAEMON $DAEMON_ARGS -- $JAVA $JAVA_ARGS -jar $JENKINS_WAR $JENKINS_ARGS" || return 2
+    $SU -l $JENKINS_USER --shell=/bin/bash -c "$DAEMON $DAEMON_ARGS -- '@@PREFIX@@/lib/@@ARTIFACTNAME@@/distrib/daemon/run.sh'" || return 2
 }
 
 
@@ -202,25 +202,6 @@ do_check_started_ok() {
 
 case "$1" in
   start)
-    if [ ! -d "${JENKINS_HOME}/plugins" -o -f "${JENKINS_HOME}/overwrite" ]; then
-      echo "Overwriting plugins."
-      mkdir -p "${JENKINS_HOME}/plugins"
-      rsync -a --delete-after "@@PREFIX@@/lib/@@ARTIFACTNAME@@/plugins/" "${JENKINS_HOME}/plugins/"
-      echo "Pinning all plugins in '${JENKINS_HOME}/plugins/'."
-      echo "See https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins for more info."
-      for plugin in "${JENKINS_HOME}"/plugins/*.jpi;do
-        #pin plugin versions
-        #https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins
-        touch "${plugin}.pinned"
-      done
-      chown -R "${JENKINS_USER}": "${JENKINS_HOME}"/plugins
-    fi
-    if [ ! -d "${JENKINS_HOME}/init.groovy.d" -o -f "${JENKINS_HOME}/overwrite" ]; then
-      echo "Overwriting init.groovy.d scripts."
-      mkdir -p "${JENKINS_HOME}/init.groovy.d"
-      rsync -a --delete-after "@@PREFIX@@/lib/@@ARTIFACTNAME@@/scripts/init.groovy.d/" "${JENKINS_HOME}/init.groovy.d/"
-      chown -R "${JENKINS_USER}": "${JENKINS_HOME}"/init.groovy.d
-    fi
     log_daemon_msg "Starting $DESC" "$NAME"
     do_start
     START_STATUS="$?"

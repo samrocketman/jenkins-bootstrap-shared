@@ -12,4 +12,8 @@ fi
 JENKINS_HOME="${JENKINS_HOME:-@@HOME@@}"
 JENKINS_USER="${JENKINS_USER:-@@USER@@}"
 
+if [ -e "${JENKINS_HOME}/cron.disabled" ]; then
+  exit
+fi
+
 su -s /bin/bash -c "${JENKINS_HOME}/dailycommit.sh" - ${JENKINS_USER}

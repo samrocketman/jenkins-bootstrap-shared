@@ -118,6 +118,15 @@ JENKINS_DEBUG_LEVEL="5"
 #
 JENKINS_ENABLE_ACCESS_LOG="~~JENKINS_ENABLE_ACCESS_LOG~~"
 
+## Type:        yesno
+## Default:     no
+## ServiceRestart: @@ARTIFACTNAME@@
+#
+# Source configuration in SysV Init compatible way.  Available for old SysV
+# Init systems.
+#
+JENKINS_ENABLE_SYSV_CONFIG="~~JENKINS_ENABLE_SYSV_CONFIG~~"
+
 ## Type:        integer
 ## Default:     100
 ## ServiceRestart: @@ARTIFACTNAME@@
