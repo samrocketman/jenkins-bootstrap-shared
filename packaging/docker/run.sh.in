@@ -3,7 +3,7 @@
 #Tue Jan 30 23:53:18 PST 2018
 #Docker runner for Jenkins
 
-set -e
+set -ex
 
 if [ -z "${JAVA_HOME}" ]; then
   echo "Error: JAVA_HOME not set."
@@ -70,11 +70,7 @@ if [ ! -e "${JENKINS_HOME}/.gitignore" ]; then
   cp "@@PREFIX@@/lib/@@ARTIFACTNAME@@/share/gitignore" "${JENKINS_HOME}/.gitignore"
   chmod 644 "${JENKINS_HOME}/.gitignore"
 fi
-if ! diff -q "@@PREFIX@@/lib/@@ARTIFACTNAME@@/share/gitignore" "${JENKINS_HOME}/.gitignore"; then
-  diff -u "@@PREFIX@@/lib/@@ARTIFACTNAME@@/share/gitignore" "${JENKINS_HOME}/.gitignore"
-  echo "To resolve the changes you can optionally:"
-  echo "    cp -f '@@PREFIX@@/lib/@@ARTIFACTNAME@@/share/gitignore' '${JENKINS_HOME}/.gitignore'"
-fi
+
 #create git repo if it doesn't exist
 if [ ! -d "${JENKINS_HOME}/.git" ]; then
   (
@@ -88,21 +84,27 @@ if [ ! -d "${JENKINS_HOME}/.git" ]; then
 fi
 
 #commit unsaved configuration before starting up/upgrading
-git config --local --get user.name || git config user.name "${JENKINS_GIT_USER}"
-git config --local --get user.email || git config user.email "${JENKINS_GIT_EMAIL}"
-git add -A
-#commit only if changes exist
-git diff-index --quiet HEAD || git commit -m 'pre-start checkpoint commit saving configs'
+if ! diff "@@PREFIX@@/lib/@@ARTIFACTNAME@@/@@MANIFEST@@" "${JENKINS_HOME}/@@MANIFEST@@" &> /dev/null; then
+  git config --local --get user.name || git config user.name "${JENKINS_GIT_USER}"
+  git config --local --get user.email || git config user.email "${JENKINS_GIT_EMAIL}"
+  git add -A
+  #commit only if changes exist
+  git diff-index --quiet HEAD || git commit -m 'pre-start checkpoint commit saving configs'
 
-#save the current version of the bootstrapper to JENKINS_HOME on startup
-echo "Overwriting manifest in '${JENKINS_HOME}/plugins/@@MANIFEST@@'."
-cp -f "@@PREFIX@@/lib/@@ARTIFACTNAME@@/@@MANIFEST@@" "${JENKINS_HOME}/"
-echo '@@COMMIT@@' > "${JENKINS_HOME}/@@PACKAGENAME@@-commit"
+  #save the current version of the bootstrapper to JENKINS_HOME on startup
+  echo "Overwriting manifest in '${JENKINS_HOME}/plugins/@@MANIFEST@@'."
+  cp -f "@@PREFIX@@/lib/@@ARTIFACTNAME@@/@@MANIFEST@@" "${JENKINS_HOME}/"
+  echo '@@COMMIT@@' > "${JENKINS_HOME}/@@PACKAGENAME@@-commit"
 
-#overwrite dailycommit which is meant for daily
-echo "Overwriting '${JENKINS_HOME}/dailycommit.sh'."
-cp -f "@@PREFIX@@/lib/@@ARTIFACTNAME@@/share/dailycommit.sh" "${JENKINS_HOME}/"
-chmod 755 "${JENKINS_HOME}/dailycommit.sh"
+  #overwrite dailycommit which is meant for daily commit snapshots of jenkins config
+  echo "Overwriting '${JENKINS_HOME}/dailycommit.sh'."
+  cp -f "@@PREFIX@@/lib/@@ARTIFACTNAME@@/share/dailycommit.sh" "${JENKINS_HOME}/"
+  chmod 755 "${JENKINS_HOME}/dailycommit.sh"
+
+  #overwrite gitignore in case it has changed in the package
+  echo "Overwriting GITIGNORE file in JENKINS_HOME"
+  cp -f "@@PREFIX@@/lib/@@ARTIFACTNAME@@/share/gitignore" "${JENKINS_HOME}/.gitignore"
+fi
 
 for x in ~/.bash_profile ~/.bashrc; do
   grep JENKINS_HOME "${x}" || echo "export JENKINS_HOME=\"${JENKINS_HOME}\"" >> "${x}"
