@@ -13,6 +13,7 @@ buildscript {
 //RPM package building
 apply plugin: 'nebula.ospackage'
 
+
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.redline_rpm.header.Flags
 
@@ -54,6 +55,7 @@ ospackage {
     url tokens['HOMEPAGE']
     into tokens['PREFIX']
     license tokens['LICENSE']
+    summary tokens['SUMMARY']
 
     //shared package name dependencies
     requires 'coreutils'
@@ -215,10 +217,11 @@ task prepareTarJenkinsScripts(type: Copy) {
 }
 
 task buildTar(type: Tar) {
-    baseName = tokens['PACKAGENAME']
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    archiveBaseName = tokens['PACKAGENAME']
     dirMode = 0755
     fileMode = 0644
-	extension = 'tar'
+	archiveExtension = 'tar'
 	//compression = Compression.GZIP
 
     from(fileTree("${buildDir}/packaging-filtered") { include '*.sh'; include 'rpm/**/*'; include 'deb/**/*'; include 'docker/**/*' }) {

@@ -1,5 +1,6 @@
 //gradle plugins
-apply plugin: 'maven'
+apply plugin: 'base'
+apply plugin: 'maven-publish'
 
 //default
 defaultTasks 'getjenkins', 'getplugins'
@@ -7,9 +8,3 @@ defaultTasks 'getjenkins', 'getplugins'
 apply from: 'variables.gradle'
 apply from: "${bootstrapHome}/jenkins.gradle"
 apply from: "${bootstrapHome}/packaging/packaging.gradle"
-
-//http://www.gradle.org/docs/current/userguide/gradle_wrapper.html
-//generate gradlew with: gradle wrapper
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.1'
-}
