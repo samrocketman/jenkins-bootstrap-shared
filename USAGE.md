@@ -42,3 +42,9 @@ stays up to date with development in Jenkins these instructions are provided.
 
 To upgrade the stable Jenkins and plugins versions used for testing PRs follow
 the [upgrade instructions](scripts/upgrade/README.md).
+
+# Upgrading Gradle
+
+    ./gradlew wrapper --gradle-version=6.2.2 --distribution-type=bin
+
+Will upgrade the gradle wrapper used.
