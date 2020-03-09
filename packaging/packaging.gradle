@@ -123,15 +123,19 @@ ospackage {
         fileType CONFIG
         rename '.*', tokens['ARTIFACTNAME']
     }
-    from("${buildDir}/packaging-filtered/jenkins.cron") {
+    from("${buildDir}/packaging-filtered/jenkins.cron.sh") {
         into '/etc/cron.daily'
         fileMode 0755
         fileType CONFIG
         rename '.*', tokens['ARTIFACTNAME']
     }
-    from(fileTree("${buildDir}/packaging-filtered") { include '*.sh'; include 'rpm/**/*'; include 'deb/**/*'; include 'daemon/**/*'; include 'jenkins.*' }) {
+    from(fileTree("${buildDir}/packaging-filtered") { include '**/*.sh'; include 'rpm/**/*'; include 'deb/**/*'; exclude 'share/**/*' }) {
         into "lib/${tokens['ARTIFACTNAME']}/distrib"
         fileMode = 0755
+    }
+    from(fileTree("${buildDir}/packaging-filtered") { include 'daemon/**/*'; include 'jenkins.*'; exclude '**/*.sh' }) {
+        into "lib/${tokens['ARTIFACTNAME']}/distrib"
+        fileMode = 0644
     }
 }
 
@@ -215,13 +219,13 @@ removeDebChangesFile.mustRunAfter buildDeb
 buildDeb.finalizedBy removeDebChangesFile
 
 task prepareTarJenkinsScripts(type: Copy) {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     from "${bootstrapHome}/scripts"
     from "scripts"
     into "${buildDir}/jenkins-scripts"
 }
 
 task buildTar(type: Tar) {
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     archiveBaseName = tokens['PACKAGENAME']
     dirMode = 0755
     fileMode = 0644
@@ -250,9 +254,13 @@ task buildTar(type: Tar) {
     from("${buildDir}/packaging-filtered/share") {
         into "lib/${tokens['ARTIFACTNAME']}/share"
     }
-    from(fileTree("${buildDir}/packaging-filtered") { include '*.sh'; include 'rpm/**/*'; include 'deb/**/*'; include 'daemon/**/*'; include 'jenkins.*' }) {
+    from(fileTree("${buildDir}/packaging-filtered") { include '**/*.sh'; include 'rpm/**/*'; include 'deb/**/*'; exclude 'share/**/*' }) {
         into "lib/${tokens['ARTIFACTNAME']}/distrib"
         fileMode = 0755
+    }
+    from(fileTree("${buildDir}/packaging-filtered") { include 'daemon/**/*'; include 'jenkins.*'; exclude '**/*.sh' }) {
+        into "lib/${tokens['ARTIFACTNAME']}/distrib"
+        fileMode = 0644
     }
 }
 buildTar.dependsOn createManifest, filterPackagingScripts, userOverridenFilterPackagingScripts, prepareTarJenkinsScripts
