@@ -216,7 +216,7 @@ Shut down and delete all Jenkins data.
 
 ### Upgrade Jenkins and plugins
 
-To upgrade Jenkins master and plugin versions do the following:
+To upgrade Jenkins server and plugin versions do the following:
 
     ./jenkins_bootstrap.sh
     ./scripts/upgrade/upgrade_build_gradle.sh
@@ -287,7 +287,7 @@ For service control and other usage see [`USAGE`](USAGE.md).
 * [ASL 2](LICENSE)
 * [3rd party licenses](3rd_party)
 
-[ci-img]: https://travis-ci.org/samrocketman/jenkins-bootstrap-shared.svg?branch=master
+[ci-img]: https://travis-ci.org/samrocketman/jenkins-bootstrap-shared.svg?branch=main
 [ci-link]: https://travis-ci.org/samrocketman/jenkins-bootstrap-shared
 [docker]: https://www.docker.com/
 [jbj]: https://github.com/samrocketman/jenkins-bootstrap-jervis
