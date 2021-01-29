@@ -40,7 +40,9 @@ if [ "${JENKINS_KEYSTORE}" ]; then
   JENKINS_HTTPS_LISTEN_ADDRESS="0.0.0.0"
 fi
 
-JAVA_CMD=( ${JENKINS_JAVA_CMD} ${JAVA_OPTS} ${JENKINS_JAVA_OPTIONS} -DJENKINS_HOME="${JENKINS_HOME}" -jar "${JENKINS_WAR}" )
+eval "JAVA_OPTS=( ${JAVA_OPTS} )"
+eval "JENKINS_JAVA_OPTIONS=( ${JENKINS_JAVA_OPTIONS} )"
+JAVA_CMD=( "${JENKINS_JAVA_CMD}" "${JAVA_OPTS[@]}" "${JENKINS_JAVA_OPTIONS[@]}" -DJENKINS_HOME="${JENKINS_HOME}" -jar "${JENKINS_WAR}" )
 ARGS=( "--webroot=/var/cache/@@ARTIFACTNAME@@/war" "--pluginroot=/var/cache/@@ARTIFACTNAME@@/plugins" )
 # pass shell arguments through as JENKINS_ARGS
 if [ "$#" -gt 0 ]; then
