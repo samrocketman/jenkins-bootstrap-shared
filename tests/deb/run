@@ -24,6 +24,6 @@ while [ $# -gt 1 ]; do
 done
 # $1 is left intact to be run as the shell command in the docker image
 
-DOCKER_IMAGE="ubuntu:16.04"
+DOCKER_IMAGE='nexus.303net.net:8443/library/ubuntu:16.04'
 docker pull "${DOCKER_IMAGE}"
 docker run "${args[@]}" -w /mnt -t --rm -v "$PWD":/mnt "${DOCKER_IMAGE}" "${1:-/mnt/tests/deb/validate.sh}"
