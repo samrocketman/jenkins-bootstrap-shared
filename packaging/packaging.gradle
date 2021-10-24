@@ -77,6 +77,11 @@ ospackage {
     preUninstall = file("${buildDir}/packaging-filtered/preUninstall.sh")
     postUninstall = file("${buildDir}/packaging-filtered/postUninstall.sh")
 
+    from("${buildDir}/packaging-filtered/daemon/jenkins.service") {
+        into '/lib/systemd/system'
+        fileMode 0644
+        fileType CONFIG
+    }
     from(configurations.getjenkins) {
         into "lib/${tokens['ARTIFACTNAME']}"
         rename '.*', "${tokens['ARTIFACTNAME']}.war"

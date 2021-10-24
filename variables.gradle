@@ -30,7 +30,7 @@ ext.tokens = [
     //RPM only
     JENKINS_DEBUG_LEVEL: '5', //5 is INFO; higher means more verbose
     JENKINS_ENABLE_ACCESS_LOG: 'no', //yes or no
-    JENKINS_ENABLE_SYSV_CONFIG: 'yes', //yes or no
+    JENKINS_ENABLE_SYSV_CONFIG: 'no', //yes or no; should always be no for systemd operating systems
     HTTP_LISTEN_ADDRESS: '',
     HTTPS_PORT: '', //disabled by default
     HTTPS_KEYSTORE: '', //disabled by default

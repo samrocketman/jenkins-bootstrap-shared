@@ -20,6 +20,6 @@ Vagrant.configure("2") do |config|
     rpm -i /vagrant/build/distributions/*.rpm
     echo 'JAVA_HOME=/etc/alternatives/java_sdk' >> /etc/sysconfig/jenkins
     #start the Jenkins daemon
-    /etc/init.d/jenkins start
+    systemctl start jenkins.service
   SHELL
 end

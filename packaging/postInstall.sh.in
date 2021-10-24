@@ -54,15 +54,17 @@ echo "Overwriting manifest in '${JENKINS_HOME}/plugins/@@MANIFEST@@'."
 cp -f "${RPM_INSTALL_PREFIX}/lib/@@ARTIFACTNAME@@/@@MANIFEST@@" "${JENKINS_HOME}/"
 echo '@@COMMIT@@' > "${JENKINS_HOME}/@@PACKAGENAME@@-commit"
 
-echo "Pinning all plugins in '${JENKINS_HOME}/plugins/'."
-echo "See https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins for more info."
-for plugin in "${JENKINS_HOME}"/plugins/*.jpi;do
-  #pin plugin versions
-  #https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins
-  if [ -f "${plugin}" ]; then
-    touch "${plugin}.pinned"
-  fi
-done
+if ls "${JENKINS_HOME}"/plugins/*.jpi &> /dev/null; then
+  echo "Pinning all plugins in '${JENKINS_HOME}/plugins/'."
+  echo "See https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins for more info."
+  for plugin in "${JENKINS_HOME}"/plugins/*.jpi;do
+    #pin plugin versions
+    #https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins
+    if [ -f "${plugin}" ]; then
+      touch "${plugin}.pinned"
+    fi
+  done
+fi
 
 #change ownership of just the plugins dir but not children
 chown ${JENKINS_USER}: "${JENKINS_HOME}/plugins"
@@ -105,11 +107,15 @@ if ! diff -q "${RPM_INSTALL_PREFIX}/lib/@@ARTIFACTNAME@@/share/gitignore" "${JEN
 fi
 
 #create a symlink based on upstream RPM spec (see preUninstall.sh.in for removal)
-if ${RPM_BASED} && [ ! -d "${RPM_INSTALL_PREFIX}/sbin" ]; then
-  mkdir -p "${RPM_INSTALL_PREFIX}/sbin"
-  chmod 555 "${RPM_INSTALL_PREFIX}/sbin"
-fi
+if type -P systemctl; then
+  systemctl daemon-reload
+else
+  if ${RPM_BASED} && [ ! -d "${RPM_INSTALL_PREFIX}/sbin" ]; then
+    mkdir -p "${RPM_INSTALL_PREFIX}/sbin"
+    chmod 555 "${RPM_INSTALL_PREFIX}/sbin"
+  fi
 
-${RPM_BASED} && ln -sf '/etc/init.d/@@ARTIFACTNAME@@' "${RPM_INSTALL_PREFIX}/sbin/rc@@ARTIFACTNAME@@"
+  ${RPM_BASED} && ln -sf '/etc/init.d/@@ARTIFACTNAME@@' "${RPM_INSTALL_PREFIX}/sbin/rc@@ARTIFACTNAME@@"
+fi
 
 exit 0
