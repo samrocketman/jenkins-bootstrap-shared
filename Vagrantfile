@@ -12,8 +12,16 @@ Vagrant.configure("2") do |config|
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "4096"
   end
-
+  if Vagrant.has_plugin?("vagrant-vbguest")
+    config.vbguest.auto_update = false
+  end
   config.vm.provision "shell", inline: <<-SHELL
+    set -ex
+
+    # temporarily disable SELinux
+    sudo sed -i 's/^SELINUX=.*/SELINUX=disabled/' /etc/selinux/config
+    sudo setenforce 0
+
     # install Java
     yum install -y java-1.8.0-openjdk-devel.x86_64 git
     #install Jenkins
