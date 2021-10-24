@@ -1,0 +1,16 @@
+# /lib/systemd/system/jenkins.service
+[Unit]
+Description=@@SUMMARY@@
+After=network.service
+Requires=network.service
+[Service]
+TimeoutStartSec=0
+Restart=on-failure
+Environment="JENKINS_HOME=@@HOME@@"
+EnvironmentFile=-/etc/default/jenkins
+EnvironmentFile=-/etc/sysconfig/jenkins
+WorkingDirectory=${JENKINS_HOME}
+User=@@USER@@
+ExecStart=@@PREFIX@@/lib/@@ARTIFACTNAME@@/distrib/daemon/run.sh
+[Install]
+WantedBy=multi-user.target
