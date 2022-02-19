@@ -12,11 +12,14 @@ To use plugin refresh practice the following should be a practice.
   plugin][cac] or via jenkins-bootstrap-shared script console scripts.
 - All Jenkins jobs should be generated from code with no manually created jobs.
 
-Plugin refresh without the above conditions is risky because you might be
+Managing Jenkins without the above conditions is risky because you might be
 required to regenerate all of your config from scratch.  This is a typical
-scenario if you have long windows between upgrades and the versions of plugins
-installed on your Jenkins controller do not have clean configuration upgrade
-paths to the latest available Jenkins plugins through the Jenkins update center.
+scenario if you have long time periods between upgrades and the versions of
+plugins installed on your Jenkins controller.  Old Jenkins plugins tend to not
+have clean configuration upgrade paths to the latest available Jenkins update
+center plugins.
+
+---
 
 # Plugin Upgrade
 
