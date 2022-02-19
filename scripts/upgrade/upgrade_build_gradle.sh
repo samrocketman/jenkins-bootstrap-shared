@@ -4,7 +4,11 @@
 #Ubuntu 16.04.2 LTS
 #Linux 4.4.0-72-generic x86_64
 
+set -e
+
 function cleanup_on() {
+  [ -n "${TMPFILE}" ] && rm -f "${TMPFILE}"
+  [ -n "${GAV_TMPFILE}" ] && rm -f "${GAV_TMPFILE}"
   #clean up jenkins headers file
   [ -n "${JENKINS_HEADERS_FILE}" -a -f "${JENKINS_HEADERS_FILE}" ] && rm -f "${JENKINS_HEADERS_FILE}"
   [ -n "${VAGRANT_SSH_CONFIG}" -a -f "${VAGRANT_SSH_CONFIG}" ] && rm -f "${VAGRANT_SSH_CONFIG}"
@@ -16,39 +20,10 @@ function cleanup_on() {
 }
 trap 'cleanup_on $?' EXIT
 
-set -e
-
-function cleanup_temp_on() {
-  [ -n "${TMPFILE}" ] && rm -f "${TMPFILE}"
-  [ -n "${GAV_TMPFILE}" ] && rm -f "${GAV_TMPFILE}"
-  [ -n "${JENKINS_HEADERS_FILE}" ] && rm -f "${JENKINS_HEADERS_FILE}"
-}
-trap cleanup_temp_on EXIT
-
-source env.sh
-#set password if using vagrant
-[ -n "${VAGRANT_JENKINS}" ] && source "${SCRIPT_LIBRARY_PATH}/vagrant-env.sh"
-[ -n "${DOCKER_JENKINS}" ] && source "${SCRIPT_LIBRARY_PATH}/docker-env.sh"
+source "${SCRIPT_LIBRARY_PATH}"/upgrade/setup_environment.sh
 
 #allow users to import when using no upgrade
 [ -n "${NO_UPGRADE}" ] && FORCE_UPGRADE=1
-
-#protect user from accidentally upgrading a remote Jenkins
-#this should always be localhost
-if [ ! "${JENKINS_WEB}" = 'http://localhost:8080' ]; then
-  echo 'ERROR: JENKINS_WEB is not equal to localhost' >&2
-  echo "JENKINS_WEB = ${JENKINS_WEB}" >&2
-  exit 1
-fi
-
-if [ ! -f build.gradle ]; then
-  echo "Not being run from repository root." 1>&2
-  exit 1
-fi
-
-#set up Jenkins env vars
-export JENKINS_HEADERS_FILE=$(mktemp)
-source "${SCRIPT_LIBRARY_PATH}"/upgrade/env.sh
 
 #wait for jenkins to become available
 "${SCRIPT_LIBRARY_PATH}"/provision_jenkins.sh url-ready "${JENKINS_WEB}/jnlpJars/jenkins-cli.jar"
