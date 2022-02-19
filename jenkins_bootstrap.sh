@@ -29,6 +29,10 @@ source env.sh
 export JENKINS_HEADERS_FILE="$(mktemp)"
 export JENKINS_USER="${JENKINS_USER:-admin}"
 
+if [ "x$1" == 'x--skip-plugins' ]; then
+  export REMOTE_JENKINS=1 NO_UPGRADE=1 SKIP_PLUGINS=1
+fi
+
 set -e
 
 
@@ -44,6 +48,14 @@ fi
 if [ -z "${REMOTE_JENKINS}" -a -z "${VAGRANT_JENKINS}" -a -z "${DOCKER_JENKINS}" ]; then
   echo 'Downloading specific versions of Jenkins and plugins...'
   ./gradlew getjenkins getplugins
+elif [ -n "${SKIP_PLUGINS:-}" ]; then
+  if [ -d plugins ]; then
+    echo 'ERROR: you called bootstrap with --skip-plugins but plugins exist.' >&2
+    echo 'Run "./gradlew clean" to clear the workspace and try again.' >&2
+    exit 1
+  fi
+  echo 'Downloading Jenkins only.'
+  ./gradlew getjenkins
 fi
 
 if [ -d "./plugins" ]; then
@@ -90,6 +102,13 @@ if [ -z "${REMOTE_JENKINS}" -a -z "${VAGRANT_JENKINS}" -a -z "${DOCKER_JENKINS}"
   fi
 fi
 
+# start up Jenkins if doing a skip plugins run
+if [ -n "${SKIP_PLUGINS:-}" ]; then
+  if ! "${SCRIPT_LIBRARY_PATH}/provision_jenkins.sh" status; then
+    "${SCRIPT_LIBRARY_PATH}/provision_jenkins.sh" start
+  fi
+fi
+
 #wait for jenkins to become available
 "${SCRIPT_LIBRARY_PATH}/provision_jenkins.sh" url-ready "${JENKINS_WEB}/jnlpJars/jenkins-cli.jar"
 
@@ -97,10 +116,15 @@ fi
 export JENKINS_PASSWORD="${JENKINS_PASSWORD:-$(<"${JENKINS_HOME}"/secrets/initialAdminPassword)}"
 "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url -a -m HEAD -o /dev/null ${JENKINS_WEB}
 
-if grep -- '^ \+getplugins' dependencies.gradle > /dev/null; then
+if [ -n "${SKIP_PLUGINS:-}" ] || grep -- '^ \+getplugins' dependencies.gradle > /dev/null; then
   jenkins_console --script "${SCRIPT_LIBRARY_PATH}/console-skip-2.0-wizard.groovy"
 fi
 jenkins_console --script "${SCRIPT_LIBRARY_PATH}/configure-disable-usage-stats.groovy"
+
+# do not process any user configs
+if [ -n "${SKIP_PLUGINS:-}" ]; then
+  exit
+fi
 
 #configure jenkins agent credentials
 #jenkins_console --script "${SCRIPT_LIBRARY_PATH}/credentials-jenkins-agent.groovy"
