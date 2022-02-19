@@ -66,7 +66,10 @@ skip to the next section.
    ```
 
 3. Visit `http://localhost:8080/` and install all desired plugins.  Be sure to
-   continue as admin.
+   continue as admin.  To simplify upgrading in the future adding the plugin IDs
+   of Jenkins plugins you install to `pinned-plugins.txt` will help keep your
+   infrastructure healthy in future upgrades.  See the [Upgrade Jenkins and
+   plugins](#upgrade-jenkins-and-plugins) section below to learn more.
 
 4. Save your Jenkins version and plugins to your new repository.
 
@@ -216,11 +219,13 @@ Shut down and delete all Jenkins data.
 
 ### Upgrade Jenkins and plugins
 
-To upgrade Jenkins server and plugin versions do the following:
+it is suggested to perform a plugin refresh instead of upgrading the plugins.
+As Jenkins plugins get developed new plugin dependencies get added and removed.
+This bloat over time can cause Jenkins instances to have a large amount of
+plugins installed which are not used.  To keep your Jenkins instance lean with
+plugins a full plugin refresh is suggested.
 
-    ./jenkins_bootstrap.sh
-    ./scripts/upgrade/upgrade_build_gradle.sh
-    git add -A && git commit -m 'jenkins upgraded'
+Learn more by reading the [upgrade documentation](scripts/upgrade/README.md).
 
 ### Build an RPM package
 
