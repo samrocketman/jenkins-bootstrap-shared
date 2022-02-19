@@ -59,6 +59,7 @@ echo 'Upgrade dependencies.gradle file.'
 if [ ! "$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url - <<< 'println Jenkins.instance.pluginManager.plugins.size()')" = '0' ]; then
   #create an index of installed plugins
   "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/listShortNameVersion.groovy > "${TMPFILE}"
+  [ -f "${GAV_TMPFILE}" ] || "${SCRIPT_LIBRARY_PATH}"/upgrade/plugins_gav.sh > "${GAV_TMPFILE}"
 
   JENKINS_WAR_VERSION=$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url - <<< 'println Jenkins.instance.version')
   cat > dependencies.gradle <<-EOF
@@ -80,17 +81,38 @@ EOF
   fi
   touch "${CUSTOM_TMPFILE}"
 
+  if [ -f pinned-plugins.txt ]; then
+    #minimally pinned plugins
+    cat >> dependencies.gradle <<-EOF
+
+    //Plugins from pinned-plugins.txt
+EOF
+    while read x; do
+      if grep -F "${x%:*}" "${CUSTOM_TMPFILE}" > /dev/null; then
+        #skip custom plugins because they're already included in dependencies.gradle
+        continue
+      fi
+      if ! grep "^${x%:*}\$" pinned-plugins.txt > /dev/null; then
+        #skip if not a pinned plugin
+        continue
+      fi
+      GROUP=$(gawk "BEGIN {FS=\":\"};\$2 == \"${x%:*}\" { print \$1 }" "${GAV_TMPFILE}")
+      echo "    getplugins '${GROUP}:${x}@hpi'"
+      unset GROUP
+    done < "${TMPFILE}" | LC_COLLATE=C sort >> dependencies.gradle
+    cat pinned-plugins.txt >> "${CUSTOM_TMPFILE}"
+  fi
+
+  # list remaining dependencies
   cat >> dependencies.gradle <<-EOF
 
-    //get plugins
+    //additional plugins (usually transitive dependencies)
 EOF
-
   while read x; do
     if grep -F "${x%:*}" "${CUSTOM_TMPFILE}" > /dev/null; then
-      #skip custom plugins because they're already included in dependencies.gradle
+      #skip plugins because they're already included in dependencies.gradle
       continue
     fi
-    [ -f "${GAV_TMPFILE}" ] || "${SCRIPT_LIBRARY_PATH}"/upgrade/plugins_gav.sh > "${GAV_TMPFILE}"
     GROUP=$(gawk "BEGIN {FS=\":\"};\$2 == \"${x%:*}\" { print \$1 }" "${GAV_TMPFILE}")
     echo "    getplugins '${GROUP}:${x}@hpi'"
     unset GROUP
