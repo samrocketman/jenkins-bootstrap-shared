@@ -46,5 +46,9 @@ fi
 
 "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/installMinimalPlugins.groovy --data-string "plugins='''$(< pinned-plugins.txt)'''.trim();"
 "${SCRIPT_LIBRARY_PATH}"/upgrade/wait_for_upgrade_to_complete.sh
+if "${SCRIPT_LIBRARY_PATH}"/upgrade/jenkins_needs_restart.sh; then
+  #set up Jenkins env vars post-restart
+  source "${SCRIPT_LIBRARY_PATH}"/upgrade/env.sh
+fi
 export NO_UPGRADE=1
 "${SCRIPT_LIBRARY_PATH}"/upgrade/upgrade_build_gradle.sh*
