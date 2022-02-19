@@ -53,8 +53,10 @@ if [ -d "./plugins" ]; then
       echo "Copying ${x} to JENKINS_HOME"
       cp -r "./plugins/${x}" "${JENKINS_HOME}/plugins/"
       #pin plugin versions
-      #https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins
-      touch "${JENKINS_HOME}/plugins/${x}.pinned"
+      if [ -f pinned-plugins.txt ] && grep "^${x%.jpi}$" pinned-plugins.txt &> /dev/null; then
+        #https://wiki.jenkins-ci.org/display/JENKINS/Pinned+Plugins
+        touch "${JENKINS_HOME}/plugins/${x}.pinned"
+      fi
     fi
   done
 fi
