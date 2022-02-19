@@ -7,12 +7,18 @@ if [ -z "${JENKINS_WEB}" -o -z "${SCRIPT_LIBRARY_PATH}" ]; then
   exit 1
 fi
 
-if ! type -P gawk; then
-  echo 'ERROR: GNU awk is required.' >&2
-  echo 'If on Mac, "brew install gawk".' >&2
-  echo "Otherwise, install GNU awk for the platform you're using" >&2
-  exit 1
-fi
+function gawk() {
+  if [ "$(uname)" = Linux ]; then
+    command awk "$@"
+  elif type -P gawk &> /dev/null; then
+    command gawk "$@"
+  else
+    echo 'ERROR: GNU awk is required.' >&2
+    echo '    If on Mac, "brew install gawk".' >&2
+    echo "    Otherwise, install GNU awk for the platform you're using" >&2
+    exit 1
+  fi
+}
 
 # GNU or BSD sed is required.  Homebrew on Mac installs GNU sed as gsed.
 # Try to detect gsed; otherwise, fall back to detecting OS for using sed.
