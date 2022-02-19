@@ -62,22 +62,11 @@ if [ -z "${NO_UPGRADE}" ]; then
     exit 1
   ) >&2
 
-  echo -n 'Waiting for Jenkins and plugins to be downloaded.'
-  while [ "$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/isUpgradeInProgress.groovy)" = 'true' ]; do
-    sleep 3
-    echo -n '.'
-  done
-  echo
-fi
-
-if [ -z "${NO_UPGRADE}" -a "$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/needsRestart.groovy)" = 'true' ]; then
-  #restart Jenkins
-  "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url <(echo "Jenkins.instance.restart()")
-  #wait for jenkins to become available
-  "${SCRIPT_LIBRARY_PATH}"/provision_jenkins.sh url-ready "${JENKINS_WEB}/jnlpJars/jenkins-cli.jar"
-
-  #set up Jenkins env vars post-restart
-  source "${SCRIPT_LIBRARY_PATH}"/upgrade/env.sh
+  "${SCRIPT_LIBRARY_PATH}"/upgrade/wait_for_upgrade_to_complete.sh
+  if "${SCRIPT_LIBRARY_PATH}"/upgrade/jenkins_needs_restart.sh; then
+    #set up Jenkins env vars post-restart
+    source "${SCRIPT_LIBRARY_PATH}"/upgrade/env.sh
+  fi
 fi
 
 if grep -- '^version' gradle.properties; then
