@@ -7,7 +7,6 @@
 # DESCRIPTION
 #     This script is meant to be sourced.  It runs some pre-upgrade checks.
 
-source env.sh
 #set password if using vagrant
 [ -n "${VAGRANT_JENKINS}" ] && source "${SCRIPT_LIBRARY_PATH}/vagrant-env.sh"
 [ -n "${DOCKER_JENKINS}" ] && source "${SCRIPT_LIBRARY_PATH}/docker-env.sh"

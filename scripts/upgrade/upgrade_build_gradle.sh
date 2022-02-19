@@ -20,6 +20,7 @@ function cleanup_on() {
 }
 trap 'cleanup_on $?' EXIT
 
+source env.sh
 source "${SCRIPT_LIBRARY_PATH}"/upgrade/setup_environment.sh
 
 #allow users to import when using no upgrade
