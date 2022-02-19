@@ -1,4 +1,27 @@
-# Upgrading
+# Plugin Refresh
+
+It is recommended to keep Jenkins lean and up to date that you follow the
+[plugin refresh guide](plugin_refresh.md).  Instead of upgrading plugins you
+start from scratch with your minimally required plugins each time.  This means
+any plugin dependencies dropped from your minimally required plugins will also
+be removed.
+
+To use plugin refresh practice the following should be a practice.
+
+- All Jenkins controller configuration is config as code either view [CaC
+  plugin][cac] or via jenkins-bootstrap-shared script console scripts.
+- All Jenkins jobs should be generated from code with no manually created jobs.
+
+Plugin refresh without the above conditions is risky because you might be
+required to regenerate all of your config from scratch.  This is a typical
+scenario if you have long windows between upgrades and the versions of plugins
+installed on your Jenkins controller do not have clean configuration upgrade
+paths to the latest available Jenkins plugins through the Jenkins update center.
+
+# Plugin Upgrade
+
+> **Please note:** upgrading plugins will keep around old plugins which may no
+> longer be dependencies of your minimally required plugins.
 
 The following descripts how to upgrade the version of Jenkins and plugins
 referenced in this repository.  Both Jenkins core and plugins versions are
@@ -37,3 +60,4 @@ Update Center (e.g. the [experimental update center][4]).
 [2]: https://repo.jenkins-ci.org/
 [3]: https://maven.apache.org/pom.html#Maven_Coordinates
 [4]: https://jenkins.io/doc/developer/publishing/releasing-experimental-updates/
+[cac]: https://plugins.jenkins.io/configuration-as-code/
