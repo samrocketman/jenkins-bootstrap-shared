@@ -16,7 +16,11 @@
 /*
    Install plugins through the update center.
  */
-if(!binding.hasVariable('plugins') || !(plugins instanceOf String)) {
+if(!binding.hasVariable('plugins')) {
+    throw new Exception('plugins is missing from the binding.')
+}
+
+if(!(plugins instanceof String)) {
     throw new Exception('plugins must defined as a String.')
 }
 
