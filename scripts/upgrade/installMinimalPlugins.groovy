@@ -24,7 +24,11 @@ if(!(plugins instanceof String)) {
     throw new Exception('plugins must defined as a String.')
 }
 
-List minimal_plugins = plugins.tokenize('\n')*.trim()
+List minimal_plugins = plugins.tokenize('\n')*.trim().sort().unique()
+
+println "Installing pinned plugins: ${minimal_plugins.join(', ')}"
 
 // install minimal plugins with no dynamic loading (false)
 Jenkins.instance.pluginManager.install(minimal_plugins, false)
+
+null
