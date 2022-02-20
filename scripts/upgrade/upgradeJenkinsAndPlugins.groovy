@@ -25,6 +25,9 @@ Jenkins.instance.pluginManager.doCheckUpdatesServer()
 
 //get the current update center
 UpdateCenter center = Jenkins.instance.updateCenter
+while(!center.isSiteDataReady()) {
+    sleep(500)
+}
 
 //upgrade Jenkins core
 //fake emulate a stapler request

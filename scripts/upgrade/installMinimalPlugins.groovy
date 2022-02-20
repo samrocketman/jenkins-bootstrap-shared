@@ -26,6 +26,12 @@ if(!(plugins instanceof String)) {
 
 List minimal_plugins = plugins.tokenize('\n')*.trim().sort().unique()
 
+
+Jenkins.instance.pluginManager.doCheckUpdatesServer()
+while(!Jenkins.instance.updateCenter.isSiteDataReady()) {
+    sleep(500)
+}
+
 println "Installing pinned plugins: ${minimal_plugins.join(', ')}"
 
 // install minimal plugins with no dynamic loading (false)
