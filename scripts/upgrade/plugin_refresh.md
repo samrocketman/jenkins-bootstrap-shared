@@ -61,7 +61,7 @@ Re-run the script console script listed in section 1 and save the list of
 plugins to `new_plugins.txt`.  You can compare a unified diff between plugins
 which have been added or removed.
 
-    diff -u old_plugins.txt new_plugins.txt
+    git diff --color -u old_plugins.txt new_plugins.txt
 
 If you determine you're missing critical plugins, then add the missing plugin
 IDs to `pinned-plugins.txt` and restart the plugin refresh procedure.
