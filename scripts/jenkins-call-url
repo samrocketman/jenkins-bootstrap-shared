@@ -20,7 +20,7 @@
 #      export JENKINS_CALL_ARGS="-m POST -v --data-string script= http://localhost:8080/scriptText --data-file"
 #      jenkins-call-url ./script.groovy
 
-from httplib import HTTPSConnection
+from http.client import HTTPSConnection
 import argparse
 import base64
 import json
@@ -79,7 +79,7 @@ parser.add_argument('-m', '--http-method', default='GET', metavar='method', dest
 parser.add_argument('--proxy', default=os.getenv('JENKINS_SOCKS_PROXY'), metavar='proxy', dest='socks_proxy', help='Define a SOCKS5 proxy to proxy traffic.  It can also be set via JENKINS_SOCKS_PROXY environment variable.')
 parser.add_argument('-s', '--jenkins-server', default='http://localhost:8080', metavar='JENKINS_WEB', dest='jenkins_web', help='Root web URL for the Jenkins server.')
 parser.add_argument('-o', '--output', default='-', metavar='OUTPUT_FILE', dest='output', help='Write output to file instead of stdout.  Default: - for stdout.')
-parser.add_argument('-v', '--verbosity', action="count", dest='verbosity', help="Increase output verbosity.")
+parser.add_argument('-v', '--verbosity', action="count", default=0, dest='verbosity', help="Increase output verbosity.")
 parser.add_argument('--raw-response', action='store_true', dest='raw_response', help='By default, script console responses are stripped of leading and trailing spaces.  This option disables the behavior and renders the literal response from Jenkins.')
 parser.add_argument('JENKINS_URL', help='The URL to a Jenkins endpoint to call.')
 
@@ -120,7 +120,7 @@ def printCurl(settings, url=trim_url_slash(args.jenkins_web)):
         curl += ' --cacert %s' % args.pinned_cert
     for k,v in headers.items():
         curl += " -H '%s:%s'" % (k, v)
-    print curl, url
+    print(curl, url)
     sys.exit(1)
 
 def getHost(url):
