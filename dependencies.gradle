@@ -1,8 +1,12 @@
 dependencies {
     //get Jenkins
-    getjenkins 'org.jenkins-ci.main:jenkins-war:2.303.2@war'
+    getjenkins 'org.jenkins-ci.main:jenkins-war:2.361.2@war'
 
     //custom plugins (if any) provided by custom-plugins.txt; format: G:A:V@hpi or G:A:V@jpi
 
-    //getplugins configurations go here...
+    //additional plugins (usually transitive dependencies)
+    getplugins 'io.jenkins.plugins:javax-activation-api:1.2.0-5@hpi'
+    getplugins 'io.jenkins.plugins:javax-mail-api:1.6.2-8@hpi'
+    getplugins 'org.jenkins-ci.modules:instance-identity:116.vf8f487400980@hpi'
+    getplugins 'org.jenkins-ci.plugins:bouncycastle-api:2.26@hpi'
 }

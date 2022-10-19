@@ -7,7 +7,7 @@ ARG JENKINS_HOME=/var/lib/jenkins
 
 RUN set -ex; \
 adduser -u 100 -G nogroup -h ${JENKINS_HOME} -S jenkins && \
-apk add --no-cache git rsync openssh && \
+apk add --no-cache git rsync openssh openjdk11-jdk && \
 mkdir -p /var/cache/jenkins && \
 chown -R jenkins: /usr/lib/jenkins /var/cache/jenkins && \
 ln -s /usr/lib/jenkins/distrib/daemon/run.sh /run.sh
