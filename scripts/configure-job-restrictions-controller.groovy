@@ -15,13 +15,14 @@
    */
 
 /*
-   Configure job restrictions plugin.  Configre the master node to only allow
+   Configure job restrictions plugin.  Configure the controller node to only allow
    the _jervis_generator job to execute.
 
-   Pipeline jobs are not allowed to run on the master.  However, pipelines use
-   the master to orchestrate nodes, stages, and steps.  The WorkflowJob class
-   is a workaround for allowing pipeline jobs to orchestrate on the master via
-   a flyweight task.  ref: https://issues.jenkins-ci.org/browse/JENKINS-31866
+   Pipeline jobs are not allowed to run on the built-in controller.  However,
+   pipelines use the built-in controller to orchestrate nodes, stages, and
+   steps.  The WorkflowJob class is a workaround for allowing pipeline jobs to
+   orchestrate on the built-in controllver via a flyweight task.  ref:
+   https://issues.jenkins-ci.org/browse/JENKINS-31866
 
    job-restrictions ver 0.6
  */
@@ -52,8 +53,8 @@ def j = Jenkins.instance
 if(!j.getNodeProperty(JobRestrictionProperty)) {
 	j.nodeProperties.add(prop)
 	j.save()
-	println 'Restricted master to only allow execution from _jervis_generator job.'
+	println 'Restricted built-in controller to only allow execution from _jervis_generator job.'
 }
 else {
-	println 'Nothing changed.  Master already restricts jobs.'
+	println 'Nothing changed.  Controller built-in already restricts jobs.'
 }

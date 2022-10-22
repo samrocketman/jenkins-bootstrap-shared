@@ -6,8 +6,8 @@ if(!rule.getMasterKillSwitch()) {
     //dismiss the warning because we don't care (cobertura reporting is broken otherwise)
     Jenkins.instance.getExtensionList(jenkins.security.s2m.MasterKillSwitchWarning.class)[0].disable(true)
     Jenkins.instance.save()
-    println 'Disabled agent -> master security for cobertura.'
+    println 'Disabled agent -> built-in controller security for cobertura.'
 }
 else {
-    println 'Nothing changed.  Agent -> master security already disabled.'
+    println 'Nothing changed.  Agent -> built-in controller security already disabled.'
 }
