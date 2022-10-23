@@ -8,12 +8,12 @@ This update includes dependency updates because a lot has changed in upstream
 Jenkins.  This update also contains terminology updates to match Jenkins
 community guidelines.
 
-- Oracle JDK 8 dropped
-- Some configuration scripts have been renamed
-- Settings for scripts have changed
-  - configure-docker-cloud.groovy
-  - configure-jenkins-settings.groovy
-  - configure-yadocker-cloud.groovy
+- [Oracle JDK 8 dropped](#oracle-jdk-8-dropped)
+- [Some configuration scripts have been renamed](#some-configuration-scripts-have-been-renamed)
+- [Settings for scripts have changed](#settings-for-scripts-have-changed)
+  - [configure-docker-cloud.groovy](#configure-docker-cloudgroovy)
+  - [configure-jenkins-settings.groovy](#configure-jenkins-settingsgroovy)
+  - [configure-yadocker-cloud.groovy](#configure-yadocker-cloudgroovy)
 
 See [Git commit `0861accfb96932baf1e9bc99cbc78831d3aad8c1`][1] for a full list
 of terminology changes.
