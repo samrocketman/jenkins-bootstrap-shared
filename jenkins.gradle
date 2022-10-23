@@ -39,7 +39,9 @@ task getplugins(type: Copy) {
     into "${pluginsDest}/plugins"
     from configurations.getplugins
     include '*.hpi'
-    rename '(.*)-[.0-9]+.hpi$', '$1.jpi'
+    include '*.jpi'
+    rename '(.*)-[0-9]+[^-].*.hpi$', '$1.jpi'
+    rename '(.*)-[0-9]+[^-].*.jpi$', '$1.jpi'
 }
 
 //download and copy a specific version of Jenkins
