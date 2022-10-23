@@ -60,7 +60,7 @@ fi
 [ -z "${JENKINS_ARGS}" ] || ARGS+=( ${JENKINS_ARGS} )
 
 #synchronize plugins
-if ls "${JENKINS_HOME}"/plugins/*.jpi &> /dev/null; then
+if [ ! -f "${JENKINS_HOME}"/plugins/disable-sync ]; then
   echo "Overwriting Jenkins plugins."
   mkdir -p "${JENKINS_HOME}/plugins"
   rsync -a --delete-after "@@PREFIX@@/lib/@@ARTIFACTNAME@@/plugins/" "${JENKINS_HOME}/plugins/"
