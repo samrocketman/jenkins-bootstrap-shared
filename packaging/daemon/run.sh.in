@@ -5,6 +5,10 @@
 
 set -ex
 
+function sync_not_disabled() (
+  [ ! -f "${JENKINS_HOME}"/disable-sync ]
+)
+
 if [ "${JENKINS_ENABLE_SYSV_CONFIG:-@@JENKINS_ENABLE_SYSV_CONFIG@@}" = yes ]; then
   [ ! -f /etc/sysconfig/jenkins ] || source /etc/sysconfig/jenkins
   [ ! -f /etc/default/jenkins ] || source /etc/default/jenkins
@@ -60,7 +64,7 @@ fi
 [ -z "${JENKINS_ARGS}" ] || ARGS+=( ${JENKINS_ARGS} )
 
 #synchronize plugins
-if [ ! -f "${JENKINS_HOME}"/plugins/disable-sync ]; then
+if sync_not_disabled; then
   echo "Overwriting Jenkins plugins."
   mkdir -p "${JENKINS_HOME}/plugins"
   rsync -a --delete-after "@@PREFIX@@/lib/@@ARTIFACTNAME@@/plugins/" "${JENKINS_HOME}/plugins/"
@@ -71,7 +75,7 @@ if [ ! -f "${JENKINS_HOME}"/plugins/disable-sync ]; then
   done
 fi
 #synchronize scripts
-if [ -d "@@PREFIX@@/lib/@@ARTIFACTNAME@@/scripts/init.groovy.d/" ]; then
+if sync_not_disabled; then
   echo "Overwriting Jenkins init scripts."
   mkdir -p "${JENKINS_HOME}/init.groovy.d"
   rsync -a --delete-after "@@PREFIX@@/lib/@@ARTIFACTNAME@@/scripts/init.groovy.d/" "${JENKINS_HOME}/init.groovy.d/"
@@ -108,14 +112,16 @@ if ! diff "@@PREFIX@@/lib/@@ARTIFACTNAME@@/@@MANIFEST@@" "${JENKINS_HOME}/@@MANI
   cp -f "@@PREFIX@@/lib/@@ARTIFACTNAME@@/@@MANIFEST@@" "${JENKINS_HOME}/"
   echo '@@COMMIT@@' > "${JENKINS_HOME}/@@PACKAGENAME@@-commit"
 
-  #overwrite dailycommit which is meant for daily commit snapshots of jenkins config
-  echo "Overwriting '${JENKINS_HOME}/dailycommit.sh'."
-  cp -f "@@PREFIX@@/lib/@@ARTIFACTNAME@@/share/dailycommit.sh" "${JENKINS_HOME}/"
-  chmod 755 "${JENKINS_HOME}/dailycommit.sh"
+  if sync_not_disabled; then
+    #overwrite dailycommit which is meant for daily commit snapshots of jenkins config
+    echo "Overwriting '${JENKINS_HOME}/dailycommit.sh'."
+    cp -f "@@PREFIX@@/lib/@@ARTIFACTNAME@@/share/dailycommit.sh" "${JENKINS_HOME}/"
+    chmod 755 "${JENKINS_HOME}/dailycommit.sh"
 
-  #overwrite gitignore in case it has changed in the package
-  echo "Overwriting GITIGNORE file in JENKINS_HOME"
-  cp -f "@@PREFIX@@/lib/@@ARTIFACTNAME@@/share/gitignore" "${JENKINS_HOME}/.gitignore"
+    #overwrite gitignore in case it has changed in the package
+    echo "Overwriting GITIGNORE file in JENKINS_HOME"
+    cp -f "@@PREFIX@@/lib/@@ARTIFACTNAME@@/share/gitignore" "${JENKINS_HOME}/.gitignore"
+  fi
 fi
 
 for x in ~/.bash_profile ~/.bashrc; do
