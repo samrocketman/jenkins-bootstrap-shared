@@ -16,6 +16,23 @@ community guidelines.
   - [configure-jenkins-settings.groovy](#configure-jenkins-settingsgroovy)
   - [configure-yadocker-cloud.groovy](#configure-yadocker-cloudgroovy)
 
+# Before and after migration
+
+You should capture plugin names from `dependencies.gradle`.  Compare differences
+before and after upgrade in order to avoid potential issues.
+
+    ./scripts/upgrade/show_plugin_artifacts.sh > ../before-upgrade
+
+Run through upgrade following [upgrade README][1].
+
+    ./scripts/upgrade/show_plugin_artifacts.sh > ../after-upgrade
+
+Compare the differences.
+
+    diff -u ../before-upgrade ../after-upgrade
+
+[1]: scripts/upgrade/README.md
+
 
 # Oracle JDK 8 dropped
 

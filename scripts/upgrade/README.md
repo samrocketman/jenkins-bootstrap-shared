@@ -21,6 +21,29 @@ center plugins.
 
 ---
 
+# Before and after upgrade
+
+[`show_plugin_artifacts.sh`](show_plugin_artifacts.sh) is meant to capture the
+plugin names from your `dependencies.gradle`.  You should call this script
+before and after upgrade in order to verify you're not missing necessary
+plugins.
+
+Usage
+
+    ./scripts/upgrade/show_plugin_artifacts.sh > ../before-upgrade
+
+    # run the upgrade following instructions below
+
+    ./scripts/upgrade/show_plugin_artifacts.sh > ../after-upgrade
+
+Once you have the two copies you can find the differences.
+
+    diff -u ../before-upgrade ../after-upgrade
+
+This utility is meant to help catch potential upgrade issues.
+
+---
+
 # Plugin Upgrade
 
 > **Please note:** upgrading plugins will keep around old plugins which may no
