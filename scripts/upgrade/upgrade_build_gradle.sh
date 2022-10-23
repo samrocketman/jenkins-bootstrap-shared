@@ -31,7 +31,7 @@ source "${SCRIPT_LIBRARY_PATH}"/upgrade/setup_environment.sh
 
 #upgrade jenkins.war and all plugins
 if [ -z "${NO_UPGRADE}" ]; then
-  "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/upgradeJenkinsAndPlugins.groovy || (
+  "${SCRIPT_LIBRARY_PATH}"/jenkins_call.sh "${SCRIPT_LIBRARY_PATH}"/upgrade/upgradeJenkinsAndPlugins.groovy || (
     echo "Upgrading Jenkins and plugins failed.  Likely, jenkins.war or plugins"
     echo "are not writeable.  This is typical if upgrading jenkins.war via"
     echo "vagrant because jenkins.war is owned by root"

@@ -45,7 +45,7 @@ CUSTOM_TMPFILE="${TMP_DIR}/custom"
 
 echo 'Upgrade build.gradle file.'
 export JENKINS_CALL_ARGS="-m POST ${JENKINS_WEB}/scriptText --data-string script= -d"
-"${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/generateSedExpr.groovy > "${TMPFILE}"
+"${SCRIPT_LIBRARY_PATH}"/jenkins_call.sh "${SCRIPT_LIBRARY_PATH}"/upgrade/generateSedExpr.groovy > "${TMPFILE}"
 if [ -n "${USE_GRADLE_PROPERTIES:-}" ]; then
   VERSION_FILE=gradle.properties
 else
@@ -56,12 +56,12 @@ rm "${VERSION_FILE}.bak"
 
 #generate a new dependencies.gradle file
 echo 'Upgrade dependencies.gradle file.'
-if [ ! "$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url - <<< 'println Jenkins.instance.pluginManager.plugins.size()')" = '0' ]; then
+if [ ! "$("${SCRIPT_LIBRARY_PATH}"/jenkins_call.sh - <<< 'println Jenkins.instance.pluginManager.plugins.size()')" = '0' ]; then
   #create an index of installed plugins
-  "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/listShortNameVersion.groovy > "${TMPFILE}"
+  "${SCRIPT_LIBRARY_PATH}"/jenkins_call.sh "${SCRIPT_LIBRARY_PATH}"/upgrade/listShortNameVersion.groovy > "${TMPFILE}"
   [ -f "${GAV_TMPFILE}" ] || "${SCRIPT_LIBRARY_PATH}"/upgrade/plugins_gav.sh > "${GAV_TMPFILE}"
 
-  JENKINS_WAR_VERSION=$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url - <<< 'println Jenkins.instance.version')
+  JENKINS_WAR_VERSION=$("${SCRIPT_LIBRARY_PATH}"/jenkins_call.sh - <<< 'println Jenkins.instance.version')
   cat > dependencies.gradle <<-EOF
 dependencies {
     //get Jenkins

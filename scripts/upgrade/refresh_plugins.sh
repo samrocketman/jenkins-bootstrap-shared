@@ -30,7 +30,7 @@ if [ ! -f pinned-plugins.txt ]; then
   exit 1
 fi
 
-"${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/upgradeJenkinsOnly.groovy || (
+"${SCRIPT_LIBRARY_PATH}"/jenkins_call.sh "${SCRIPT_LIBRARY_PATH}"/upgrade/upgradeJenkinsOnly.groovy || (
   echo "Upgrading Jenkins and plugins failed.  Likely, jenkins.war or plugins"
   echo "are not writeable.  This is typical if upgrading jenkins.war via"
   echo "vagrant because jenkins.war is owned by root"
@@ -44,7 +44,7 @@ if "${SCRIPT_LIBRARY_PATH}"/upgrade/jenkins_needs_restart.sh; then
   source "${SCRIPT_LIBRARY_PATH}"/upgrade/env.sh
 fi
 
-"${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/installMinimalPlugins.groovy --data-string "plugins='''$(< pinned-plugins.txt)'''.trim();"
+"${SCRIPT_LIBRARY_PATH}"/jenkins_call.sh "${SCRIPT_LIBRARY_PATH}"/upgrade/installMinimalPlugins.groovy --data-string "plugins='''$(< pinned-plugins.txt)'''.trim();"
 "${SCRIPT_LIBRARY_PATH}"/upgrade/wait_for_upgrade_to_complete.sh
 if "${SCRIPT_LIBRARY_PATH}"/upgrade/jenkins_needs_restart.sh; then
   #set up Jenkins env vars post-restart

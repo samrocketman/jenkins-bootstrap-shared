@@ -14,9 +14,9 @@
 #       1 - If Jenkins does not need to restart.  Non-zero exit code.
 
 EXIT_CODE=1
-if [ "$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/needsRestart.groovy)" = 'true' ]; then
+if [ "$("${SCRIPT_LIBRARY_PATH}"/jenkins_call.sh "${SCRIPT_LIBRARY_PATH}"/upgrade/needsRestart.groovy)" = 'true' ]; then
   #restart Jenkins
-  "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url <(echo "Jenkins.instance.restart()")
+  "${SCRIPT_LIBRARY_PATH}"/jenkins_call.sh <(echo "Jenkins.instance.restart()")
   #wait for jenkins to become available
   "${SCRIPT_LIBRARY_PATH}"/provision_jenkins.sh url-ready "${JENKINS_WEB}/jnlpJars/jenkins-cli.jar"
   EXIT_CODE=0

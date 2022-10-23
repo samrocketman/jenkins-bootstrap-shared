@@ -7,7 +7,7 @@
 
 # Waits for an upgrade to complete
 echo -n 'Waiting for Jenkins upgrade to complete.'
-while [ "$("${SCRIPT_LIBRARY_PATH}"/jenkins-call-url "${SCRIPT_LIBRARY_PATH}"/upgrade/isUpgradeInProgress.groovy)" = 'true' ]; do
+while [ "$("${SCRIPT_LIBRARY_PATH}"/jenkins_call.sh "${SCRIPT_LIBRARY_PATH}"/upgrade/isUpgradeInProgress.groovy)" = 'true' ]; do
   sleep 3
   echo -n '.'
 done
