@@ -1,47 +1,37 @@
-#!/usr/bin/env python
-#Created by Sam Gleske
-#Copyright 2017 Sam Gleske
-#Tue Mar 21 17:24:36 PDT 2017
-#Ubuntu 16.04.1 LTS
-#Linux 4.4.0-59-generic x86_64
-#Python 2.7.12
-#LICENSE MIT
-#Source: https://github.com/samrocketman/home/blob/master/bin/jenkins-call-url-2.7
-#The above comment block must remain intact for usage.
+#!/usr/bin/env python3
+# Created by Sam Gleske
+# Copyright 2017 Sam Gleske
+# Thu 20 Oct 2022 19:30:22 AM EDT
+# Ubuntu 20.04.5 LTS
+# Linux 5.15.0-50-generic x86_64
+# GNU bash, version 5.0.17(1)-release (x86_64-pc-linux-gnu)
+# Python 3.8.10
+# LICENSE MIT
+# Source: https://github.com/samrocketman/home/blob/master/bin/jenkins-call-url
+# The above comment block must remain intact for usage.
 
-#DESCRIPTION:
-#  Reads Jenkins API and can make calls to arbitrary Jenkins URL endpoints.
-#EXAMPLES:
-#  Execute script console script.
-#      jenkins-call-url -m POST --data-string "script=println 'hello world'" http://localhost:8080/scriptText
-#  Execute a whole Groovy script on script console.
-#      jenkins-call-url -m POST --data-string "script=" --data-file ./script.groovy http://localhost:8080/scriptText
-#  Set default arguments for always calling groovy scripts to script console.
-#      export JENKINS_CALL_ARGS="-m POST -v --data-string script= http://localhost:8080/scriptText --data-file"
-#      jenkins-call-url ./script.groovy
+# DESCRIPTION:
+#   Reads Jenkins API and can make calls to arbitrary Jenkins URL endpoints.
+# EXAMPLES:
+#   Execute script console script.
+#       jenkins-call-url -m POST --data-string "script=println 'hello world'" http://localhost:8080/scriptText
+#   Execute a whole Groovy script on script console.
+#       jenkins-call-url -m POST --data-string "script=" --data-file ./script.groovy http://localhost:8080/scriptText
+#   Set default arguments for always calling groovy scripts to script console.
+#       export JENKINS_CALL_ARGS="-m POST -v --data-string script= http://localhost:8080/scriptText --data-file"
+#       jenkins-call-url ./script.groovy
 
-import sys
 
-def version_check(version):
-    import platform
-    return platform.python_version().startswith(version)
-
-if not version_check("2.7"):
-    print("ERROR: This script is designed for python 2.7.  Use the Python 3 version instead.")
-    sys.exit(1)
-
-try:
-    from httplib import HTTPSConnection
-except ModuleNotFoundError:
-    from http.client import HTTPSConnection
 import argparse
 import base64
 import json
 import os
 import re
 import ssl
+import sys
 import time
 
+# Python 3 requires pip3 install PySocks
 try:
     import socket
     import socks
@@ -49,7 +39,7 @@ try:
 except ImportError:
     socks_supported = False
 
-version = "0.10.1"
+version = "0.13"
 
 parser = argparse.ArgumentParser(description="Reads Jenkins API and can make calls to arbitrary Jenkins URL endpoints.  Useful for calling Jenkins URLs for killing jobs or executing script console scripts.", epilog="""
 environment variables:
@@ -134,20 +124,31 @@ def printCurl(settings, url=trim_url_slash(args.jenkins_web)):
         curl += ' --cacert %s' % args.pinned_cert
     for k,v in headers.items():
         curl += " -H '%s:%s'" % (k, v)
-    print(curl, url)
+    printOut(curl, url)
     sys.exit(1)
 
 def getHost(url):
     return url.split('/')[2].split(':')[0]
 
+# create_connection method only used for patching socket for SOCKS5
+# see also https://www.michaelrinderle.com/2020/05/21/patching-a-python-socket-to-use-socks5-protocol/
+def create_connection(address, timeout=None, source_address=None):
+    sock = socks.socksocket()
+    sock.connect(address)
+    return sock
+
+#print to stdout
+def printOut(*messages):
+    print(*messages)
+
+
 #print to stderr
 def printErr(message=''):
-    sys.stderr.write(message + '\n')
-    sys.stderr.flush()
+    print(message, file=sys.stderr)
 
 if not args.http_method in ['GET', 'HEAD', 'POST']:
-    printErr("Invalid --http-method specified: %s" % args.http_method)
-    parser.print_help()
+    printErr("See also --help for usage documentation.")
+    printErr("ERROR: Invalid --http-method specified: %s" % args.http_method)
     sys.exit(1)
 
 #build credentials
@@ -184,7 +185,7 @@ else:
     if not username == None:
         if args.verbosity >= 2:
             printErr("Logging in as user %s." % username)
-        headers['Authorization'] = "Basic %s" % base64.b64encode("%s:%s" % (username, password)).decode('ascii')
+        headers['Authorization'] = "Basic %s" % base64.b64encode(("%s:%s" % (username, password)).encode('utf-8')).decode('ascii')
 
 #configure SOCKS5 proxy
 if args.socks_proxy != None:
@@ -208,14 +209,24 @@ if proxy:
     proxy_host = proxy.split(':')[0]
     proxy_port = int(proxy.split(':')[1])
     if not socks_supported:
-        printErr("WARNING: Python socks module not installed so socks is not supported")
+        printErr("ERROR: Python socks module not installed so socks is not supported")
+        printErr("    pip3 install pysocks")
+        sys.exit(1)
     else:
         socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, proxy_host, proxy_port)
         socket.socket = socks.socksocket
+        socket.create_connection = create_connection
 else:
     if args.verbosity >= 3:
         printErr("Removing proxy configuration from headers file.")
     settings.pop('socks_proxy', None)
+#
+### POST-PROXY SETTINGS using urllib and urllib2
+# See: https://stackoverflow.com/questions/2317849/how-can-i-use-a-socks-4-5-proxy-with-urllib2
+# Note: SOCKS proxy must always be configured before importing urllib and urllib2
+import urllib
+from urllib.request import Request, urlopen
+from http.client import HTTPSConnection
 
 if args.print_curl_crumb:
     settings['headers'] = headers
@@ -232,22 +243,12 @@ if args.print_curl_init:
     else:
         printCurl(settings)
 
-#
-### POST-PROXY SETTINGS using urllib and urllib2
-# See: https://stackoverflow.com/questions/2317849/how-can-i-use-a-socks-4-5-proxy-with-urllib2
-# Note: SOCKS proxy must always be configured before importing urllib and urllib2
-
-import urllib
-try:
-    import urllib2
-except:
-    from urllib import request as urllib2
 
 def getUrl(url, headers, data=None, method='GET'):
     if args.verbosity >= 3:
         printErr('%s %s' % (method, url))
     responseCode = -1
-    responseString = ""
+    responseString = b''
     responseErrorReason = None
     try:
         if url.startswith('https'):
@@ -257,15 +258,15 @@ def getUrl(url, headers, data=None, method='GET'):
                 context.load_verify_locations(cafile=args.pinned_cert)
             else:
                 context.load_default_certs()
-            req = urllib2.Request(url, data=data, headers=headers)
+            req = Request(url, data=data, headers=headers)
             if method != 'GET':
                 req.get_method = lambda: method
-            urlconn = urllib2.urlopen(req, context=context)
+            urlconn = urlopen(req, context=context)
         else:
-            req = urllib2.Request(url=url, data=data, headers=headers)
+            req = Request(url=url, data=data, headers=headers)
             if method != 'GET':
                 req.get_method = lambda: method
-            urlconn = urllib2.urlopen(req)
+            urlconn = urlopen(req)
         responseString = urlconn.read()
         if url.endswith('crumbIssuer/api/json'):
             if 'Cookie' in headers:
@@ -276,10 +277,10 @@ def getUrl(url, headers, data=None, method='GET'):
                     printErr('Set a new session cookie ' + headers['Cookie'])
         responseCode = urlconn.getcode()
         urlconn.close()
-    except urllib2.HTTPError as e:
+    except urllib.request.HTTPError as e:
         responseCode = e.code
         responseErrorReason = e.reason
-    return (responseCode, responseString, responseErrorReason)
+    return (responseCode, responseString.decode('utf-8'), responseErrorReason)
 
 def getJSONUrl(url, headers):
     if not url.endswith('/api/json'):
@@ -368,9 +369,9 @@ if args.verbosity >= 1:
 if len(response) > 0:
     if args.output == '-':
         if args.raw_response:
-            print(response)
+            printOut(response)
         else:
-            print(str(response).strip())
+            printOut(response.strip() + '\n')
     else:
         with open(args.output, 'w') as f:
             f.write(response)
@@ -393,8 +394,15 @@ if reason:
 sys.exit(STATUS)
 
 # CHANGELOG
-# 0.10.1
-#  - Add a Python 3 detection error.
+# 0.13
+#  - Removed print statement interfering with responses.
+# 0.12
+#  - Add back SOCKS5 proxy support.
+# 0.11
+#  - Python 3 upgrade and drop python 2.7.  See jenkins-call-url-2.7 if that is
+#    required.
+#  - Preserved all options and functionality provided by the Python 2 version.
+#  - Was not able to keep SOCKS5 proxy support.  More investigation required.
 # 0.10
 #  - Python 2 version of the script renamed to jenkins-call-url-2.7.
 #  - This is the last release of the Python 2 version of the script.  Further

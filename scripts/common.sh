@@ -35,7 +35,7 @@ function jenkins_console() (
     exit 1
   fi
 
-  "${SCRIPT_LIBRARY_PATH}"/jenkins-call-url -m POST --data-string script= "${script[@]}" "${jenkins}"
+  "${SCRIPT_LIBRARY_PATH}"/jenkins_call.sh -m POST --data-string script= "${script[@]}" "${jenkins}"
 )
 
 function curl_item_script() (
