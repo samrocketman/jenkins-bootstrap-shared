@@ -128,5 +128,5 @@ fi
 
 #configure jenkins agent credentials
 #jenkins_console --script "${SCRIPT_LIBRARY_PATH}/credentials-jenkins-agent.groovy"
-#disable agent -> master security
-#jenkins_console --script "${SCRIPT_LIBRARY_PATH}/security-disable-agent-master.groovy"
+#disable agent -> controller security
+#jenkins_console --script "${SCRIPT_LIBRARY_PATH}/security-disable-agent-controller.groovy"

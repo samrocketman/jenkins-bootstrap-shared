@@ -66,7 +66,7 @@ permanent_agents = [
   plugin without requiring that it be installed if an admin does not need to
   configure SSH agents.
 
-  This script will succeed both with and without the SSH slaves plugin
+  This script will succeed both with and without the SSH Build Agents plugin
   installed.
  */
 Class loadClass(String clazz) {

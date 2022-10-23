@@ -127,7 +127,7 @@ clouds_yadocker = [
                 //STOP CONTAINER SETTINGS
                 remove_volumes: false,
                 force_remove_containers: false,
-                //JENKINS SLAVE CONFIG
+                //JENKINS AGENT CONFIG
                 remote_fs_root: "/home/jenkins",
                 labels: "stable docker ubuntu1604 sudo language:groovy env jdk",
                 //valid values: exclusive or normal
@@ -143,17 +143,17 @@ clouds_yadocker = [
                 launch_ssh_port: 22,
                 launch_ssh_java_path: "",
                 launch_ssh_jvm_options: "",
-                launch_ssh_prefix_start_slave_command: "",
-                launch_ssh_suffix_start_slave_command: "",
+                launch_ssh_prefix_start_agent_command: "",
+                launch_ssh_suffix_start_agent_command: "",
                 launch_ssh_connection_timeout: 120,
                 launch_ssh_max_num_retries: 10,
                 launch_ssh_time_wait_between_retries: 10,
                 //settings specific to launch_jnlp
                 launch_jnlp_linux_user: "jenkins",
                 launch_jnlp_launch_timeout: 120,
-                launch_jnlp_slave_jar_options: "",
-                launch_jnlp_slave_jvm_options: "",
-                launch_jnlp_different_jenkins_master_url: "",
+                launch_jnlp_agent_jar_options: "",
+                launch_jnlp_agent_jvm_options: "",
+                launch_jnlp_different_jenkins_controller_url: "",
                 launch_jnlp_ignore_certificate_check: false,
                 //NODE PROPERTIES
                 //environment_variables is a HashMap of key/value pairs
@@ -186,8 +186,8 @@ def selectLauncher(String launcherType, JSONObject obj) {
                     obj.optString('launch_ssh_credentials_id'),
                     obj.optString('launch_ssh_jvm_options'),
                     obj.optString('launch_ssh_java_path'),
-                    obj.optString('launch_ssh_prefix_start_slave_command'),
-                    obj.optString('launch_ssh_suffix_start_slave_command'),
+                    obj.optString('launch_ssh_prefix_start_agent_command'),
+                    obj.optString('launch_ssh_suffix_start_agent_command'),
                     obj.optInt('launch_ssh_connection_timeout'),
                     obj.optInt('launch_ssh_max_num_retries'),
                     obj.optInt('launch_ssh_time_wait_between_retries')
@@ -197,9 +197,9 @@ def selectLauncher(String launcherType, JSONObject obj) {
             DockerComputerJNLPLauncher dockerComputerJNLPLauncher = new DockerComputerJNLPLauncher()
             dockerComputerJNLPLauncher.setUser(obj.optString('launch_jnlp_linux_user','jenkins'))
             dockerComputerJNLPLauncher.setLaunchTimeout(obj.optLong('launch_jnlp_launch_timeout', 120L))
-            dockerComputerJNLPLauncher.setSlaveOpts(obj.optString('launch_jnlp_slave_jar_options'))
-            dockerComputerJNLPLauncher.setJvmOpts(obj.optString('launch_jnlp_slave_jvm_options'))
-            dockerComputerJNLPLauncher.setJenkinsUrl(obj.optString('launch_jnlp_different_jenkins_master_url'))
+            dockerComputerJNLPLauncher.setSlaveOpts(obj.optString('launch_jnlp_agent_jar_options'))
+            dockerComputerJNLPLauncher.setJvmOpts(obj.optString('launch_jnlp_agent_jvm_options'))
+            dockerComputerJNLPLauncher.setJenkinsUrl(obj.optString('launch_jnlp_different_jenkins_controller_url'))
             dockerComputerJNLPLauncher.setNoCertificateCheck(obj.optBoolean('launch_jnlp_ignore_certificate_check', false))
             return dockerComputerJNLPLauncher
         default:

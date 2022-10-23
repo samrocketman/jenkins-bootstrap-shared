@@ -49,7 +49,7 @@ Plugins are stored at [`repo.jenkins-ci.org`][2].  Gradle is used to download
 plugins using [GAV coordinates][3].  When running `upgrade_build_gradle.sh`,
 a local Jenkins instance is upgraded and all of the plugins are upgraded.  Once
 Jenkins is upgraded then `build.gradle` and `dependencies.gradle` is updated
-with the new Jenkins master and plugin versions.
+with the new Jenkins controller and plugin versions.
 
 ### Override Jenkins Update Center
 

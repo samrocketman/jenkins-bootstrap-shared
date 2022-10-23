@@ -82,8 +82,8 @@ JSONArray clouds_docker = [
             launcher_credentials_id: "jenkins-docker-cloud-credentials",
             launcher_jvm_options: "",
             launcher_java_path: "/home/jenkins/java/openjdk8/bin/java",
-            launcher_prefix_start_slave_cmd: "",
-            launcher_suffix_start_slave_cmd: "",
+            launcher_prefix_start_agent_cmd: "",
+            launcher_suffix_start_agent_cmd: "",
             launcher_connection_timeout_seconds: 0,
             launcher_max_num_retries: 0,
             launcher_retry_wait_time: 0
@@ -129,8 +129,8 @@ def newDockerTemplate(JSONObject obj) {
             obj.optString('launcher_credentials_id'),
             obj.optString('launcher_jvm_options'),
             obj.optString('launcher_java_path'),
-            obj.optString('launcher_prefix_start_slave_cmd'),
-            obj.optString('launcher_suffix_start_slave_cmd'),
+            obj.optString('launcher_prefix_start_agent_cmd'),
+            obj.optString('launcher_suffix_start_agent_cmd'),
             obj.optInt('launcher_connection_timeout_seconds'),
             obj.optInt('launcher_max_num_retries'),
             obj.optInt('launcher_retry_wait_time')

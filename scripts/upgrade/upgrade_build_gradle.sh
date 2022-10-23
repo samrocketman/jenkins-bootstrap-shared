@@ -59,7 +59,7 @@ if [ -n "${USE_GRADLE_PROPERTIES:-}" ]; then
   VERSION="${VERSION%.*}.$(( ${VERSION##*.} + 1 ))"
 fi
 
-#write jenkins master and plugin versions to build.gradle and dependencies.gradle
+#write jenkins controller and plugin versions to build.gradle and dependencies.gradle
 "${SCRIPT_LIBRARY_PATH}"/upgrade/remote_dependencies.sh
 
 # GNU or BSD sed is required.  Homebrew on Mac installs GNU sed as gsed.

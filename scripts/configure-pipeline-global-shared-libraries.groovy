@@ -59,7 +59,7 @@ boolean isLibrariesEqual(List lib1, List lib2) {
 /* Example configuration
 pipeline_shared_libraries = [
     'Global Library Name': [
-        'defaultVersion': 'master-fu',
+        'defaultVersion': 'main',
         'implicit': true,
         'allowVersionOverride': false,
         'includeInChangesets': false,
