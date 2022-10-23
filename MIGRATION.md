@@ -9,16 +9,13 @@ Jenkins.  This update also contains terminology updates to match Jenkins
 community guidelines.
 
 - [Oracle JDK 8 dropped](#oracle-jdk-8-dropped)
+- [Remove configuration scripts](#remove-configuration-scripts)
 - [Some configuration scripts have been renamed](#some-configuration-scripts-have-been-renamed)
 - [Settings for scripts have changed](#settings-for-scripts-have-changed)
   - [configure-docker-cloud.groovy](#configure-docker-cloudgroovy)
   - [configure-jenkins-settings.groovy](#configure-jenkins-settingsgroovy)
   - [configure-yadocker-cloud.groovy](#configure-yadocker-cloudgroovy)
 
-See [Git commit `0861accfb96932baf1e9bc99cbc78831d3aad8c1`][1] for a full list
-of terminology changes.
-
-[1]: https://github.com/samrocketman/jenkins-bootstrap-shared/commit/0861accfb96932baf1e9bc99cbc78831d3aad8c1
 
 # Oracle JDK 8 dropped
 
@@ -27,13 +24,21 @@ upgrading from older version of Jervis use the older Docker image which contains
 Oracle JDK 8.  After update start with the latest Docker image because it
 contains OpenJDK 11.
 
+# Remove configuration scripts
+
+`security-disable-agent-master.groovy` is no longer supported in newer
+versions of Jenkins.  Remove refrences from `jenkins_bootstrap.sh`.
+
+It has been renamed for future archival.
+
+    security-disable-agent-master.groovy -> security-disable-agent-controller.groovy
+
 # Some configuration scripts have been renamed
 
 `scripts/` directory files have been renamed.  Users will need to update
 `jenkins_bootstrap.sh` to reflect the following.
 
     configure-job-restrictions-master.groovy -> configure-job-restrictions-controller.groovy
-    security-disable-agent-master.groovy -> security-disable-agent-controller.groovy
 
 # Settings for scripts have changed
 

@@ -1,4 +1,10 @@
-//https://wiki.jenkins-ci.org/display/JENKINS/Slave+To+Master+Access+Control
+/**
+  WARNING SCRIPT IS DEPRECATED.
+
+  Does not work on newer versions of Jenkins.  Recommendation is to stop
+  calling it.
+  */
+// https://www.jenkins.io/doc/book/security/controller-isolation/#agent-controller-access-control
 
 def rule = Jenkins.instance.getExtensionList(jenkins.security.s2m.MasterKillSwitchConfiguration.class)[0].rule
 if(!rule.getMasterKillSwitch()) {
