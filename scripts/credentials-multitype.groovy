@@ -293,6 +293,44 @@ def setAWSCredentialsImpl(Map settings) {
             )
 }
 
+/**
+  Supports GitHub App Credentials provided by GitHub Branch Source Plugin
+
+  Example:
+
+    [
+        credential_type: 'GitHubAppCredentials',
+        'credentials_id': 'some credentials id',
+        'description': 'A description of this credential',
+        appid: '12345',
+        apiuri: '',
+        owner: 'github organization',
+        key: 'private key downloaded from github re-encoded following docs'
+    ]
+
+  */
+def setGitHubAppCredentials(Map settings) {
+    String credentials_id = ((settings['credentials_id'])?:'').toString()
+    String description = ((settings['description'])?:'').toString()
+
+    def credential = newClassInstance('org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials',
+                [
+                    resolveScope('global'),
+                    credentials_id,
+                    description,
+                    settings['appid'] ?: '',
+                    settings['key'] ?: '',
+                ])
+    if(settings['apiuri']) {
+        credential.apiUri = settings['apiuri']
+    }
+    if(settings['owner']) {
+        credential.owner = settings['owner']
+    }
+
+    addCredential(credentials_id, credential)
+}
+
 if(!binding.hasVariable('credentials')) {
     credentials = []
 }

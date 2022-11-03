@@ -1,6 +1,6 @@
 #!/bin/bash
 # This is a wrapper script for jenkins-call-url and jenkins-call-url-2.7.  This
-# script detections python version from the current system and selects an
+# script will detect the python version from the current system.  It selects an
 # appropriate way to call jenkins-call-url.  This enables a better user
 # experience by not having to worry about python version.
 
