@@ -64,7 +64,7 @@ fi
 [ -z "${JENKINS_ARGS}" ] || ARGS+=( ${JENKINS_ARGS} )
 
 #synchronize plugins
-if sync_not_disabled; then
+if sync_not_disabled && [ -d "@@PREFIX@@/lib/@@ARTIFACTNAME@@/plugins/" ]; then
   echo "Overwriting Jenkins plugins."
   mkdir -p "${JENKINS_HOME}/plugins"
   rsync -a --delete-after "@@PREFIX@@/lib/@@ARTIFACTNAME@@/plugins/" "${JENKINS_HOME}/plugins/"
@@ -75,7 +75,7 @@ if sync_not_disabled; then
   done
 fi
 #synchronize scripts
-if sync_not_disabled; then
+if sync_not_disabled && [ -d "@@PREFIX@@/lib/@@ARTIFACTNAME@@/scripts/init.groovy.d/" ]; then
   echo "Overwriting Jenkins init scripts."
   mkdir -p "${JENKINS_HOME}/init.groovy.d"
   rsync -a --delete-after "@@PREFIX@@/lib/@@ARTIFACTNAME@@/scripts/init.groovy.d/" "${JENKINS_HOME}/init.groovy.d/"
