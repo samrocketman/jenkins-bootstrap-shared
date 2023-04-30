@@ -5,9 +5,9 @@
 
 set -ex
 
-function sync_not_disabled() (
+function sync_not_disabled() {
   [ ! -f "${JENKINS_HOME}"/disable-sync ]
-)
+}
 
 if [ "${JENKINS_ENABLE_SYSV_CONFIG:-@@JENKINS_ENABLE_SYSV_CONFIG@@}" = yes ]; then
   [ ! -f /etc/sysconfig/jenkins ] || source /etc/sysconfig/jenkins
@@ -44,7 +44,7 @@ fi
 
 eval "JAVA_OPTS=( ${JAVA_OPTS} )"
 eval "JENKINS_JAVA_OPTIONS=( ${JENKINS_JAVA_OPTIONS} )"
-JAVA_CMD=( "${JENKINS_JAVA_CMD}" "${JAVA_OPTS[@]}" "${JENKINS_JAVA_OPTIONS[@]}" -DJENKINS_HOME="${JENKINS_HOME}" -jar "${JENKINS_WAR}" )
+JAVA_CMD=( "${JENKINS_JAVA_CMD}" "${JAVA_OPTS[@]}" "${JENKINS_JAVA_OPTIONS[@]}" "-DJENKINS_HOME=${JENKINS_HOME}" -jar "${JENKINS_WAR}" )
 ARGS=( "--webroot=/var/cache/@@ARTIFACTNAME@@/war" "--pluginroot=/var/cache/@@ARTIFACTNAME@@/plugins" )
 # pass shell arguments through as JENKINS_ARGS
 if [ "$#" -gt 0 ]; then
@@ -52,12 +52,18 @@ if [ "$#" -gt 0 ]; then
 fi
 [ -z "${JENKINS_PORT}" ] || ARGS+=( "--httpPort=${JENKINS_PORT}" )
 [ -z "${JENKINS_LISTEN_ADDRESS}" ] || ARGS+=( "--httpListenAddress=${JENKINS_LISTEN_ADDRESS}" )
-[ -z "${JENKINS_HTTPS_PORT}" ] || ARGS+=( "--httpsPort=${JENKINS_HTTPS_PORT}" )
-[ -z "${JENKINS_HTTPS_KEYSTORE}" ] || ARGS+=( "--httpsKeyStore=${JENKINS_HTTPS_KEYSTORE}" )
-[ -z "${JENKINS_HTTPS_KEYSTORE_PASSWORD}" ] || ARGS+=( "--httpsKeyStorePassword=${JENKINS_HTTPS_KEYSTORE_PASSWORD}" )
-[ -z "${JENKINS_HTTPS_LISTEN_ADDRESS}" ] || ARGS+=( "--httpsListenAddress=${JENKINS_HTTPS_LISTEN_ADDRESS}" )
+if [ "${JENKINS_KEYSTORE}" ]; then
+  [ -z "${JENKINS_HTTPS_PORT}" ] || ARGS+=( "--httpsPort=${JENKINS_HTTPS_PORT}" )
+  [ -z "${JENKINS_HTTPS_KEYSTORE}" ] || ARGS+=( "--httpsKeyStore=${JENKINS_HTTPS_KEYSTORE}" )
+  [ -z "${JENKINS_HTTPS_KEYSTORE_PASSWORD}" ] || ARGS+=( "--httpsKeyStorePassword=${JENKINS_HTTPS_KEYSTORE_PASSWORD}" )
+  [ -z "${JENKINS_HTTPS_LISTEN_ADDRESS}" ] || ARGS+=( "--httpsListenAddress=${JENKINS_HTTPS_LISTEN_ADDRESS}" )
+fi
 [ -z "${JENKINS_DEBUG_LEVEL}" ] || ARGS+=( "--debug=${JENKINS_DEBUG_LEVEL}" )
-[ -z "${JENKINS_ARGS}" ] || ARGS+=( ${JENKINS_ARGS} )
+if [ -n "${JENKINS_ARGS}" ]; then
+  declare -a tmp_jenkins_args
+  read -ra tmp_jenkins_args <<< "${JENKINS_ARGS}"
+  ARGS+=( "${tmp_jenkins_args[@]}" )
+fi
 
 #synchronize plugins
 if sync_not_disabled && [ -d "@@PREFIX@@/lib/@@ARTIFACTNAME@@/plugins/" ]; then
