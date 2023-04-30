@@ -1,6 +1,6 @@
 dependencies {
     //get Jenkins
-    getjenkins 'org.jenkins-ci.main:jenkins-war:2.375.2@war'
+    getjenkins 'org.jenkins-ci.main:jenkins-war:2.387.2@war'
 
     //custom plugins (if any) provided by custom-plugins.txt; format: G:A:V@hpi or G:A:V@jpi
 
