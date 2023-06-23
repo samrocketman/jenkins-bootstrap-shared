@@ -24,6 +24,7 @@ import hudson.model.FreeStyleProject
 import hudson.model.Item
 import hudson.plugins.groovy.SystemGroovy
 import jenkins.model.Jenkins
+import org.jenkinsci.plugins.scriptsecurity.scripts.languages.GroovyLanguage
 import org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildDescriptor
 
 script_approval = Jenkins.get().getExtensionList('org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval')[0]
@@ -31,7 +32,7 @@ script_approval = Jenkins.get().getExtensionList('org.jenkinsci.plugins.scriptse
 approvalsNotUpdated = true
 
 void approveGroovyScript(String fullName, String script, String type = '') {
-    String hash = script_approval.hash(script, 'groovy')
+    String hash = script_approval.DEFAULT_HASHER.hash(script, GroovyLanguage.get().getName())
     if(!(hash in script_approval.approvedScriptHashes)) {
         println "${fullName} ${(type)? type + ' ' : ''}groovy script approved."
         script_approval.approveScript(hash)

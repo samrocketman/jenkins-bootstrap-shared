@@ -22,6 +22,7 @@
 import jenkins.model.Jenkins
 import org.jenkinsci.plugins.configfiles.GlobalConfigFiles
 import org.jenkinsci.plugins.configfiles.groovy.GroovyScript
+import org.jenkinsci.plugins.scriptsecurity.scripts.languages.GroovyLanguage
 
 //bindings
 script_approval = Jenkins.instance.getExtensionList('org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval')[0]
@@ -51,7 +52,7 @@ else {
 }
 
 //approve Jenkinsfile script for execution
-String hash = script_approval.hash(jenkinsfile_script, 'groovy')
+String hash = script_approval.DEFAULT_HASHER.hash(jenkinsfile_script, GroovyLanguage.get().getName())
 if(hash in script_approval.approvedScriptHashes) {
 	println 'Nothing changed.  Global Jenkinsfile script already approved.'
 }
