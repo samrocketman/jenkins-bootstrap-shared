@@ -1,6 +1,6 @@
 #!/bin/bash
 #Created by Sam Gleske (https://github.com/samrocketman)
-#Copyright (c) 2015-2022 Sam Gleske - https://github.com/samrocketman/jenkins-bootstrap-jervis
+#Copyright (c) 2015-2023 Sam Gleske - https://github.com/samrocketman/jenkins-bootstrap-jervis
 #Sun Jul 26 14:30:25 EDT 2015
 #Ubuntu 14.04.2 LTS
 #Linux 3.13.0-57-generic x86_64
