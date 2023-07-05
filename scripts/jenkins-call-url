@@ -31,6 +31,11 @@ import ssl
 import sys
 import time
 
+try:
+    from urllib.parse import quote
+except ImportError:
+    from urllib import quote
+
 # Python 3 requires pip3 install PySocks
 try:
     import socket
@@ -251,6 +256,8 @@ def getUrl(url, headers, data=None, method='GET'):
     responseString = b''
     responseErrorReason = None
     try:
+        if data is not None and isinstance(data, str):
+            data = data.encode('utf-8')
         if url.startswith('https'):
             #https://docs.python.org/3/library/ssl.html#ssl-security
             context = ssl.create_default_context()
@@ -356,10 +363,10 @@ if len(args.http_data_files) > 0:
         data += string
     for path in args.http_data_files:
         if path == '-':
-            data += urllib.quote(sys.stdin.read())
+            data += quote(sys.stdin.read())
         else:
             with open(path) as f:
-                data += urllib.quote(f.read())
+                data += quote(f.read())
 
 #Call the URL
 code, response, reason = getUrl(jenkins_url, headers, method=args.http_method, data=data)
