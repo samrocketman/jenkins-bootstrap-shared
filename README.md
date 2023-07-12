@@ -1,4 +1,4 @@
-# jenkins-bootstrap shared scripts [![Build Status][ci-img]][ci-link]
+# jenkins-bootstrap shared scripts
 
 <img
 src="https://user-images.githubusercontent.com/875669/35621130-2acb1e78-0638-11e8-8777-0f56edc79c32.png"
