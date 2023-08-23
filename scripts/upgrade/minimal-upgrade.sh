@@ -13,7 +13,7 @@ if ! type -P jq &> /dev/null; then
 fi
 
 latest_lts() {
-  curl -sSfL https://updates.jenkins-ci.org/current/update-center.json | \
+  curl -sSfL https://updates.jenkins-ci.org/stable/update-center.json | \
   awk 'NR == 1 {next}; {print; exit}' | \
   jq -r '.core.version'
 }
