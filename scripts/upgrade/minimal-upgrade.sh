@@ -33,11 +33,11 @@ rm dependencies.gradle.bak
 
   # download jenkins cli, install plugins, remove jenkins cli
   curl -sSfLO "${JENKINS_WEB}/jnlpJars/jenkins-cli.jar"
+  grep -v '^$\|^#.*' plugins.txt | \
   xargs java -jar jenkins-cli.jar \
     -auth "${JENKINS_USER}:${JENKINS_PASSWORD}" \
     -s "${JENKINS_WEB}" \
-    -webSocket install-plugin \
-    < plugins.txt
+    -webSocket install-plugin
   rm jenkins-cli.jar
 
   "${SCRIPT_LIBRARY_PATH}"/upgrade/wait_for_upgrade_to_complete.sh
