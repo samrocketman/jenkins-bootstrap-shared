@@ -9,6 +9,10 @@ function sync_not_disabled() {
   [ ! -f "${JENKINS_HOME}"/disable-sync ]
 }
 
+function git_not_disabled() {
+  [ ! -f "${JENKINS_HOME}"/disable-git ]
+}
+
 if [ "${JENKINS_ENABLE_SYSV_CONFIG:-@@JENKINS_ENABLE_SYSV_CONFIG@@}" = yes ]; then
   [ ! -f /etc/sysconfig/jenkins ] || source /etc/sysconfig/jenkins
   [ ! -f /etc/default/jenkins ] || source /etc/default/jenkins
@@ -24,16 +28,16 @@ JENKINS_WAR="~~WAR~~"
 
 # container configurable variables
 JENKINS_HOME="${JENKINS_HOME:-~~HOME~~}"
-[ -n "${JENKINS_JAVA_OPTIONS}" ] || JENKINS_JAVA_OPTIONS="~~JENKINS_JAVA_OPTIONS~~"
+[ -n "${JENKINS_JAVA_OPTIONS:-}" ] || JENKINS_JAVA_OPTIONS="~~JENKINS_JAVA_OPTIONS~~"
 JENKINS_PORT="${JENKINS_PORT:-@@HTTP_PORT@@}"
 JENKINS_KEYSTORE="${JENKINS_KEYSTORE:-~~HTTPS_KEYSTORE~~}"
 JENKINS_DEBUG_LEVEL="${JENKINS_DEBUG_LEVEL:-5}"
 JENKINS_GIT_USER="${JENKINS_GIT_USER:-Jenkins Automation}"
 JENKINS_GIT_EMAIL="${JENKINS_GIT_EMAIL:-noreply@example.com}"
 JENKINS_JAVA_CMD="${JENKINS_JAVA_CMD:-java}"
-[ -n "${JENKINS_ARGS}" ] || JENKINS_ARGS="-~~ADDITIONAL_JENKINS_ARGS~~"
+[ -n "${JENKINS_ARGS:-}" ] || JENKINS_ARGS="-~~ADDITIONAL_JENKINS_ARGS~~"
 
-if [ "${JENKINS_KEYSTORE}" ]; then
+if [ -n "${JENKINS_KEYSTORE:-}" ]; then
   #smart HTTPS defaults for Jenkins
   JENKINS_HTTPS_PORT="${JENKINS_HTTPS_PORT:-8443}"
   JENKINS_HTTPS_KEYSTORE_PASSWORD_FILE="${JENKINS_HTTPS_KEYSTORE_PASSWORD_FILE:-/dev/null}"
@@ -52,14 +56,14 @@ if [ "$#" -gt 0 ]; then
 fi
 [ -z "${JENKINS_PORT}" ] || ARGS+=( "--httpPort=${JENKINS_PORT}" )
 [ -z "${JENKINS_LISTEN_ADDRESS}" ] || ARGS+=( "--httpListenAddress=${JENKINS_LISTEN_ADDRESS}" )
-if [ "${JENKINS_KEYSTORE}" ]; then
+if [ -n "${JENKINS_KEYSTORE:-}" ]; then
   [ -z "${JENKINS_HTTPS_PORT}" ] || ARGS+=( "--httpsPort=${JENKINS_HTTPS_PORT}" )
   [ -z "${JENKINS_HTTPS_KEYSTORE}" ] || ARGS+=( "--httpsKeyStore=${JENKINS_HTTPS_KEYSTORE}" )
   [ -z "${JENKINS_HTTPS_KEYSTORE_PASSWORD}" ] || ARGS+=( "--httpsKeyStorePassword=${JENKINS_HTTPS_KEYSTORE_PASSWORD}" )
   [ -z "${JENKINS_HTTPS_LISTEN_ADDRESS}" ] || ARGS+=( "--httpsListenAddress=${JENKINS_HTTPS_LISTEN_ADDRESS}" )
 fi
 [ -z "${JENKINS_DEBUG_LEVEL}" ] || ARGS+=( "--debug=${JENKINS_DEBUG_LEVEL}" )
-if [ -n "${JENKINS_ARGS}" ]; then
+if [ -n "${JENKINS_ARGS:-}" ]; then
   declare -a tmp_jenkins_args
   read -ra tmp_jenkins_args <<< "${JENKINS_ARGS}"
   ARGS+=( "${tmp_jenkins_args[@]}" )
@@ -90,7 +94,7 @@ if [ ! -e "${JENKINS_HOME}/.gitignore" ]; then
 fi
 
 #create git repo if it doesn't exist
-if [ ! -d "${JENKINS_HOME}/.git" ]; then
+if git_not_disabled && [ ! -d "${JENKINS_HOME}/.git" ]; then
   (
     cd "${JENKINS_HOME}"
     git init
@@ -103,11 +107,13 @@ fi
 
 #commit unsaved configuration before starting up/upgrading
 if ! diff "@@PREFIX@@/lib/@@ARTIFACTNAME@@/@@MANIFEST@@" "${JENKINS_HOME}/@@MANIFEST@@" &> /dev/null; then
-  git config --local --get user.name || git config user.name "${JENKINS_GIT_USER}"
-  git config --local --get user.email || git config user.email "${JENKINS_GIT_EMAIL}"
-  git add -A
-  #commit only if changes exist
-  git diff-index --quiet HEAD || git commit -m 'pre-start checkpoint commit saving configs'
+  if git_not_disabled; then
+    git config --local --get user.name || git config user.name "${JENKINS_GIT_USER}"
+    git config --local --get user.email || git config user.email "${JENKINS_GIT_EMAIL}"
+    git add -A
+    #commit only if changes exist
+    git diff-index --quiet HEAD || git commit -m 'pre-start checkpoint commit saving configs'
+  fi
 
   #save the current version of the bootstrapper to JENKINS_HOME on startup
   echo "Overwriting manifest in '${JENKINS_HOME}/plugins/@@MANIFEST@@'."
