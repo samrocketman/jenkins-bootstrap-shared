@@ -26,6 +26,7 @@ import hudson.plugins.groovy.SystemGroovy
 import jenkins.model.Jenkins
 import org.jenkinsci.plugins.scriptsecurity.scripts.languages.GroovyLanguage
 import org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildDescriptor
+import org.jenkinsci.plugins.workflow.job.WorkflowJob
 
 script_approval = Jenkins.get().getExtensionList('org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval')[0]
 
@@ -57,6 +58,17 @@ Jenkins.get().items.findAll { Item i ->
         v.script.script
     }.each {
         approveGroovyScript(j.fullName, it, 'postbuild')
+    }
+}
+
+Jenkins.get().items.findAll { Item i ->
+    (i in WorkflowJob) && i.fullName.startsWith('_')
+}.each { WorkflowJob j ->
+    j?.definition?.script.with {
+        if(!it) {
+            return
+        }
+        approveGroovyScript(j.fullName, it, 'pipeline script')
     }
 }
 
