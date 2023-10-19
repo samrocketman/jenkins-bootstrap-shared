@@ -27,6 +27,7 @@ import org.jenkinsci.plugins.workflow.libs.GlobalLibraries
 import org.jenkinsci.plugins.workflow.libs.LibraryConfiguration
 import org.jenkinsci.plugins.workflow.libs.SCMSourceRetriever
 import net.sf.json.JSONObject
+import org.jenkinsci.plugins.workflow.libs.LibraryCachingConfiguration
 
 /**
   Function to compare if the two global shared libraries are equal.
@@ -36,6 +37,8 @@ boolean isLibrariesEqual(List lib1, List lib2) {
     lib1.size() == lib2.size() &&
     !(
         false in [lib1, lib2].transpose().collect { l1, l2 ->
+            def c1 = l1.cachingConfiguration
+            def c2 = l2.cachingConfiguration
             def s1 = l1.retriever.scm
             def s2 = l2.retriever.scm
             l1.retriever.class == l2.retriever.class &&
@@ -47,6 +50,8 @@ boolean isLibrariesEqual(List lib1, List lib2) {
             s1.remote == s2.remote &&
             s1.credentialsId == s2.credentialsId &&
             s1.traits.size() == s2.traits.size() &&
+            c1?.refreshTimeMinutes == c2?.refreshTimeMinutes &&
+            c1?.excludedVersionsStr == c2?.excludedVersionsStr &&
             !(
                 false in [s1.traits, s2.traits].transpose().collect { t1, t2 ->
                     t1.class == t2.class
@@ -63,6 +68,10 @@ pipeline_shared_libraries = [
         'implicit': true,
         'allowVersionOverride': false,
         'includeInChangesets': false,
+        'cache': [
+            refresh_in_minutes: 0,
+            exclude_versions: ''
+        ]
         'scm': [
             'remote': 'https://github.com/example/project.git',
             'credentialsId': 'your-credentials-id'
@@ -93,6 +102,12 @@ pipeline_shared_libraries.each { name, config ->
         library.implicit = config.optBoolean('implicit', false)
         library.allowVersionOverride = config.optBoolean('allowVersionOverride', true)
         library.includeInChangesets = config.optBoolean('includeInChangesets', true)
+        if(config['cache'] in Map) {
+            Integer refresh_time = config.cache.optInt('refresh_in_minutes', 0)
+            String exclude_versions = config.cache.optString('exclude_versions', '')
+            LibraryCachingConfiguration cachingConfiguration = new LibraryCachingConfiguration(refresh_time, exclude_versions)
+            library.cachingConfiguration = cachingConfiguration
+        }
         libraries << library
     }
 }
