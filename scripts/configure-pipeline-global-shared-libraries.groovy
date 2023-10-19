@@ -71,7 +71,7 @@ pipeline_shared_libraries = [
         'cache': [
             refresh_in_minutes: 0,
             exclude_versions: ''
-        ]
+        ],
         'scm': [
             'remote': 'https://github.com/example/project.git',
             'credentialsId': 'your-credentials-id'
