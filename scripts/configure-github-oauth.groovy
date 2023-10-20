@@ -41,18 +41,14 @@ String oauthScopes = github_realm.optString('oauth_scopes', GithubSecurityRealm.
 String clientID = github_realm.optString('client_id')
 String clientSecret = github_realm.optString('client_secret')
 
-if(!Jenkins.instance.isQuietingDown()) {
-    if(clientID && clientSecret) {
-        SecurityRealm github_realm = new GithubSecurityRealm(githubWebUri, githubApiUri, clientID, clientSecret, oauthScopes)
-        //check for equality, no need to modify the runtime if no settings changed
-        if(!github_realm.equals(Jenkins.instance.getSecurityRealm())) {
-            Jenkins.instance.setSecurityRealm(github_realm)
-            Jenkins.instance.save()
-            println 'Security realm configuration has changed.  Configured GitHub security realm.'
-        } else {
-            println 'Nothing changed.  GitHub security realm already configured.'
-        }
+if(clientID && clientSecret) {
+    SecurityRealm github_realm = new GithubSecurityRealm(githubWebUri, githubApiUri, clientID, clientSecret, oauthScopes)
+    //check for equality, no need to modify the runtime if no settings changed
+    if(!github_realm.equals(Jenkins.instance.getSecurityRealm())) {
+        Jenkins.instance.setSecurityRealm(github_realm)
+        Jenkins.instance.save()
+        println 'Security realm configuration has changed.  Configured GitHub security realm.'
+    } else {
+        println 'Nothing changed.  GitHub security realm already configured.'
     }
-} else {
-    println 'Shutdown mode enabled.  Configure GitHub security realm SKIPPED.'
 }
