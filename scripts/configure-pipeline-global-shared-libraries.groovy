@@ -23,11 +23,13 @@
 
 import jenkins.plugins.git.GitSCMSource
 import jenkins.plugins.git.traits.BranchDiscoveryTrait
+import jenkins.plugins.git.traits.DiscoverOtherRefsTrait
+import jenkins.plugins.git.traits.TagDiscoveryTrait
+import net.sf.json.JSONObject
 import org.jenkinsci.plugins.workflow.libs.GlobalLibraries
+import org.jenkinsci.plugins.workflow.libs.LibraryCachingConfiguration
 import org.jenkinsci.plugins.workflow.libs.LibraryConfiguration
 import org.jenkinsci.plugins.workflow.libs.SCMSourceRetriever
-import net.sf.json.JSONObject
-import org.jenkinsci.plugins.workflow.libs.LibraryCachingConfiguration
 
 /**
   Function to compare if the two global shared libraries are equal.
@@ -54,7 +56,13 @@ boolean isLibrariesEqual(List lib1, List lib2) {
             c1?.excludedVersionsStr == c2?.excludedVersionsStr &&
             !(
                 false in [s1.traits, s2.traits].transpose().collect { t1, t2 ->
-                    t1.class == t2.class
+                    t1.class == t2.class && (
+                        !(t1 in DiscoverOtherRefsTrait) ||
+                        (
+                            t1.ref == t2.ref &&
+                            t1.nameMapping == t2.nameMapping
+                        )
+                    )
                 }
             )
         }
@@ -64,17 +72,27 @@ boolean isLibrariesEqual(List lib1, List lib2) {
 /* Example configuration
 pipeline_shared_libraries = [
     'Global Library Name': [
-        'defaultVersion': 'main',
-        'implicit': true,
-        'allowVersionOverride': false,
-        'includeInChangesets': false,
-        'cache': [
+        defaultVersion: 'main',
+        implicit: true,
+        allowVersionOverride: false,
+        includeInChangesets: false,
+        cache: [
             refresh_in_minutes: 0,
             exclude_versions: ''
         ],
-        'scm': [
-            'remote': 'https://github.com/example/project.git',
-            'credentialsId': 'your-credentials-id'
+        scm: [
+            remote: 'https://github.com/example/project.git',
+            credentialsId: 'your-credentials-id',
+            traits: [
+               'discoverBranches': true,
+               'discoverTags': true,
+               'discoverRef': [
+                   [
+                       ref: 'pull/123/head',
+                       nameMapping: 'pull-123'
+                   ]
+               ]
+            ]
         ]
     ]
 ]
@@ -95,7 +113,23 @@ pipeline_shared_libraries.each { name, config ->
     if(name && config && config in Map && 'scm' in config && config['scm'] in Map && 'remote' in config['scm'] && config['scm'].optString('remote')) {
         def scm = new GitSCMSource(config['scm'].optString('remote'))
         scm.credentialsId = config['scm'].optString('credentialsId')
-        scm.traits = [new BranchDiscoveryTrait()]
+        List newTraits = []
+        if('traits' in config.scm.keySet()) {
+            if(config.scm.traits.optBoolean('discoverBranches')) {
+                newTraits << (new BranchDiscoveryTrait())
+            }
+            if(config.scm.traits.optBoolean('discoverTags')) {
+                newTraits << (new TagDiscoveryTrait())
+            }
+            if(config.scm.traits.discoverRef in List) {
+                config.scm.traits.discoverRef.each { Map refspec ->
+                    newTraits << (new DiscoverOtherRefsTrait(refspec.optString('ref'), refspec.optString('nameMapping')))
+                }
+            }
+        } else {
+            newTraits = [new BranchDiscoveryTrait()]
+        }
+        scm.traits = newTraits
         def retriever = new SCMSourceRetriever(scm)
         def library = new LibraryConfiguration(name, retriever)
         library.defaultVersion = config.optString('defaultVersion')
