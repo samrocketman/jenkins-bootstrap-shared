@@ -86,7 +86,7 @@ pipeline_shared_libraries = [
             traits: [
                'discoverBranches': true,
                'discoverTags': true,
-               'discoverRef': [
+               'discoverRefs': [
                    [
                        ref: 'pull/123/head',
                        nameMapping: 'pull-123'
@@ -121,8 +121,8 @@ pipeline_shared_libraries.each { name, config ->
             if(config.scm.traits.optBoolean('discoverTags')) {
                 newTraits << (new TagDiscoveryTrait())
             }
-            if(config.scm.traits.discoverRef in List) {
-                config.scm.traits.discoverRef.each { Map refspec ->
+            if(config.scm.traits.discoverRefs in List) {
+                config.scm.traits.discoverRefs.each { Map refspec ->
                     newTraits << (new DiscoverOtherRefsTrait(refspec.optString('ref'), refspec.optString('nameMapping')))
                 }
             }
