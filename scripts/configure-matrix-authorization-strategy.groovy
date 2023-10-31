@@ -74,6 +74,7 @@ import hudson.security.Permission
 import hudson.security.ProjectMatrixAuthorizationStrategy
 import jenkins.model.Jenkins
 import org.jenkinsci.plugins.matrixauth.PermissionEntry
+import org.jenkinsci.plugins.matrixauth.AuthorizationProperty
 
 /**
  * FUNCTIONS AND SETUP CODE
@@ -163,7 +164,7 @@ println "Configuring authorization strategy ${authz_strategy_config['strategy']}
 
 def authz_strategy = Class.forName("hudson.security.${authz_strategy_config['strategy']}").newInstance()
 
-List jenkins_builtin_groups = [ 'anonymous', 'authenticated' ]
+List jenkins_builtin_groups = [ 'authenticated' ]
 
 // build the permissions in the strategy
 authz_strategy_config['user_permissions'].each { user, permissions ->
