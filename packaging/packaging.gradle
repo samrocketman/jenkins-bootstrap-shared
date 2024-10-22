@@ -196,12 +196,12 @@ buildDeb {
     requires 'net-tools'
     requires 'psmisc'
     requires('default-jre-headless', '2:1.11', Flags.GREATER | Flags.EQUAL)
-        .or('openjdk-11-jre-headless')
-        .or('openjdk-11-jdk')
-        .or('openjdk-11-jre')
         .or('openjdk-17-jre-headless')
         .or('openjdk-17-jdk')
         .or('openjdk-17-jre')
+        .or('openjdk-21-jre-headless')
+        .or('openjdk-21-jdk')
+        .or('openjdk-21-jre')
     conflicts 'hudson'
     conflicts 'jenkins'
     replaces 'hudson'
