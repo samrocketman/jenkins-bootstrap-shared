@@ -4,6 +4,7 @@
 # appropriate way to call jenkins-call-url.  This enables a better user
 # experience by not having to worry about python version.
 
+
 function minimum() (
   exec &> /dev/null
   local major="${2%.*}"
@@ -11,7 +12,7 @@ function minimum() (
   if ! type -P "$1"; then
     return false
   fi
-  python -c 'import platform,sys; check=lambda x,y,z: x.startswith(y) and int(x.split(".")[0:2][-1]) >= z; sys.exit(0) if check(platform.python_version(), sys.argv[1], int(sys.argv[2])) else sys.exit(1)' \
+  "$1" -c 'import platform,sys; check=lambda x,y,z: x.startswith(y) and int(x.split(".")[0:2][-1]) >= z; sys.exit(0) if check(platform.python_version(), sys.argv[1], int(sys.argv[2])) else sys.exit(1)' \
   "${major}" "${minor}"
 )
 

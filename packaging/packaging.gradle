@@ -2,16 +2,18 @@
 //I want to package the exact version of Jenkins plus all exact versions of plugins together
 buildscript {
     repositories {
-        jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
 
     dependencies {
-        classpath 'com.netflix.nebula:gradle-ospackage-plugin:8.2.0'
+        classpath 'com.netflix.nebula:gradle-ospackage-plugin:11.10.0'
     }
 }
 
 //RPM package building
-apply plugin: 'nebula.ospackage'
+apply plugin: 'com.netflix.nebula.ospackage'
 
 
 import org.apache.tools.ant.filters.ReplaceTokens
@@ -193,7 +195,13 @@ buildDeb {
     requires 'daemon'
     requires 'net-tools'
     requires 'psmisc'
-    requires('default-jre-headless', '2:1.8', Flags.GREATER | Flags.EQUAL).or('java8-runtime-headless').or('openjdk-8-jdk').or('openjdk-8-jre')
+    requires('default-jre-headless', '2:1.11', Flags.GREATER | Flags.EQUAL)
+        .or('openjdk-11-jre-headless')
+        .or('openjdk-11-jdk')
+        .or('openjdk-11-jre')
+        .or('openjdk-17-jre-headless')
+        .or('openjdk-17-jdk')
+        .or('openjdk-17-jre')
     conflicts 'hudson'
     conflicts 'jenkins'
     replaces 'hudson'

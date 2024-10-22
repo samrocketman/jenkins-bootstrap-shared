@@ -1,11 +1,5 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-
-    dependencies {
-        classpath 'com.netflix.nebula:gradle-ospackage-plugin:8.2.0'
-    }
+plugins {
+    id 'com.netflix.nebula.ospackage' version '11.10.0'
 }
 
 apply from: "${bootstrapHome}/shared.gradle"
