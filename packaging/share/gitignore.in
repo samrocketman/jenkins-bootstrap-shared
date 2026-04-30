@@ -1,3 +1,5 @@
+# Copied from https://github.com/github/gitignore/blob/master/JENKINS_HOME.gitignore
+#
 # Learn more about Jenkins and JENKINS_HOME directory for which this file is
 # intended.
 #
@@ -6,10 +8,9 @@
 #
 # Note: secret.key is purposefully not tracked by git. This should be backed up
 # separately because configs may contain secrets which were encrypted using the
-# secret.key.  To back up secrets use 'tar -czf /tmp/secrets.tgz secret*' and
-# save the file separate from your repository.
+# secret.key.
 
-# ignore all JENKINS_HOME except jobs directory, root xml config, and .gitignore file
+# Ignore all JENKINS_HOME except jobs directory, root xml config, and .gitignore file
 /*
 !/jobs
 !/.gitignore
@@ -17,35 +18,28 @@
 !/@@MANIFEST@@
 !/dailycommit.sh
 !/@@PACKAGENAME@@-commit
-!/cron.disabled
 
-# ignore all files in jobs subdirectories except for folders
-# note: git doesn't track folders, only file content
+# Ignore all files in jobs subdirectories except for folders
+# Note: git doesn't track folders, only file content
 jobs/**
 !jobs/**/
 
-# save next build numbers with config
+# Save next build numbers with config
 !jobs/**/nextBuildNumber
 
-# For performance reasons, we want to ignore builds in Jenkins jobs because it
-# contains many tiny files on large installations.  This can impact git
-# performance when running even basic commands like 'git status'.
+# Exclude only config.xml files in repository subdirectories
+!config.xml
+
+# Don't track workspaces (when users build on the master)
+jobs/**/*workspace
+
+# For performance reasons we want to ignore this in multibranch pipelines so
+# that git does not traverse inside of the builds folder.
 builds
 indexing
 
-# exclude only config.xml files in repository subdirectories
-!config.xml
-
-# don't track workspaces (when users build on the master)
-jobs/**/*workspace
-
-# Security warning: If secrets are included with your configuration, then an
-# adversary be able to decrypt all encrypted secrets within Jenkins config.
-# Including secrets is a bad practice, but the example is included in case
-# someone still wants it for convenience.  Uncomment the following line to
-# include secrets for decryption with repository configuration in Git.
-
-#!/secret*
+# Do not search PR jobs
+branches
 
 # As a result only Jenkins settings and job config.xml files in JENKINS_HOME
 # will be tracked by git
