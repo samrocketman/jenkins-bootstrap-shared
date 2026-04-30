@@ -2,6 +2,12 @@
 
 set -e
 
+if [ -z "${JENKINS_START:-}" ]; then
+  # work around https://www.jenkins.io/doc/book/managing/system-properties/#hudson-cli-cliaction-accept_url_from_request
+  # this is necessary for upgrading Jenkins in a local ephemeral copy
+  export JENKINS_START='java -Xms4g -Xmx4g -Dhudson.cli.CLIAction.ACCEPT_URL_FROM_REQUEST=true -jar jenkins.war'
+fi
+
 if [ ! -f plugins.txt ]; then
   echo 'ERROR: Missing plugins.txt at the root of your repository with plugin IDs to be installed.' >&2
   exit 1
